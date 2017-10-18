@@ -7,22 +7,11 @@ entity Top is
 	port (
 		clk, rst: in std_logic;
 		input: in u16;
-		s: out u16;
-		flag: out std_logic
+		fout: out u16
 	) ;
 end Top;
 
 architecture arch of Top is
-
-	component Controller is
-		port (
-		  clk, rst: in std_logic;
-		  input: in u16;
-		  op: out u4;
-		  a: out u16;
-		  b: out u16
-		) ;
-	end component;
 
 	component ALU is
 		port (
@@ -31,15 +20,48 @@ architecture arch of Top is
 		  b: in u16;
 		  s: out u16;
 		  flag: out std_logic
-		) ;
+		);
 	end component;
 
 	signal op: u4;
-	signal a, b: u16;
+	signal a, b ,s: u16;
+	signal flag: std_logic;
+	signal status: integer := 0;	
 
 begin
 
-	ctl0: Controller port map (clk, rst, input, op, a, b);
 	alu0: ALU port map (op, a, b, s, flag);
+
+	process(clk,rst)
+	begin
+		if rst = '0'
+		then 
+			status <= 0;
+		elsif rising_edge(clk)
+		then 
+			if status = 3
+			then
+				status <= 0;
+			else
+				status <= status + 1;
+			end if;
+		end if;
+		
+		if status = 0
+		then
+			a <= input;
+		elsif status = 1
+		then
+			b <= input;
+		elsif status = 2
+		then
+			op <= input(3 downto 0);
+			fout <= s;
+		elsif status = 3
+		then
+			fout <= (15 downto 0=>flag);
+		end if;
+
+	end process;
 
 end arch ; -- arch
