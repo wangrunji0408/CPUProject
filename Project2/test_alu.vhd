@@ -33,12 +33,12 @@ begin
 	process
 	begin
 		-- 一个测例
-		op <= OP_ADD;
-		a <= to_u16(2);
-		b <= to_u16(4);
+		op <= OP_SLL;
+		a <= to_u16(3);
+		b <= to_u16(2);
 		wait for 10 ns; -- 这里随便等待一段时间，只要不是0
-		assert(s = 6) 
-			report "Failed: ADD s=" & toString(s) severity error;
+		assert(s = 12) 
+			report "Failed: SLL s=" & toString(s) severity error;
 
 		op <= OP_SUB;
 		a <= to_u16(2);

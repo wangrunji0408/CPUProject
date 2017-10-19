@@ -19,18 +19,18 @@ architecture arch of Top is
 		  a: in u16;
 		  b: in u16;
 		  s: out u16;
-		  flag: out std_logic
+		  cf, zf, sf, vf: out std_logic
 		);
 	end component;
 
 	signal op: u4;
 	signal a, b ,s: u16;
-	signal flag: std_logic;
+	signal cf,zf,sf,vf: std_logic;
 	signal status: integer := 0;	
 
 begin
 
-	alu0: ALU port map (op, a, b, s, flag);
+	alu0: ALU port map (op, a, b, s, cf,zf,sf,vf);
 
 	process(clk,rst)
 	begin
@@ -59,7 +59,12 @@ begin
 			fout <= s;
 		elsif status = 3
 		then
-			fout <= (15 downto 0=>flag);
+			fout <= (
+					15 downto 12=> cf,
+					11 downto 8 => zf,
+					7  downto 4 => sf,
+					3  downto 0 => vf
+					);
 		end if;
 
 	end process;
