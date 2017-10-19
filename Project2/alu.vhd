@@ -110,7 +110,7 @@ begin
                 end if;
                 s <= temp;
             when "1000" =>       --SAR
-                temp := shift_right(a, to_integer(b));
+                temp := unsigned(shift_right(signed(a), to_integer(b)));
                 if (temp = "0000000000000000") then
                     zf <= '1';
                 end if;
