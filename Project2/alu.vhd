@@ -10,7 +10,7 @@ entity ALU is
 		a: in u16;
 		b: in u16;
 		s: out u16;
-		cf, zf, sf, vf: out std_logic;
+		cf, zf, sf, vf: out std_logic
 	) ;
 end ALU;
 
