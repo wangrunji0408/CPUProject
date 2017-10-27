@@ -17,7 +17,7 @@ end ALU;
 architecture arch of ALU is
 	
 begin
-	calc : process(op)
+	calc : process(a, b, op)
         variable temp : u16;
 	begin
         cf <= '0';

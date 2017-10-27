@@ -7,7 +7,8 @@ entity Top is
 	port (
 		clk, rst: in std_logic;
 		input: in u16;
-		fout: out u16
+		fout: out u16;
+		digit0, digit1: out std_logic_vector(6 downto 0)
 	) ;
 end Top;
 
@@ -31,6 +32,9 @@ architecture arch of Top is
 begin
 
 	alu0: ALU port map (op, a, b, s, cf,zf,sf,vf);
+
+	digit0 <= DisplayNumber(to_unsigned(status, 4));
+	digit1 <= (others => '0');
 
 	process(clk,rst)
 	begin

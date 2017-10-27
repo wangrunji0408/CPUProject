@@ -74,18 +74,18 @@ begin
 		wait for 100 ns;
 		press(rst);
 
-		test_case("ADD", clk, input, fout, x"0002", x"FFFF", OP_ADD, x"0001", "1001");
+		test_case("ADD", clk, input, fout, x"0002", x"FFFF", OP_ADD, x"0001", "1000");
 		test_case("SUB", clk, input, fout, x"0002", x"0004", OP_SUB, x"FFFE", "1010");
 		test_case("AND", clk, input, fout, x"0003", x"0005", OP_AND, x"0001", "0000");
 		test_case("OR", clk, input, fout, x"0002", x"0004", OP_OR, x"0006", "0000");
 		test_case("XOR", clk, input, fout, x"0002", x"0004", OP_XOR, x"0006", "0000");
-		test_case("NOT", clk, input, fout, x"0002", x"0004", OP_NOT, x"FFFD", "0000");
-		test_case("SLL", clk, input, fout, x"ABCD", x"0004", OP_SLL, x"BCD0", "0000");
+		test_case("NOT", clk, input, fout, x"0002", x"0004", OP_NOT, x"FFFD", "0010");
+		test_case("SLL", clk, input, fout, x"ABCD", x"0004", OP_SLL, x"BCD0", "0010");
 		test_case("SRL", clk, input, fout, x"ABCD", x"0004", OP_SRL, x"0ABC", "0000");
-		test_case("SRA", clk, input, fout, x"FFF8", x"0002", OP_SRA, x"FFFE", "0000");
-		test_case("ROL", clk, input, fout, x"ABCD", x"0004", OP_ROL, x"BCDA", "0000");
+		test_case("SRA", clk, input, fout, x"FFF8", x"0002", OP_SRA, x"FFFE", "0010");
+		test_case("ROL", clk, input, fout, x"ABCD", x"0004", OP_ROL, x"BCDA", "0010");
 
-		assert(false) report "Test End" severity note;
+		assert(false) report "Top: Test Success." severity note;
 		wait;
 	end process;
 
