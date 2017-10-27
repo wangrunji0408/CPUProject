@@ -16,19 +16,19 @@ architecture arch of TestALU is
 		  a: in u16;
 		  b: in u16;
 		  s: out u16;
-		  flag: out std_logic
+		  cf, zf, sf, vf: out std_logic
 		) ;
 	end component;
 
 	-- ALU Signals
 	signal op: u4;
 	signal a, b, s: u16;
-	signal flag: std_logic;
+	signal cf, zf, sf, vf: std_logic;
 
 begin
 
 	-- 实例化被测entity
-	alu0: alu port map (op, a, b, s, flag);
+	alu0: alu port map (op, a, b, s, cf, zf, sf, vf);
 
 	process
 	begin
@@ -46,6 +46,8 @@ begin
 		wait for 10 ns;
 		assert(s = x"FFFE") 
 			report "Failed: SUB s=" & toString(s) severity error;
+		assert(zf = '0') 
+			report "Failed: SUB ZF" severity error;
 
 		-- 最后一句，会输出"Test End"，一定要有wait否则模拟不会结束
 		assert(false) report "Test End" severity note;

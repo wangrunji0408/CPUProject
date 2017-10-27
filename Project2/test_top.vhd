@@ -28,9 +28,10 @@ architecture arch of TestTop is
 		signal fout: in u16;
 		a, b: u16;
 		op: u4;
-		f: u16
-		-- cf, zf, sf, vf: std_logic
+		std_f: u16;
+		std_flag: u4 -- cf 进位, zf 零, sf 符号, vf 溢出
 		) is
+		variable af: u4;
 	begin
 		input <= a;
 		wait for 100 ns;
@@ -44,11 +45,17 @@ architecture arch of TestTop is
 		wait for 100 ns;
 		press(clk);
 
-		assert(fout = f) 
-			report "Failed case " & info & ". expect=" & toString(f) & " actual=" & toString(fout) 
+		-- wait for ALU calc
+		press(clk);
+		assert(fout = std_f) 
+			report "Failed case " & info & ". expect=" & toString(std_f) & " actual=" & toString(fout) 
 			severity error;
 
 		press(clk);
+		af := fout(3 downto 0);
+		assert(std_flag = af) 
+			report "Failed case (FLAG) " & info & ". expect=" & toBitStr(std_flag) & " actual=" & toBitStr(af)
+			severity error;
 	end procedure;
 
 	signal clk, rst: std_logic;
@@ -67,16 +74,16 @@ begin
 		wait for 100 ns;
 		press(rst);
 
-		test_case("ADD", clk, input, fout, x"0002", x"0004", OP_ADD, x"0006");
-		test_case("SUB", clk, input, fout, x"0002", x"0004", OP_SUB, x"FFFE");
-		test_case("AND", clk, input, fout, x"0003", x"0005", OP_AND, x"0001");
-		test_case("OR", clk, input, fout, x"0002", x"0004", OP_OR, x"0006");
-		test_case("XOR", clk, input, fout, x"0002", x"0004", OP_XOR, x"0006");
-		test_case("NOT", clk, input, fout, x"0002", x"0004", OP_NOT, x"FFFD");
-		test_case("SLL", clk, input, fout, x"ABCD", x"0004", OP_SLL, x"BCD0");
-		test_case("SRL", clk, input, fout, x"ABCD", x"0004", OP_SRL, x"0ABC");
-		test_case("SRA", clk, input, fout, x"FFF8", x"0002", OP_SRA, x"FFFE");
-		test_case("ROL", clk, input, fout, x"ABCD", x"0004", OP_ROL, x"BCDA");
+		test_case("ADD", clk, input, fout, x"0002", x"FFFF", OP_ADD, x"0001", "1001");
+		test_case("SUB", clk, input, fout, x"0002", x"0004", OP_SUB, x"FFFE", "1010");
+		test_case("AND", clk, input, fout, x"0003", x"0005", OP_AND, x"0001", "0000");
+		test_case("OR", clk, input, fout, x"0002", x"0004", OP_OR, x"0006", "0000");
+		test_case("XOR", clk, input, fout, x"0002", x"0004", OP_XOR, x"0006", "0000");
+		test_case("NOT", clk, input, fout, x"0002", x"0004", OP_NOT, x"FFFD", "0000");
+		test_case("SLL", clk, input, fout, x"ABCD", x"0004", OP_SLL, x"BCD0", "0000");
+		test_case("SRL", clk, input, fout, x"ABCD", x"0004", OP_SRL, x"0ABC", "0000");
+		test_case("SRA", clk, input, fout, x"FFF8", x"0002", OP_SRA, x"FFFE", "0000");
+		test_case("ROL", clk, input, fout, x"ABCD", x"0004", OP_ROL, x"BCDA", "0000");
 
 		assert(false) report "Test End" severity note;
 		wait;

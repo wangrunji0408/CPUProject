@@ -6,7 +6,8 @@ package Base is
 	subtype u16 is unsigned(15 downto 0);
 	subtype u4 is unsigned(3 downto 0);
 	
-	function toString (x: u16) return string;
+	function toBitStr (x: unsigned) return string;
+	function toString (x: unsigned) return string;
 	function to_u4 (x: integer) return u4;
 	function to_u16 (x: integer) return u16;
 
@@ -24,7 +25,12 @@ end package ;
 
 package body Base is
 
-	function toString (x: u16) return string is 
+	function toBitStr (x: unsigned) return string is 
+	begin
+		return integer'image(to_integer(x));
+	end function;
+
+	function toString (x: unsigned) return string is 
 	begin
 		return integer'image(to_integer(x));
 	end function;

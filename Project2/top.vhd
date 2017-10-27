@@ -37,36 +37,32 @@ begin
 		if rst = '0'
 		then 
 			status <= 0;
+			fout <= x"FFFF";
 		elsif rising_edge(clk)
 		then 
-			if status = 3
-			then
+			status <= status + 1;
+			if status = 0 then
+				a <= input;
+				fout <= input;
+			elsif status = 1 then
+				b <= input;
+				fout <= input;
+			elsif status = 2 then
+				op <= input(3 downto 0);
+				fout <= input;
+			elsif status = 3 then
+				fout <= s;
+			elsif status = 4 then
+				fout <= x"000" & cf & zf & sf & vf;
+				--(
+				--	15 downto 12=> cf,
+				--	11 downto 8 => zf,
+				--	7  downto 4 => sf,
+				--	3  downto 0 => vf
+				--);
 				status <= 0;
-			else
-				status <= status + 1;
 			end if;
 		end if;
-		
-		if status = 0
-		then
-			a <= input;
-		elsif status = 1
-		then
-			b <= input;
-		elsif status = 2
-		then
-			op <= input(3 downto 0);
-			fout <= s;
-		elsif status = 3
-		then
-			fout <= (
-					15 downto 12=> cf,
-					11 downto 8 => zf,
-					7  downto 4 => sf,
-					3  downto 0 => vf
-					);
-		end if;
-
 	end process;
 
 end arch ; -- arch
