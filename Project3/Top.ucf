@@ -155,4 +155,9 @@ NET "vga_vs" LOC = E6;
 NET "ps2_clk" LOC = U6;
 NET "ps2_data" LOC = V6;
 
+NET "key[3]" LOC = V16;
+NET "key[2]" LOC = V14;
+NET "key[1]" LOC = U14;
+NET "key[0]" LOC = U11;
+
 

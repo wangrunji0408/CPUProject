@@ -18,13 +18,13 @@ begin
 	process( enable, read, write, addr )
 	begin
 		data <= (others => 'Z');
-		if enable = '1' and rising_edge(write) then
+		if enable = '0' and rising_edge(write) then
 			ram(to_integer(addr)) <= data after 1 ns;
 		end if;
-		if enable = '1' and falling_edge(read) then
+		if enable = '0' and falling_edge(read) then
 			data <= (others => 'X');
 		end if;
-		if enable = '1' and read = '0' then
+		if enable = '0' and read = '0' then
 			data <= ram(to_integer(addr)) after 1 ns;
 		end if;
 	end process ;

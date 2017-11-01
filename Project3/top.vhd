@@ -23,7 +23,8 @@ entity Top is
 		vga_r, vga_g, vga_b: out u3;
 		vga_vs, vga_hs: out std_logic;
 
-		digit0raw, digit1raw: out std_logic_vector(6 downto 0)
+		digit0raw, digit1raw: out std_logic_vector(6 downto 0);
+		key: in std_logic_vector(3 downto 0)
 	) ;
 end Top;
 
@@ -38,6 +39,22 @@ architecture arch of Top is
 		ram1data, ram2data: inout u16;
 		ram1read, ram1write, ram1enable: out std_logic;
 		ram2read, ram2write, ram2enable: out std_logic;
+
+		digit0, digit1: out u4
+	) ;
+	end component;
+
+	component UartProj is
+	port (
+		clk11, rst: in std_logic;
+		switch: in u16;
+		light: out u16;
+		
+		ram1addr: out u18;
+		ram1data: inout u16;
+
+		uart_data_ready, uart_tbre, uart_tsre: in std_logic;	-- UART flags 
+		uart_read, uart_write: out std_logic;					-- UART lock
 
 		digit0, digit1: out u4
 	) ;
@@ -58,5 +75,11 @@ begin
 								ram1read, ram1write, ram1enable, 
 								ram2read, ram2write, ram2enable,
 								digit0, digit1);
+
+	-- ram1read <= '1'; ram1write <= '1'; ram1enable <= '1';
+	-- uart0:   UartProj port map (clk11, rst, switch, light, 
+	-- 							ram1addr, ram1data,
+	-- 							uart_data_ready, uart_tbre, uart_tsre, uart_read, uart_write, 
+	-- 							digit0, digit1);
 	
 end arch ; -- arch

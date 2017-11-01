@@ -51,8 +51,8 @@ begin
 		variable addrBegin: u16;
 	begin
 		if rst = '0' then
-			ram1enable <= '0'; ram1read <= '1';
-			ram2enable <= '0'; ram2read <= '1';
+			ram1enable <= '1'; ram1read <= '1';
+			ram2enable <= '1'; ram2read <= '1';
 			status <= WriteRAM1;
 			count <= 0;
 			data <= to_u16(0); addr <= to_u16(0);
@@ -62,7 +62,7 @@ begin
 			case status is
 			when WriteRAM1 =>
 				case count is 
-				when 0 => addr <= switch; addrBegin := switch; ram1enable <= '1';
+				when 0 => addr <= switch; addrBegin := switch; ram1enable <= '0';
 				when 1 => data <= switch; ram1writeEqualsClk <= true;
 				when 2 => ram1writeEqualsClk <= false;	-- writing 1
 				when 3|5|7|9|11|13|15|17|19 => 	addr <= addr + 1; data <= data + 1; ram1writeEqualsClk <= true;
