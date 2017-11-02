@@ -107,11 +107,12 @@ begin
 				end case;
 			when WriteUART =>
 				case count is 
-				when 0 => uart_write <= '1'; ram1data <= data;
-				when 1 => uart_write <= '0';
-				when 2 => if uart_tbre /= '1' then count <= count; end if;
-				when 3 => if uart_tsre /= '1' then count <= count; end if;
-				when 4 => 
+				when 0 => ram1data <= data;
+				when 1 => uart_write <= '0'; 
+				when 2 => uart_write <= '1';
+				when 3 => if uart_tbre /= '1' then count <= count; end if;
+				when 4 => if uart_tsre /= '1' then count <= count; end if;
+				when 5 => 
 					if pressclk then count <= 0; status <= ReadUART; 
 					else count <= count; end if;
 				when others => count <= 0;
