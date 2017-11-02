@@ -60,6 +60,24 @@ architecture arch of Top is
 	) ;
 	end component;
 
+	component RamUart is
+	port (
+		clk, rst, clk11: in std_logic;
+		switch: in u16;
+		light: out u16;
+		
+		ram1addr, ram2addr: out u18;
+		ram1data, ram2data: inout u16;
+		ram1read, ram1write, ram1enable: out std_logic;
+		ram2read, ram2write, ram2enable: out std_logic;
+
+		uart_data_ready, uart_tbre, uart_tsre: in std_logic;	-- UART flags 
+		uart_read, uart_write: out std_logic;					-- UART lock
+
+		digit0, digit1: out u4
+	) ;
+	end component;
+
 	signal digit0, digit1: u4;
 begin
 
@@ -67,19 +85,32 @@ begin
 	digit1raw <= DisplayNumber(digit1);
 
 	vga_r <= "000"; vga_g <= "000"; vga_b <= "000"; vga_vs <= '1'; vga_hs <= '1'; 
-	uart_read <= '1'; uart_write <= '1';
 
-	ramproj0: RamProj port map (clk, rst, switch, light, 
-								ram1addr, ram2addr, 
-								ram1data, ram2data, 
-								ram1read, ram1write, ram1enable, 
-								ram2read, ram2write, ram2enable,
-								digit0, digit1);
+	-- RAM Only
+	-- uart_read <= '1'; uart_write <= '1';
+	-- ramproj0: RamProj port map (clk, rst, switch, light, 
+	-- 							ram1addr, ram2addr, 
+	-- 							ram1data, ram2data, 
+	-- 							ram1read, ram1write, ram1enable, 
+	-- 							ram2read, ram2write, ram2enable,
+	-- 							digit0, digit1);
 
+	-- UART Only
 	-- ram1read <= '1'; ram1write <= '1'; ram1enable <= '1';
+	-- ram2read <= '1'; ram2write <= '1'; ram2enable <= '1';
+	-- ram2addr <= (others => 'Z');
 	-- uart0:   UartProj port map (clk11, rst, switch, light, 
 	-- 							ram1addr, ram1data,
 	-- 							uart_data_ready, uart_tbre, uart_tsre, uart_read, uart_write, 
 	-- 							digit0, digit1);
+
+	-- RAM & UART
+	ramuart0: RamUart port map (clk, rst, clk11, switch, light, 
+								ram1addr, ram2addr, 
+								ram1data, ram2data, 
+								ram1read, ram1write, ram1enable, 
+								ram2read, ram2write, ram2enable,
+								uart_data_ready, uart_tbre, uart_tsre, uart_read, uart_write, 
+								digit0, digit1);
 	
 end arch ; -- arch
