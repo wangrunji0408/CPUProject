@@ -3,15 +3,15 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use work.Base.all;
 
-entity FakeRam is
+entity MockRam is
 	port (
 		addr: in u18;
 		data: inout u16;
 		read, write, enable: in std_logic
 	) ;
-end FakeRam;
+end MockRam;
 
-architecture arch of FakeRam is	
+architecture arch of MockRam is	
 	type TRam is array (20 downto 0) of u16;
 	signal ram: TRam;
 begin
