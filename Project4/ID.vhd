@@ -13,8 +13,9 @@ entity ID is
 
 		------ 寄存器接口 ------
 
-		-- 只有.data是in
-		reg1, reg2: inout RegPort;
+		reg1_enable, reg2_enable: out std_logic;
+		reg1_addr, reg2_addr: out u16;
+		reg1_data, reg2_data: in u16;
 
 		------ 旁路信息 ------
 
@@ -28,6 +29,15 @@ entity ID is
 		-- 正处于此阶段的指令，是否要写寄存器
 		-- 若是，enable=1，并给出地址，数据属性无效
 		writeReg: out RegPort;
+
+		-- 正处于此阶段的指令，是否为LW
+		-- 若是，在MEM阶段，writeReg.data <= Mem[ALUOut]
+		isLW: out std_logic;
+
+		-- 正处于此阶段的指令，是否为SW
+		-- 若是，在MEM阶段，Mem[ALUOut] <= writeMemData
+		isSW: out std_logic;
+		writeMemData: out u16;
 
 		aluInput: out AluInput
 	) ;

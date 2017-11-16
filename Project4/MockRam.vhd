@@ -19,13 +19,13 @@ begin
 	begin
 		data <= (others => 'Z');
 		if enable = '0' and rising_edge(write) then
-			ram(to_integer(addr)) <= data after 1 ns;
+			ram(to_integer(addr)) <= data after 8 ns;
 		end if;
 		if enable = '0' and falling_edge(read) then
 			data <= (others => 'X');
 		end if;
 		if enable = '0' and read = '0' then
-			data <= ram(to_integer(addr)) after 1 ns;
+			data <= ram(to_integer(addr)) after 10 ns;
 		end if;
 	end process ;
 end arch ; -- arch

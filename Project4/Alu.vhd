@@ -5,7 +5,7 @@ use work.Base.all;
 
 entity Alu is
 	port (
-		op: in u4;
+		op: in AluOp;
 		a, b: in u16;
 		s: out u16;
 		flag: out AluFlag

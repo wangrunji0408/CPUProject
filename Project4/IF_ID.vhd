@@ -12,8 +12,8 @@ entity IF_ID is
 		if_pc: in u16;
 		if_inst: in Inst;
 		-- ID
-		id_pc: in u16;
-		id_inst: in Inst
+		id_pc: out u16;
+		id_inst: out Inst
 	) ;
 end IF_ID;
 

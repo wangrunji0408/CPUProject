@@ -4,13 +4,15 @@ use ieee.numeric_std.all;
 use work.Base.all;
 
 -- 地址模块
--- 每个时钟上升沿，若branch==true，则输出branchTarget，否则+4输出
+-- 每个时钟上升沿时切换地址
+-- 1. 若isOffset==true，则 PC+=offset
+-- 2. 若isJump==true，则 PC=target
+-- 3. 否则 PC+=4
 entity PC is
 	port (
 		rst, clk: in std_logic;
-		branch: in std_logic;
-		branchTarget: in u16;
-
+		isOffset, isJump: in std_logic;
+		offset, target: in u16;
 		pc: out u16
 	) ;
 end PC;

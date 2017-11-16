@@ -149,8 +149,8 @@ NET "vga_g[0]" LOC = B4;
 NET "vga_b[2]" LOC = B6;
 NET "vga_b[1]" LOC = A6;
 NET "vga_b[0]" LOC = D5;
-NET "vga_hs" LOC = D6;
-NET "vga_vs" LOC = E6;
+NET "vga_hs" LOC = E6;
+NET "vga_vs" LOC = D6;
 
 NET "ps2_clk" LOC = U6;
 NET "ps2_data" LOC = V6;

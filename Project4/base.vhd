@@ -14,7 +14,18 @@ package Base is
 	subtype Inst is u16;
 	subtype InstOpcode is u5;
 	subtype AluOpcode is u4;
-	subtype RegAddr is u3;
+	subtype RegAddr is u4;
+
+	-- 特殊寄存器。和通用寄存器一起，统一编码为4位地址。
+	constant REG_SP: RegAddr := x"8";
+	constant REG_IH: RegAddr := x"9";
+	constant REG_RA: RegAddr := x"A";
+	constant REG_T:  RegAddr := x"B";
+
+	type AluOp is (
+		OP_ADD, OP_SUB, OP_AND, OP_OR , OP_XOR, 
+		OP_NOT, OP_SLL, OP_SRL, OP_SRA, OP_ROL
+	);
 
 	type AluFlag is record
 		cf, zf, sf, vf: std_logic;
@@ -31,22 +42,20 @@ package Base is
 
 	type RegPort is record
 		enable: std_logic;
-		addr, data: u16;
+		addr: RegAddr;
+		data: u16;
 	end record;
 
 	type AluInput is record
-		op: u4;
+		op: AluOp;
 		a, b: u16;
 	end record;
 
-	-- 控制信号定义（临时）
-	type TRegDst is (Rx, Ry, Rz);
-	type TRegWrite is (None, Reg, SP, T, RA, IH);
-	type TMemToReg is (ALU, MDR);
-	type TAluSrcA is (A, PC);
-	type TAluSrcB is (B, One, IR);
-	type TIorD is (PC, ALU);
-	type TPCSrc is (ALU, ALUout);
+	type RamPort is record
+		enable, read, write: std_logic;
+		addr: u18;
+		data: u16;
+	end record;
 	
 	function toBitStr (x: unsigned) return string;
 	function toString (x: unsigned) return string;
@@ -62,18 +71,6 @@ package Base is
 	function getRy (x: Inst) return RegAddr;
 	function getRz (x: Inst) return RegAddr;
 	function getIm8 (x: Inst) return u8;
-
-	-- define ALU op
-	constant OP_ADD: 	AluOpcode := to_u4(0); 
-	constant OP_SUB: 	AluOpcode := to_u4(1); 
-	constant OP_AND: 	AluOpcode := to_u4(2); 
-	constant OP_OR: 	AluOpcode := to_u4(3); 
-	constant OP_XOR: 	AluOpcode := to_u4(4); 
-	constant OP_NOT: 	AluOpcode := to_u4(5); 
-	constant OP_SLL: 	AluOpcode := to_u4(6); 
-	constant OP_SRL: 	AluOpcode := to_u4(7); 
-	constant OP_SRA: 	AluOpcode := to_u4(8); 
-	constant OP_ROL: 	AluOpcode := to_u4(9); 
 
 	-- define Instruction op
 	constant INST_ADDIU: 	InstOpcode := "01001";

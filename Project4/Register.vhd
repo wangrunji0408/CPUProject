@@ -7,8 +7,12 @@ use work.Base.all;
 entity Register is
 	port (
 		clk, rst: in std_logic;
-		write: in RegPort;
-		read1, read2: inout RegPort -- only .data is out
+		write_enable: in std_logic;
+		write_addr: in RegAddr;
+		write_data: in u16;
+		read1_enable, read2_enable: in std_logic;
+		read1_addr, read2_addr: in RegAddr;
+		read1_data, read2_data: out u16
 	) ;
 end Register;
 
