@@ -18,6 +18,22 @@ entity PC is
 end PC;
 
 architecture arch of PC is	
+	signal pc0: u16;
 begin
+	
+	process( rst, clk )
+	begin
+		if rst = '0' then
+			pc0 <= x"0000";
+		elsif rising_edge(clk) then
+			if isOffset = '1' then
+				pc0 <= pc0 + offset;
+			elsif isJump = '1' then
+				pc0 <= target;
+			else
+				pc0 <= pc0 + 4;
+			end if;
+		end if;
+	end process ;
 
 end arch ; -- arch

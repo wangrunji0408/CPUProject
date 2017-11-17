@@ -20,4 +20,17 @@ end IF_;
 architecture arch of IF_ is	
 begin
 
+	ram2addr <= "00" & pc;
+	inst <= ram2data;
+
+	process( rst, clk )
+	begin
+		if rst = '0' then
+			ram2read <= '1'; ram2write <= '1'; ram2enable <= '1';
+			ram2data <= (others => 'Z');
+		elsif rising_edge(clk) then
+			ram2read <= '0'; ram2enable <= '0'; -- enable RAM2 read
+		end if;
+	end process ;
+
 end arch ; -- arch
