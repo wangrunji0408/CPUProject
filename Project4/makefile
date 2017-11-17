@@ -1,16 +1,18 @@
+ifndef ENTITY
+	ENTITY = top
+endif
+
 all: build
 
-testfakeram: build
-	nvc -e testfakeram
-	nvc -r testfakeram -w 
-
+# usage: make test [ENTITY=top]
 test: build
-	nvc -e testtop
-	nvc -r testtop -w 
+	nvc -e test${ENTITY}
+	nvc -r test${ENTITY} -w 
 
 build: 
 	nvc -a base.vhd
 	nvc -a *.vhd
+	nvc -a test/*.vhd
 
 clean:
 	rm -r work

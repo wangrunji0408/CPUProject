@@ -4,6 +4,7 @@
 *
 !.gitignore
 !*.vhd
+!test/
 !*.vhdl
 !makefile
 !*.xise
