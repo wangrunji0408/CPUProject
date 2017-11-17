@@ -25,7 +25,7 @@ package Base is
 	type AluOp is (
 		OP_ADD, OP_SUB, OP_AND, OP_OR , OP_XOR, 
 		OP_NOT, OP_SLL, OP_SRL, OP_SRA, OP_ROL,
-		OP_CMPU, OP_CMPS -- 
+		OP_LTU, OP_LTS, OP_EQ -- 分别对应 SLTUI SLT CMP 指令，输出0/1
 	);
 
 	type AluFlag is record
