@@ -24,7 +24,8 @@ package Base is
 
 	type AluOp is (
 		OP_ADD, OP_SUB, OP_AND, OP_OR , OP_XOR, 
-		OP_NOT, OP_SLL, OP_SRL, OP_SRA, OP_ROL
+		OP_NOT, OP_SLL, OP_SRL, OP_SRA, OP_ROL,
+		OP_CMPU, OP_CMPS -- 
 	);
 
 	type AluFlag is record
@@ -63,7 +64,8 @@ package Base is
 	function to_u16 (x: integer) return u16;
 	function DisplayNumber (number: u4) return std_logic_vector;
 
-	function signExtend (number: u16) return u32;
+	function signExtend (number: u8) return u16;
+	function zeroExtend (number: u8) return u16;
 
 	-- Get part from instruction
 	function getOp (x: Inst) return InstOpcode;
@@ -147,13 +149,18 @@ package body Base is
 		return x(7 downto 0);
 	end function;
 
-	function signExtend (number: u16) return u32 is
+	function signExtend (number: u8) return u16 is
 	begin
-		if number(15) = '0' then
-			return x"0000" & number;
+		if number(7) = '0' then
+			return x"00" & number;
 		else
-			return x"FFFF" & number;
+			return x"FF" & number;
 		end if;
+	end function;
+
+	function zeroExtend (number: u8) return u16 is
+	begin
+		return x"00" & number;
 	end function;
 	
 	function toBitStr (x: unsigned) return string is 

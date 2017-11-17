@@ -7,15 +7,9 @@ use work.Base.all;
 entity EX is
 	port (
 		------ 从ID读入 ------
-
-		-- 这些貌似都不需要？
-		-- writeReg: in RegPort;
-		-- isLW, isSW: in std_logic;
-		-- writeMemData: in u16;
 		aluInput: in AluInput;
 
 		------ 输出到MEM ------
-
 		aluOut: out u16
 	) ;
 end EX;

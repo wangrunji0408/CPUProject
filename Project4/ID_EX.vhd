@@ -7,7 +7,7 @@ use work.Base.all;
 -- 时钟上升沿时，简单地将参数从输入传递到输出
 entity ID_EX is
 	port (
-		rst, clk: in std_logic;
+		rst, clk, stall, clear: in std_logic;
 		-- ID
 		id_writeReg: in RegPort;
 		id_isLW, id_isSW: in std_logic;

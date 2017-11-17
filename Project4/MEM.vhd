@@ -16,6 +16,11 @@ entity MEM is
 		uart_data_ready, uart_tbre, uart_tsre: in std_logic;	-- UART flags 
 		uart_read, uart_write: out std_logic;					-- UART lock
 
+		------ 输出到Ctrl ------
+
+		-- 当读串口时，请求暂停，直到data_ready
+		stallReq: out std_logic;
+
 		------ 从EX读入 ------
 
 		writeReg: in RegPort;		

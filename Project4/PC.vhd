@@ -10,7 +10,7 @@ use work.Base.all;
 -- 3. 否则 PC+=4
 entity PC is
 	port (
-		rst, clk: in std_logic;
+		rst, clk, stall: in std_logic;
 		isOffset, isJump: in std_logic;
 		offset, target: in u16;
 		pc: out u16

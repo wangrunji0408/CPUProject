@@ -6,7 +6,14 @@ use work.Base.all;
 -- 取指模块
 entity IF_ is
 	port (
-		rst, clk: in std_logic
+		rst, clk: in std_logic;
+		pc: in u16;
+		inst: out Inst;
+		
+		------ RAM2接口 ------
+		ram2addr: out u18;
+		ram2data: inout u16;
+		ram2read, ram2write, ram2enable: out std_logic
 	) ;
 end IF_;
 

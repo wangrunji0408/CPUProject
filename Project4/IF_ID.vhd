@@ -7,7 +7,7 @@ use work.Base.all;
 -- 时钟上升沿时，简单地将参数从输入传递到输出
 entity IF_ID is
 	port (
-		rst, clk: in std_logic;
+		rst, clk, stall, clear: in std_logic;
 		-- IF
 		if_pc: in u16;
 		if_inst: in Inst;
