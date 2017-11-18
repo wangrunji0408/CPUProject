@@ -11,25 +11,24 @@ entity InstFetch is
 		inst: out Inst;
 		
 		------ RAM2接口 ------
-		ram2addr: out u18;
-		ram2data: inout u16;
-		ram2read, ram2write, ram2enable: out std_logic
+		ram2: out RamPort;
+		ram2_datain: in u16
 	) ;
 end InstFetch;
 
 architecture arch of InstFetch is	
 begin
 
-	ram2addr <= "00" & pc;
-	inst <= ram2data;
+	ram2.addr <= "00" & pc;
+	inst <= ram2_datain;
 
 	process( rst, clk )
 	begin
 		if rst = '0' then
-			ram2read <= '1'; ram2write <= '1'; ram2enable <= '1';
-			ram2data <= (others => 'Z');
+			ram2.read <= '1'; ram2.write <= '1'; ram2.enable <= '1';
+			ram2.data <= (others => 'Z');
 		elsif rising_edge(clk) then
-			ram2read <= '0'; ram2enable <= '0'; -- enable RAM2 read
+			ram2.read <= '0'; ram2.enable <= '0'; -- enable RAM2 read
 		end if;
 	end process ;
 

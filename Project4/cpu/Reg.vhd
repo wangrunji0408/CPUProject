@@ -6,13 +6,10 @@ use work.Base.all;
 -- 寄存器堆
 entity Reg is
 	port (
-		clk, rst: in std_logic;
-		write_enable: in std_logic;
-		write_addr: in RegAddr;
-		write_data: in u16;
-		read1_enable, read2_enable: in std_logic;
-		read1_addr, read2_addr: in RegAddr;
-		read1_data, read2_data: out u16
+		rst, clk: in std_logic;
+		write: in RegPort;
+		read1, read2: in RegPort;	-- read.data is null, unable to read.
+		read1_dataout, read2_dataout: out u16
 	) ;
 end Reg;
 

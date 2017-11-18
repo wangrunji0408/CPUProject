@@ -11,8 +11,7 @@ use work.Base.all;
 entity PC is
 	port (
 		rst, clk, stall: in std_logic;
-		isOffset, isJump: in std_logic;
-		offset, target: in u16;
+		branch: in PCBranch;
 		pc: out u16
 	) ;
 end PC;
@@ -26,10 +25,10 @@ begin
 		if rst = '0' then
 			pc0 <= x"0000";
 		elsif rising_edge(clk) then
-			if isOffset = '1' then
-				pc0 <= pc0 + offset;
-			elsif isJump = '1' then
-				pc0 <= target;
+			if branch.isOffset = '1' then
+				pc0 <= pc0 + branch.offset;
+			elsif branch.isJump = '1' then
+				pc0 <= branch.target;
 			else
 				pc0 <= pc0 + 4;
 			end if;

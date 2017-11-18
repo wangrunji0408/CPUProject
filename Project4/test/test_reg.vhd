@@ -11,15 +11,9 @@ architecture arch of TestReg is
 	component Reg is
 		port (
 			clk, rst: in std_logic;
-			write_enable: in std_logic;
-			write_addr: in RegAddr;
-			write_data: in u16;
-			read1_enable: in std_logic;
-			read1_addr: in RegAddr;
-			read1_data: out u16;
-			read2_enable: in std_logic;
-			read2_addr: in RegAddr;
-			read2_data: out u16
+			write: in RegPort;
+			read1, read2: in RegPort;
+			read1_dataout, read2_dataout: out u16
 		) ;
 	end component;
 
@@ -51,13 +45,7 @@ architecture arch of TestReg is
 
 begin
 
-	reg0: Reg port map (clk, rst, write.enable, write.addr, write.data,
-								read1_enable => read1.enable, 
-								read1_addr => read1.addr, 
-								read1_data => read1.data,
-								read2_enable => read2.enable, 
-								read2_addr => read2.addr, 
-								read2_data => read2.data);
+	reg0: Reg port map (clk, rst, write, read1, read2, read1.data, read2.data);
 
 	process
 	begin

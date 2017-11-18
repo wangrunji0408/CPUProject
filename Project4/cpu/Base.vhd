@@ -42,6 +42,20 @@ package Base is
 		clk, data: std_logic;
 	end record;
 
+	type UartFlags is record
+		data_ready, tbre, tsre: std_logic;
+	end record;
+
+	type UartCtrl is record
+		read, write: std_logic;
+		data: u16; -- is ram1_data
+	end record;
+
+	type PCBranch is record
+		isOffset, isJump: std_logic;
+		offset, target: u16;
+	end record;
+
 	type RegPort is record
 		enable: std_logic;
 		addr: RegAddr;

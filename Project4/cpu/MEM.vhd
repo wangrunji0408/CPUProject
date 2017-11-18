@@ -6,6 +6,8 @@ use work.Base.all;
 -- 访存模块
 entity MEM is
 	port (
+		rst, clk: in std_logic;
+		
 		------ RAM1接口 ------
 
 		ram1: out RamPort;
@@ -13,8 +15,8 @@ entity MEM is
 
 		------ UART接口 ------
 
-		uart_data_ready, uart_tbre, uart_tsre: in std_logic;	-- UART flags 
-		uart_read, uart_write: out std_logic;					-- UART lock
+		uartIn: in UartFlags;
+		uartOut: out UartCtrl;
 
 		------ 输出到Ctrl ------
 

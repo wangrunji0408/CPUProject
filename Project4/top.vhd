@@ -85,17 +85,17 @@ architecture arch of Top is
 	port (
 		clk, rst: in std_logic;
 		
-		ram1addr, ram2addr: out u18;
-		ram1data, ram2data: inout u16;
-		ram1read, ram1write, ram1enable: out std_logic;
-		ram2read, ram2write, ram2enable: out std_logic;
+		ram1, ram2: out RamPort;
+		ram1_datain, ram2_datain: in u16;
 
-		uart_data_ready, uart_tbre, uart_tsre: in std_logic;	-- UART flags 
-		uart_read, uart_write: out std_logic					-- UART lock
+		uartIn: in UartFlags;
+		uartOut: out UartCtrl
 	) ;
 	end component;
 
 	signal digit0, digit1: u4;
+
+	signal uart_data: u16;
 	
 begin
 
@@ -128,8 +128,19 @@ begin
 	vga_b <= unsigned(color_out(2 downto 0));
 
 	cpu0: CPU port map (rst, clk50, 
-						ram1addr, ram2addr, ram1data, ram2data, 
-						ram1read, ram1write, ram1enable, ram2read, ram2write, ram2enable,
-						uart_data_ready, uart_tbre, uart_tsre, uart_read, uart_write);
+						ram1.addr => ram1addr, 
+						ram1.data => ram1data, 
+						ram1.enable => ram1enable, 
+						ram2.addr => ram2addr, 
+						ram2.data => ram2data, 
+						ram2.enable => ram2enable, 
+						ram1_datain => ram1data,
+						ram2_datain => ram2data,
+						uartIn.data_ready => uart_data_ready, 
+						uartIn.tbre => uart_tbre, 
+						uartIn.tsre => uart_tsre, 
+						uartOut.read => uart_read, 
+						uartOut.write => uart_write, 
+						uartOut.data => uart_data); -- TODO bind uart_data
 	
 end arch ; -- arch
