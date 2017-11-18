@@ -5,6 +5,8 @@
 !.gitignore
 !*.vhd
 !test/
+!mock/
+!cpu/
 !data/
 !device/
 !ipcore_dir/

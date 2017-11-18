@@ -14,6 +14,8 @@ build:
 	nvc -a *.vhd
 	nvc -a test/*.vhd
 	nvc -a device/*.vhd
+	nvc -a mock/*.vhd
+	nvc -a cpu/*.vhd
 
 clean:
 	rm -r work
