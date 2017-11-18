@@ -15,6 +15,7 @@ package Base is
 	subtype InstOpcode is u5;
 	subtype AluOpcode is u4;
 	subtype RegAddr is u4;
+	subtype TColor is std_logic_vector(8 downto 0); 	--颜色：[R2R1R0 G2G1G0 B2B1B0]
 
 	-- 特殊寄存器。和通用寄存器一起，统一编码为4位地址。
 	constant REG_SP: RegAddr := x"8";
@@ -131,17 +132,17 @@ package body Base is
 	
 	function getRx (x: Inst) return RegAddr is
 	begin
-		return x(10 downto 8);
+		return "0" & x(10 downto 8);
 	end function;
 
 	function getRy (x: Inst) return RegAddr is
 	begin
-		return x(7 downto 5);
+		return "0" & x(7 downto 5);
 	end function;
 	
 	function getRz (x: Inst) return RegAddr is
 	begin
-		return x(4 downto 2);
+		return "0" & x(4 downto 2);
 	end function;
 
 	function getIm8 (x: Inst) return u8 is

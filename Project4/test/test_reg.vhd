@@ -8,7 +8,7 @@ end TestReg;
 
 architecture arch of TestReg is
 
-	component Register is
+	component Reg is
 		port (
 			clk, rst: in std_logic;
 			write_enable: in std_logic;
@@ -51,7 +51,7 @@ architecture arch of TestReg is
 
 begin
 
-	reg0: Register port map (clk, rst, write.enable, write.addr, write.data,
+	reg0: Reg port map (clk, rst, write.enable, write.addr, write.data,
 								read1_enable => read1.enable, 
 								read1_addr => read1.addr, 
 								read1_data => read1.data,

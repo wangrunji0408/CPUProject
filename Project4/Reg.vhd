@@ -4,7 +4,7 @@ use ieee.numeric_std.all;
 use work.Base.all;
 
 -- 寄存器堆
-entity Register is
+entity Reg is
 	port (
 		clk, rst: in std_logic;
 		write_enable: in std_logic;
@@ -14,9 +14,9 @@ entity Register is
 		read1_addr, read2_addr: in RegAddr;
 		read1_data, read2_data: out u16
 	) ;
-end Register;
+end Reg;
 
-architecture arch of Register is	
+architecture arch of Reg is	
 begin
 	-- 1. $0=0
 	-- 2. 读使能无效时，输出0

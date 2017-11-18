@@ -5,7 +5,13 @@
 !.gitignore
 !*.vhd
 !test/
+!data/
+!device/
+!ipcore_dir/
 !*.vhdl
 !makefile
 !*.xise
 !*.ucf
+!*.coe
+!*.py
+!*.png

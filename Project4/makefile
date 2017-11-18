@@ -13,6 +13,7 @@ build:
 	nvc -a base.vhd
 	nvc -a *.vhd
 	nvc -a test/*.vhd
+	nvc -a device/*.vhd
 
 clean:
 	rm -r work

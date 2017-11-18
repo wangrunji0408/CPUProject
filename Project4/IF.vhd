@@ -4,7 +4,7 @@ use ieee.numeric_std.all;
 use work.Base.all;
 
 -- 取指模块
-entity IF_ is
+entity InstFetch is
 	port (
 		rst, clk: in std_logic;
 		pc: in u16;
@@ -15,9 +15,9 @@ entity IF_ is
 		ram2data: inout u16;
 		ram2read, ram2write, ram2enable: out std_logic
 	) ;
-end IF_;
+end InstFetch;
 
-architecture arch of IF_ is	
+architecture arch of InstFetch is	
 begin
 
 	ram2addr <= "00" & pc;
