@@ -17,5 +17,9 @@ architecture arch of Reg is
 begin
 	-- 1. $0=0
 	-- 2. 读使能无效时，输出0
-	-- 3. 时钟上升沿时，若写使能生效，将数据写入
+	-- 3. 时钟上升沿时，若写使能生效，将数据写入 
+
+	read1_dataout <= x"0000";
+	read2_dataout <= x"0000";
+
 end arch ; -- arch

@@ -16,16 +16,8 @@ end EX;
 
 architecture arch of EX is	
 
-	component Alu is
-	port (
-		op: in AluOp;
-		a, b: in u16;
-		s: out u16
-	) ;
-	end component;
-
 begin
 
-	alu0: Alu port map (aluInput.op, aluInput.a, aluInput.b, aluOut);
+	alu0: entity work.Alu port map (aluInput.op, aluInput.a, aluInput.b, aluOut);
 
 end arch ; -- arch

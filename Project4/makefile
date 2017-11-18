@@ -11,11 +11,7 @@ test: build
 
 build: 
 	nvc -a cpu/Base.vhd
-	nvc -a *.vhd
-	nvc -a test/*.vhd
-	nvc -a device/*.vhd
-	nvc -a mock/*.vhd
-	nvc -a cpu/*.vhd
+	nvc -a test/*.vhd device/*.vhd mock/*.vhd cpu/*.vhd *.vhd
 	nvc -e cpu
 
 clean:

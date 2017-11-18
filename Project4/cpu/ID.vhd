@@ -53,4 +53,9 @@ end ID;
 architecture arch of ID is	
 begin
 
+	reg1_enable <= '1';
+	reg2_enable <= '1';
+	reg1_addr <= x"0";
+	reg2_addr <= x"0";
+
 end arch ; -- arch

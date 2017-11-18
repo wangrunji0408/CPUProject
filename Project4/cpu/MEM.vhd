@@ -39,4 +39,13 @@ end MEM;
 architecture arch of MEM is	
 begin
 
+	ram1.enable <= '0';
+	ram1.read <= '1';
+	ram1.write <= '1';
+	ram1.addr <= (others => '0');
+	ram1.data <= (others => 'Z');
+	uartOut <= (read => '0', write => '0', data => x"0000");
+	stallReq <= '0';
+	writeRegOut <= writeReg;
+
 end arch ; -- arch
