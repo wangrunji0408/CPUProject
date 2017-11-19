@@ -16,6 +16,7 @@ package Base is
 	subtype AluOpcode is u4;
 	subtype RegAddr is u4;
 	subtype TColor is std_logic_vector(8 downto 0); 	--颜色：[R2R1R0 G2G1G0 B2B1B0]
+	type RegData is array (0 to 15) of u16;
 
 	-- 特殊寄存器。和通用寄存器一起，统一编码为4位地址。
 	constant REG_SP: RegAddr := x"8";
@@ -76,6 +77,7 @@ package Base is
 
 	constant NULL_REGPORT : RegPort := ('0', x"0", x"0000");
 	constant NULL_ALUINPUT : AluInput := (OP_NOP, x"0000", x"0000");
+	constant NULL_PCBRANCH : PCBranch := ('0', '0', x"0000", x"0000");
 	
 	function toBitStr (x: unsigned) return string;
 	function toString (x: unsigned) return string;
