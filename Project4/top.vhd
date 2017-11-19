@@ -71,7 +71,7 @@ begin
 	vga1: entity work.vga_controller 
 		--generic map (1440,80,152,232,'0',900,1,3,28,'1') -- 60Hz clk=106Mhz
 		-- generic map (1024,24,136,160,'0',768,3,6,29,'0') -- 60Hz clk=65Mhz
-		generic map (640,16,96,48,'0',480,11,2,31,'0') -- 60Hz clk=25Mhz		
+		generic map (640,16,96,48,'0',480,10,2,33,'0') -- 60Hz clk=25Mhz		
 		port map (clk_vga, rst, color, color_out, vga_hs, vga_vs, vga_x, vga_y);
 	vga_r <= unsigned(color_out(8 downto 6));
 	vga_g <= unsigned(color_out(5 downto 3));

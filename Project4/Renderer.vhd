@@ -24,9 +24,9 @@ architecture arch of Renderer is
 	end component;
 	
 	signal r, g, b: u3;
-	signal grid_x, grid_y: natural range 0 to 40; -- 40 * 30
-	signal char_id: natural range 0 to 127;
-	signal char_x, char_y: natural range 0 to 15;
+	signal grid_x, grid_y: natural; -- 40 * 30
+	signal char_id: natural;
+	signal char_x, char_y: natural;
 	signal char_zone: boolean;
 	signal data: std_logic;
 begin
@@ -37,7 +37,7 @@ begin
 	char_id <= grid_y * 32 + grid_x;
 	char_zone <= grid_x < 32 and grid_y < 4;
 	-- Output
-	color <= std_logic_vector(r & g & b);
+	color <= std_logic_vector(r) & std_logic_vector(g) & std_logic_vector(b);
 	process( vga_x, vga_y )
 	begin
 		if char_zone then
