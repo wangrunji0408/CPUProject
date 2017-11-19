@@ -24,4 +24,29 @@ end EX_MEM;
 architecture arch of EX_MEM is	
 begin
 
+	process( rst, clk )
+	begin
+		if rst = '0' then
+			mem_writeReg <= NULL_REGPORT;
+			mem_isLW <= '0';
+			mem_isSW <= '0';
+			mem_writeMemData <= x"0000";
+			mem_aluOut <= x"0000";
+		elsif rising_edge(clk) then
+			if clear = '1' then
+				mem_writeReg <= NULL_REGPORT;
+				mem_isLW <= '0';
+				mem_isSW <= '0';
+				mem_writeMemData <= x"0000";
+				mem_aluOut <= x"0000";
+			elsif stall = '0' then
+				mem_writeReg <= ex_writeReg;
+				mem_isLW <= ex_isLW;
+				mem_isSW <= ex_isSW;
+				mem_writeMemData <= ex_writeMemData;
+				mem_aluOut <= ex_aluOut;
+			end if;
+		end if;
+	end process ;
+	
 end arch ; -- arch

@@ -16,12 +16,11 @@ architecture arch of TestReg is
 	end record;
 	type TestCases is array (0 to 4) of TestCase;
 
-	constant NULL_INPUT : RegPort := ('0', x"0", x"0000");
 	constant cases: TestCases := ( -- 每个test_case对应一个时钟周期
-		(     NULL_INPUT     , ('1', x"5", x"0000"), ('1', x"8", x"0000")), -- 任意初始值应该为0	
-		(('1', x"0", x"ABCD"),      NULL_INPUT     ,      NULL_INPUT     ), -- 写入0...
-		(     NULL_INPUT     , ('1', x"0", x"0000"),      NULL_INPUT     ), -- 写入0应该无效
-		(('1', x"1", x"ABCD"), ('1', x"1", x"ABCD"),      NULL_INPUT     ), -- 写入1，应该同时能读出来
+		(    NULL_REGPORT    , ('1', x"5", x"0000"), ('1', x"8", x"0000")), -- 任意初始值应该为0	
+		(('1', x"0", x"ABCD"),     NULL_REGPORT    ,     NULL_REGPORT    ), -- 写入0...
+		(    NULL_REGPORT    , ('1', x"0", x"0000"),     NULL_REGPORT    ), -- 写入0应该无效
+		(('1', x"1", x"ABCD"), ('1', x"1", x"ABCD"),     NULL_REGPORT    ), -- 写入1，应该同时能读出来
 		(('1', x"2", x"DCBA"), ('1', x"0", x"0000"), ('1', x"2", x"DCBA"))  -- 写入2，应该同时能读出来
 	);
 

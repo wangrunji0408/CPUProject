@@ -23,5 +23,29 @@ end ID_EX;
 
 architecture arch of ID_EX is	
 begin
+	process( rst, clk )
+	begin
+		if rst = '0' then
+			ex_writeReg <= NULL_REGPORT;
+			ex_isLW <= '0';
+			ex_isSW <= '0';
+			ex_writeMemData <= x"0000";
+			ex_aluInput <= NULL_ALUINPUT;
+		elsif rising_edge(clk) then
+			if clear = '1' then
+				ex_writeReg <= NULL_REGPORT;
+				ex_isLW <= '0';
+				ex_isSW <= '0';
+				ex_writeMemData <= x"0000";
+				ex_aluInput <= NULL_ALUINPUT;
+			elsif stall = '0' then
+				ex_writeReg <= id_writeReg;
+				ex_isLW <= id_isLW;
+				ex_isSW <= id_isSW;
+				ex_writeMemData <= id_writeMemData;
+				ex_aluInput <= id_aluInput;
+			end if;
+		end if;
+	end process ;
 
 end arch ; -- arch

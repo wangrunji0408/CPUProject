@@ -19,5 +19,19 @@ end IF_ID;
 
 architecture arch of IF_ID is	
 begin
-
+	process( rst, clk )
+	begin
+		if rst = '0' then
+			id_pc <= x"0000";
+			id_inst <= x"0000";
+		elsif rising_edge(clk) then
+			if clear = '1' then
+				id_pc <= x"0000";
+				id_inst <= x"0000";
+			elsif stall = '0' then
+				id_pc <= if_pc;
+				id_inst <= if_inst;
+			end if;
+		end if;
+	end process ;
 end arch ; -- arch

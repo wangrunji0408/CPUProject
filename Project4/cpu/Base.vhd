@@ -24,6 +24,7 @@ package Base is
 	constant REG_T:  RegAddr := x"B";
 
 	type AluOp is (
+		OP_NOP,
 		OP_ADD, OP_SUB, OP_AND, OP_OR , OP_XOR, 
 		OP_NOT, OP_SLL, OP_SRL, OP_SRA, OP_ROL,
 		OP_LTU, OP_LTS, OP_EQ -- 分别对应 SLTUI SLT CMP 指令，输出0/1
@@ -72,6 +73,9 @@ package Base is
 		addr: u18;
 		data: u16;
 	end record;
+
+	constant NULL_REGPORT : RegPort := ('0', x"0", x"0000");
+	constant NULL_ALUINPUT : AluInput := (OP_NOP, x"0000", x"0000");
 	
 	function toBitStr (x: unsigned) return string;
 	function toString (x: unsigned) return string;
