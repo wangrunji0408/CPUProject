@@ -9,6 +9,8 @@ entity Ctrl is
 	port (
 		-- 全局重置/暂停
 		rst, pause: in std_logic;
+		-- 当IF无法取指时，暂停
+		if_canread: in std_logic;
 		-- 当MEM读串口时，请求暂停
 		mem_stallReq: in std_logic;
 		-- 当EX阶段指令为LW，且要写入的寄存器与ID阶段读寄存器冲突时，暂停ID及之前
@@ -32,11 +34,14 @@ begin
 			clear <= "11111";
 		elsif pause = '1' then
 			stall <= "11111";
+		elsif mem_stallReq = '1' then
+			stall <= "11110";
 		elsif ex_isLW = '1' and (ex_writeReg = id_readReg1 or ex_writeReg = id_readReg2) then
 			stall <= "11000";
 			clear <= "00100";
-		elsif mem_stallReq = '1' then
-			stall <= "11110";
+		elsif if_canread = '0' then
+			stall <= "10000";
+			clear <= "01000";
 		end if;
 	end process ;
 

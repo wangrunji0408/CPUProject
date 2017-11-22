@@ -64,7 +64,7 @@ begin
 			mem_stallReq, mem_in.writeReg, mem_in.isLW, mem_in.isSW, mem_in.writeMemData, 
 			mem_in_aluOut, mem_out);
 	reg0: entity work.Reg port map (rst, clk, mem_out, reg1, reg2, reg1.data, reg2.data, d_regs);
-	ctrl0: entity work.Ctrl port map (rst, pause, mem_stallReq, ex_in.isLW, ex_in.writeReg.addr, reg1.addr, reg2.addr, stall, clear);
+	ctrl0: entity work.Ctrl port map (rst, pause, if_canread, mem_stallReq, ex_in.isLW, ex_in.writeReg.addr, reg1.addr, reg2.addr, stall, clear);
 
 	if_id0: entity work.IF_ID port map (rst, clk, stall(3), clear(3),
 			if_out.pc, if_out.inst, id_in.pc, id_in.inst);
