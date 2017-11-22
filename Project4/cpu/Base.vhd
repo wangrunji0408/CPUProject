@@ -77,11 +77,16 @@ package Base is
 		data: u16;
 	end record;
 
+	type MEMType is (None, ReadRam1, WriteRam1, ReadRam2, WriteRam2, ReadUart, WriteUart);
+
 	constant NULL_REGPORT : RegPort := ('0', x"0", x"0000");
+	constant NULL_RAMPORT : RamPort := ('1', '1', '1', "00" & x"0000", x"0000");
 	constant NULL_ALUINPUT : AluInput := (OP_NOP, x"0000", x"0000");
 	constant NULL_PCBRANCH : PCBranch := ('0', '0', x"0000", x"0000");
 	
-	function toBitStr (x: unsigned) return string;
+	function toStr2 (x: u16) return string;
+	function toStr16 (x: u16) return string;
+	function toHex (x: u4) return character;
 	function toString (x: unsigned) return string;
 	function to_u4 (x: integer) return u4;
 	function to_u16 (x: integer) return u16;
@@ -219,10 +224,58 @@ package body Base is
 	begin
 		return x"00" & number;
 	end function;
-	
-	function toBitStr (x: unsigned) return string is 
+
+	function toStr2 (x: u16) return string is 
+		variable s: string(1 to 16);
 	begin
-		return integer'image(to_integer(x));
+		for i in 0 to 15 loop
+			case x(i) is
+				when '0' => s(i) := '0';
+				when '1' => s(i) := '1';
+				when 'Z' => s(i) := 'Z';
+				when 'U' => s(i) := 'U';
+				when 'X' => s(i) := 'X';
+				when others => s(i) := '?';
+			end case ;
+		end loop ; -- 
+		return s;
+	end function;
+
+	function toStr16 (x: u16) return string is 
+		variable hex : string(1 to 4);
+		variable fourbit : u4;
+	begin
+		for i in 3 downto 0 loop
+			fourbit:=x(((i*4)+3) downto (i*4));
+			hex(4-I) := toHex(fourbit);
+		end loop;
+		return hex;
+	end function;
+
+	function toHex (x: u4) return character is 
+	begin
+		case x is
+			when "0000" => return '0';
+			when "0001" => return '1';
+			when "0010" => return '2';
+			when "0011" => return '3';
+			when "0100" => return '4';
+			when "0101" => return '5';
+			when "0110" => return '6';
+			when "0111" => return '7';
+			when "1000" => return '8';
+			when "1001" => return '9';
+			when "1010" => return 'A';
+			when "1011" => return 'B';
+			when "1100" => return 'C';
+			when "1101" => return 'D';
+			when "1110" => return 'E';
+			when "1111" => return 'F';
+			when "ZZZZ" => return 'z';
+			when "UUUU" => return 'u';
+			when "XXXX" => return 'x';
+			when others => return '?';
+		end case;
 	end function;
 
 	function toString (x: unsigned) return string is 

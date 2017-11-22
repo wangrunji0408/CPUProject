@@ -13,12 +13,12 @@ end MockRam;
 
 architecture arch of MockRam is	
 	type TRam is array (20 downto 0) of u16;
-	signal ram: TRam;
+	signal ram: TRam := (others => x"0000");
 begin
 	process( enable, read, write, addr )
 	begin
 		data <= (others => 'Z');
-		if enable = '0' and rising_edge(write) then
+		if enable = '0' and falling_edge(write) then
 			ram(to_integer(addr)) <= data after 8 ns;
 		end if;
 		if enable = '0' and falling_edge(read) then

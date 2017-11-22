@@ -3,7 +3,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use work.Base.all;
 
-entity Top is
+entity TestRucTop is
 	port (
 		clk, rst: in std_logic;
 		clk11, clk50: in std_logic;
@@ -26,16 +26,9 @@ entity Top is
 		digit0raw, digit1raw: out std_logic_vector(6 downto 0);
 		key: in std_logic_vector(3 downto 0)
 	) ;
-end Top;
+end TestRucTop;
 
-architecture arch of Top is	
-
-	signal color, color_out: TColor;
-	signal vga_x, vga_y: integer;
-	signal clk_vga: std_logic;
-
-	signal ascii_new: std_logic;
-	signal ascii_code: std_logic_vector(6 downto 0);
+architecture arch of TestRucTop is	
 
 	------ 对MEM接口 ------
 	signal mem_type: MEMType;
@@ -50,7 +43,8 @@ architecture arch of Top is
 
 	signal digit0, digit1: u4;
 
-	signal d_regs: RegData;
+	signal count: natural;
+	signal data: u16;
 	
 begin
 
@@ -59,39 +53,53 @@ begin
 
 	light <= (others => '0');
 
-	ps2: entity work.ps2_keyboard_to_ascii 
-		port map (clk50, ps2_clk, ps2_data, ascii_new, ascii_code);
-	digit1 <= unsigned("0" & ascii_code(6 downto 4));
-	digit0 <= unsigned(ascii_code(3 downto 0));
-
-	make_clk_vga : process( clk50 )
-	begin
-		if rst = '0' then
-			clk_vga <= '1';
-		elsif rising_edge(clk50) then
-			clk_vga <= not clk_vga;
-		end if;
-	end process ; -- make_clk_vga
-
-	renderer0: entity work.Renderer 
-		port map (rst, clk_vga, vga_x, vga_y, color, d_regs);	
-	vga1: entity work.vga_controller 
-		--generic map (1440,80,152,232,'0',900,1,3,28,'1') -- 60Hz clk=106Mhz
-		-- generic map (1024,24,136,160,'0',768,3,6,29,'0') -- 60Hz clk=65Mhz
-		generic map (640,16,96,48,'0',480,10,2,33,'0') -- 60Hz clk=25Mhz		
-		port map (clk_vga, rst, color, color_out, vga_hs, vga_vs, vga_x, vga_y);
-	vga_r <= unsigned(color_out(8 downto 6));
-	vga_g <= unsigned(color_out(5 downto 3));
-	vga_b <= unsigned(color_out(2 downto 0));
-
 	ruc: entity work.RamUartCtrl 
-		port map ( rst, clk, 
+		port map ( rst, clk50, 
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, if_addr, if_data, if_canread,
 			ram1addr, ram2addr, ram1data, ram2data, ram1read, ram1write, ram1enable, ram2read, ram2write, ram2enable,
 			uart_data_ready, uart_tbre, uart_tsre, uart_read, uart_write);
-	cpu0: entity work.CPU 
-		port map (rst, clk50, 
-			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, if_addr, if_data, if_canread, 
-			d_regs); 
+
+	process(rst, clk50)
+		variable addr: u16 := x"0000";
+	begin
+		if rst = '0' then
+			mem_type <= None;
+			mem_addr <= x"0000";
+			mem_write_data <= x"0000";
+			count <= 0;
+			addr := x"0000";
+		elsif rising_edge(clk50) and mem_busy = '0' then
+			count <= count + 1;
+			case count  is
+			when 0 => 
+				mem_type <= ReadUart;
+			when 1 => 
+				mem_type <= WriteRam1;
+				mem_addr <= addr;
+				mem_write_data <= mem_read_data + 1; 
+			when 2 => 
+				mem_type <= ReadRam1;
+				mem_addr <= addr;
+			when 3 =>
+				mem_type <= WriteRam2;
+				mem_addr <= addr;
+				mem_write_data <= mem_read_data + 1; 				
+			when 4 =>
+				mem_type <= ReadRam2;
+				mem_addr <= addr;
+				if addr /= x"0010" then
+					count <= 1;
+					addr := addr + 1;
+				end if;
+			when 5 =>
+				mem_type <= WriteUart;
+				mem_write_data <= mem_read_data + 1;
+			when 6 => 
+				addr := x"0000";
+				count <= 0;
+			when others => count <= 0;
+			end case ;
+		end if;
+	end process ; -- 
 	
 end arch ; -- arch

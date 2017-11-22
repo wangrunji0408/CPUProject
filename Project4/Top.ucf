@@ -1,6 +1,5 @@
 
 # PlanAhead Generated physical constraints 
-
 NET "switch[15]" LOC = J6;
 NET "switch[14]" LOC = J7;
 NET "switch[13]" LOC = K2;
@@ -159,5 +158,6 @@ NET "key[3]" LOC = V16;
 NET "key[2]" LOC = V14;
 NET "key[1]" LOC = U14;
 NET "key[0]" LOC = U11;
-
-
+#Created by Constraints Editor (xc3s1200e-fg320-4) - 2017/11/22
+NET "clk50" TNM_NET = clk50;
+TIMESPEC TS_clk50 = PERIOD "clk50" 20 ns HIGH 50%;
