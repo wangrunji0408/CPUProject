@@ -6,10 +6,12 @@ package Base is
 	subtype u32 is unsigned(31 downto 0);
 	subtype u16 is unsigned(15 downto 0);
 	subtype u18 is unsigned(17 downto 0);
+    subtype u11 is unsigned(10 downto 0);
 	subtype u8 is unsigned(7 downto 0);
 	subtype u5 is unsigned(4 downto 0);
 	subtype u4 is unsigned(3 downto 0);
 	subtype u3 is unsigned(2 downto 0);
+    subtype u2 is unsigned(1 downto 0);
 
 	subtype Inst is u16;
 	subtype InstOpcode is u5;
@@ -86,61 +88,63 @@ package Base is
 	function DisplayNumber (number: u4) return std_logic_vector;
 
 	function signExtend (number: u8) return u16;
+    function signExtend4 (number: u4) return u16;
+    function signExtend5 (number: u5) return u16;
+    function signExtend11 (number: u11) return u16;
 	function zeroExtend (number: u8) return u16;
 
 	-- Get part from instruction
 	function getOp (x: Inst) return InstOpcode;
+	function getSubOp (x: Inst) return InstOpcode;
 	function getRx (x: Inst) return RegAddr;
 	function getRy (x: Inst) return RegAddr;
 	function getRz (x: Inst) return RegAddr;
 	function getIm8 (x: Inst) return u8;
 
 	-- define Instruction op
-	constant INST_ADDIU: 	InstOpcode := "01001";
-	constant INST_ADDIU3: 	InstOpcode := "01000";
-	constant INST_ADDSP3: 	InstOpcode := "00000";
-	constant INST_ADDSP: 	InstOpcode := "01100";	-- warn: same 0
-	constant INST_ADDU: 	InstOpcode := "11100";	-- warn: same 2
-	constant INST_AND: 		InstOpcode := "11101";	-- warn: same 1
-	constant INST_B: 		InstOpcode := "00010";
-	constant INST_BEQZ: 	InstOpcode := "00100";
-	constant INST_BNEZ: 	InstOpcode := "00101";
-	constant INST_BTEQZ: 	InstOpcode := "01100";	-- warn: same 0
-	constant INST_BTNEZ: 	InstOpcode := "01100";	-- warn: same 0
-	constant INST_CMP: 		InstOpcode := "11101";	-- warn: same 1
-	constant INST_CMPI: 	InstOpcode := "01110";
-	constant INST_INT: 		InstOpcode := "11111";
-	constant INST_JALR: 	InstOpcode := "11101";	-- warn: same 1
-	constant INST_JR: 		InstOpcode := "11101";	-- warn: same 1
-	constant INST_JRRA: 	InstOpcode := "11101";	-- warn: same 1
-	constant INST_LI: 		InstOpcode := "01101";
-	constant INST_LW: 		InstOpcode := "10011";
-	constant INST_LW_SP: 	InstOpcode := "10010";
-	constant INST_MFIH: 	InstOpcode := "11110";	-- warn: same 3
-	constant INST_MFPC: 	InstOpcode := "11101";	-- warn: same 1
-	constant INST_MOVE: 	InstOpcode := "01111";
-	constant INST_MTIH: 	InstOpcode := "11110";	-- warn: same 3
-	constant INST_MTSP: 	InstOpcode := "01100";	-- warn: same 0
-	constant INST_NEG: 		InstOpcode := "11101";	-- warn: same 1
-	constant INST_NOT: 		InstOpcode := "11101";	-- warn: same 1
-	constant INST_NOP: 		InstOpcode := "00001";
-	constant INST_OR: 		InstOpcode := "11101";	-- warn: same 1
-	constant INST_SLL: 		InstOpcode := "00110";	-- warn: same 4
-	constant INST_SLLV: 	InstOpcode := "11101";	-- warn: same 1
-	constant INST_SLT: 		InstOpcode := "11101";	-- warn: same 1
-	constant INST_SLTI: 	InstOpcode := "01010";
-	constant INST_SLTU: 	InstOpcode := "11101";	-- warn: same 1
+	constant INST_ADDIU: 	InstOpcode := "01001";  -- first
+	constant INST_ADDIU3: 	InstOpcode := "01000";  -- first
+    constant INST_ADDSP3:   InstOpcode := "00000";  -- first
+	constant INST_B: 		InstOpcode := "00010";  -- first
+	constant INST_BEQZ: 	InstOpcode := "00100";  -- first
+	constant INST_BNEZ: 	InstOpcode := "00101";  -- first
+	constant INST_LI: 		InstOpcode := "01101";  -- first
+	constant INST_LW: 		InstOpcode := "10011";  -- first
+	constant INST_LW_SP: 	InstOpcode := "10010";  -- first
+	constant INST_NOP: 		InstOpcode := "00001";  -- first
 	constant INST_SLTUI: 	InstOpcode := "01011";
-	constant INST_SRA: 		InstOpcode := "00110";	-- warn: same 4
-	constant INST_SRAV: 	InstOpcode := "11101";	-- warn: same 1
-	constant INST_SRL: 		InstOpcode := "00110";	-- warn: same 4
-	constant INST_SRLV: 	InstOpcode := "11101";	-- warn: same 1
-	constant INST_SUBU: 	InstOpcode := "11100";	-- warn: same 2
-	constant INST_SW: 		InstOpcode := "11011";
-	constant INST_SW_RS: 	InstOpcode := "01100";	-- warn: same 0
-	constant INST_SW_SP: 	InstOpcode := "11010";
-	constant INST_XOR: 		InstOpcode := "11101";	-- warn: same 1
-	
+	constant INST_SW: 		InstOpcode := "11011";  -- first
+	constant INST_SW_SP: 	InstOpcode := "11010";  -- first
+    
+    constant INST_SET0:     InstOpcode := "01100";
+	-- constant INST_ADDSP: 	InstOpcode := "01100";	-- first warn: same 0 "01100011"
+	-- constant INST_SW_RS: 	InstOpcode := "01100";	-- warn: same 0 "01100010"
+	-- constant INST_BTEQZ: 	InstOpcode := "01100";	-- first warn: same 0 "01100000"
+	-- constant INST_MTSP: 	InstOpcode := "01100";	-- first warn: same 0 "01100100"
+    
+    constant INST_SET1:     InstOpcode := "11101";
+	-- constant INST_AND: 		InstOpcode := "11101";	-- first warn: same 1 "11101 01100"
+	-- constant INST_JR: 		InstOpcode := "11101";	-- first warn: same 1 "11101 000 00000"
+	-- constant INST_CMP: 		InstOpcode := "11101";	-- first warn: same 1 "11101 01010"
+	-- constant INST_MFPC: 	InstOpcode := "11101";	-- first warn: same 1 "11101 010 00000"
+	-- constant INST_NOT: 		InstOpcode := "11101";	-- warn: same 1 "11101 01111"
+	-- constant INST_OR: 		InstOpcode := "11101";	-- first warn: same 1 "11101 01101"
+	-- constant INST_SLT: 		InstOpcode := "11101";	-- warn: same 1 "11101 00010"
+    
+    constant INST_SET2:     InstOpcode := "11100";
+	-- constant INST_ADDU: 	InstOpcode := "11100";	-- first warn: same 2 "11100 01"
+	-- constant INST_SUBU: 	InstOpcode := "11100";	-- first warn: same 2 "11100 11"
+    
+    
+	constant INST_SET3: 	InstOpcode := "11110";
+	-- constant INST_MFIH: 	InstOpcode := "11110";	-- first warn: same 3 "11110 00000"
+	-- constant INST_MTIH: 	InstOpcode := "11110";	-- first warn: same 3 "11110 00001"
+    
+    constant INST_SET4: 	InstOpcode := "00110";
+	constant INST_SLL: 		InstOpcode := "00110";	-- first warn: same 4 "00110 00"
+	constant INST_SRA: 		InstOpcode := "00110";	-- first warn: same 4 "00110 11"
+	constant INST_SRL: 		InstOpcode := "00110";	-- warn: same 4 "00110 10"
+    
 end package ;
 
 package body Base is
@@ -148,6 +152,11 @@ package body Base is
 	function getOp (x: Inst) return InstOpcode is
 	begin
 		return x(15 downto 11);
+	end function;
+    
+    function getSubOp (x: Inst) return InstOpcode is
+	begin
+		return x(4 downto 0);
 	end function;
 	
 	function getRx (x: Inst) return RegAddr is
@@ -178,7 +187,34 @@ package body Base is
 			return x"FF" & number;
 		end if;
 	end function;
-
+    
+    function signExtend4 (number: u4) return u16 is
+    begin
+        if number(3) = '0' then
+            return x"000" & number;
+        else
+            return x"FFF" & number;
+        end if;
+    end function;
+    
+    function signExtend5 (number: u5) return u16 is
+    begin
+        if number(4) = '0' then
+            return x"00" & "000" & number;
+        else
+            return x"FF" & "111" & number;
+        end if;
+    end function;
+    
+    function signExtend11 (number: u11) return u16 is
+    begin
+        if number(10) = '0' then
+            return "00000" & number;
+        else
+            return "11111" & number;
+        end if;
+    end function;
+    
 	function zeroExtend (number: u8) return u16 is
 	begin
 		return x"00" & number;
