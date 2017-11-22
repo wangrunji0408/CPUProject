@@ -8,15 +8,13 @@ entity MEM is
 	port (
 		rst, clk: in std_logic;
 		
-		------ RAM1接口 ------
+		------ 对外接口 ------
 
-		ram1: out RamPort;
-		ram1_datain: in u16;
-
-		------ UART接口 ------
-
-		uartIn: in UartFlags;
-		uartOut: out UartCtrl;
+		mem_type: out MEMType;
+		mem_addr: out u16;
+		mem_write_data: out u16;
+		mem_read_data: in u16;
+		mem_busy: in std_logic;	-- 串口操作可能很慢，busy=1表示尚未完成
 
 		------ 输出到Ctrl ------
 
@@ -39,13 +37,10 @@ end MEM;
 architecture arch of MEM is	
 begin
 
-	ram1.enable <= '0';
-	ram1.read <= '1';
-	ram1.write <= '1';
-	ram1.addr <= (others => '0');
-	ram1.data <= (others => 'Z');
-	uartOut <= (read => '0', write => '0', data => x"0000");
-	stallReq <= '0';
+	mem_type <= ReadRam1;
+	mem_addr <= x"0000";
+	mem_write_data <= x"0000";
+	stallReq <= mem_busy;
 	writeRegOut <= writeReg;
 
 end arch ; -- arch

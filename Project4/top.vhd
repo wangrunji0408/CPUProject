@@ -37,13 +37,19 @@ architecture arch of Top is
 	signal ascii_new: std_logic;
 	signal ascii_code: std_logic_vector(6 downto 0);
 
-	signal ram1, ram2: RamPort;
-	signal uartIn: UartFlags;
-	signal uartOut: UartCtrl;
+	------ 对MEM接口 ------
+	signal mem_type: MEMType;
+	signal mem_addr: u16;
+	signal mem_write_data: u16;
+	signal mem_read_data: u16;
+	signal mem_busy: std_logic;	-- 串口操作可能很慢，busy=1表示尚未完成
+	------ 对IF接口 ------
+	signal if_addr: u16;
+	signal if_data: u16;
+	signal if_canread: std_logic; -- 当MEM操作RAM2时不可读
 
 	signal digit0, digit1: u4;
 
-	signal uart_data: u16;
 	signal d_regs: RegData;
 	
 begin
@@ -78,23 +84,14 @@ begin
 	vga_g <= unsigned(color_out(5 downto 3));
 	vga_b <= unsigned(color_out(2 downto 0));
 
-	ram1addr <= ram1.addr; 
-	ram1data <= ram1.data; 
-	ram1enable <= ram1.enable; 
-	ram1read <= ram1.read; 
-	ram1write <= ram1.write; 
-	ram2addr <= ram2.addr; 
-	ram2data <= ram2.data; 
-	ram2enable <= ram2.enable; 
-	ram2read <= ram2.read; 
-	ram2write <= ram2.write; 
-	uartIn.data_ready <= uart_data_ready;
-	uartIn.tbre <= uart_tbre;
-	uartIn.tsre <= uart_tsre;
-	uart_read <= uartOut.read;
-	uart_write <= uartOut.write;
-	uart_data <= uartOut.data; -- TODO bind uart_data
+	ruc: entity work.RamUartCtrl 
+		port map ( rst, clk, 
+			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, if_addr, if_data, if_canread,
+			ram1addr, ram2addr, ram1data, ram2data, ram1read, ram1write, ram1enable, ram2read, ram2write, ram2enable,
+			uart_data_ready, uart_tbre, uart_tsre, uart_read, uart_write);
 	cpu0: entity work.CPU 
-		port map (rst, clk50, ram1, ram2, ram1data, ram2data, uartIn, uartOut); 
+		port map (rst, clk50, 
+			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, if_addr, if_data, if_canread, 
+			d_regs); 
 	
 end arch ; -- arch

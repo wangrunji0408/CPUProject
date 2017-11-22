@@ -75,7 +75,10 @@ package Base is
 		data: u16;
 	end record;
 
+	type MEMType is (None, ReadRam1, WriteRam1, ReadRam2, WriteRam2, ReadUart, WriteUart);
+
 	constant NULL_REGPORT : RegPort := ('0', x"0", x"0000");
+	constant NULL_RAMPORT : RamPort := ('1', '1', '1', "00" & x"0000", x"0000");
 	constant NULL_ALUINPUT : AluInput := (OP_NOP, x"0000", x"0000");
 	constant NULL_PCBRANCH : PCBranch := ('0', '0', x"0000", x"0000");
 	
