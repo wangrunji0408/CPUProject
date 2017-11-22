@@ -9,7 +9,8 @@ entity Reg is
 		rst, clk: in std_logic;
 		write: in RegPort;
 		read1, read2: in RegPort;	-- read.data is null, unable to read.
-		read1_dataout, read2_dataout: out u16
+		read1_dataout, read2_dataout: out u16;
+		d_regs: out RegData		-- for debug
 	) ;
 end Reg;
 
@@ -28,6 +29,8 @@ begin
 	-- 2. 读使能无效时，输出0
 	-- 3. 时钟上升沿时，若写使能生效，将数据写入 
 
+	d_regs <= Regs;
+
 	read1_dataout <= Regs(to_integer(read1.addr)) when read1.enable = '1' 
 					 else x"0000";
 	read2_dataout <= Regs(to_integer(read2.addr)) when read2.enable = '1' 
@@ -40,7 +43,7 @@ begin
 			Regs <= (others => x"0000");
 		elsif rising_edge(clk)
 		then
-			if write.enable = '1' and to_integer(write.addr) > 0
+			if write.enable = '1' and write.addr /= x"0"
 			then
 				Regs(to_integer(write.addr)) <= write.data;
 			end if;

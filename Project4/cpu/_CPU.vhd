@@ -11,7 +11,9 @@ entity CPU is
 		ram1_datain, ram2_datain: in u16;
 
 		uartIn: in UartFlags;
-		uartOut: out UartCtrl
+		uartOut: out UartCtrl;
+
+		d_regs: out RegData
 	) ;
 end CPU;
 
@@ -52,7 +54,7 @@ begin
 	mem0: entity work.MEM port map (rst, clk, ram1, ram1_datain, uartIn, uartOut, mem_stallReq, 
 			mem_in.writeReg, mem_in.isLW, mem_in.isSW, mem_in.writeMemData, 
 			mem_in_aluOut, mem_out);
-	reg0: entity work.Reg port map (rst, clk, mem_out, reg1, reg2);
+	reg0: entity work.Reg port map (rst, clk, mem_out, reg1, reg2, reg1.data, reg2.data, d_regs);
 
 	if_id0: entity work.IF_ID port map (rst, clk, stall(3), clear(3),
 			if_out.pc, if_out.inst, id_in.pc, id_in.inst);

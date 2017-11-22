@@ -44,6 +44,7 @@ architecture arch of Top is
 	signal digit0, digit1: u4;
 
 	signal uart_data: u16;
+	signal d_regs: RegData;
 	
 begin
 
@@ -67,7 +68,7 @@ begin
 	end process ; -- make_clk_vga
 
 	renderer0: entity work.Renderer 
-		port map (rst, clk_vga, vga_x, vga_y, color);	
+		port map (rst, clk_vga, vga_x, vga_y, color, d_regs);	
 	vga1: entity work.vga_controller 
 		--generic map (1440,80,152,232,'0',900,1,3,28,'1') -- 60Hz clk=106Mhz
 		-- generic map (1024,24,136,160,'0',768,3,6,29,'0') -- 60Hz clk=65Mhz
