@@ -5,9 +5,7 @@ use work.Base.all;
 
 -- 访存模块
 entity MEM is
-	port (
-		rst, clk: in std_logic;
-		
+	port (		
 		------ 对外接口 ------
 
 		mem_type: out MEMType;
@@ -37,6 +35,7 @@ end MEM;
 architecture arch of MEM is	
 begin
 
+	-- BF01 0位：是否能写 1位：是否能读
 	mem_type <= ReadRam1;
 	mem_addr <= x"0000";
 	mem_write_data <= x"0000";

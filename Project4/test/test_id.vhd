@@ -81,17 +81,8 @@ begin
 			p.aluInput);
 
 	process
-	begin
-		clk <= '0'; wait for 10 ns;
-		clk <= '1'; wait for 10 ns;
-	end process;
-
-	process
 		variable std: TestCase;
 	begin
-		rst <= '0';	wait for 10 ns;
-		rst <= '1';	wait for 10 ns;
-
 		for i in cases'length loop
 			std := cases(i);
 			p.inst <= std.inst;

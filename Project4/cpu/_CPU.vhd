@@ -59,7 +59,7 @@ begin
 			id_out.writeReg, id_out.isLW, id_out.isSW, id_out.writeMemData, 
 			id_out_aluInput);
 	ex0: entity work.EX port map (ex_in_aluInput, ex_out_aluOut);	ex_out <= ex_in;
-	mem0: entity work.MEM port map (rst, clk,
+	mem0: entity work.MEM port map (
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy,
 			mem_stallReq, mem_in.writeReg, mem_in.isLW, mem_in.isSW, mem_in.writeMemData, 
 			mem_in_aluOut, mem_out);
