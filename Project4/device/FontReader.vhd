@@ -25,8 +25,8 @@ architecture arch of FontReader is
 	signal data: std_logic_vector(0 downto 0);
 begin
 	rom: FontROM port map (clk, addr, data);
-	addr <= std_logic_vector(to_unsigned(character'pos(char), 7)) 
+	addr <= std_logic_vector(to_unsigned(character'pos(char), 8)) 
 				& std_logic_vector(to_unsigned(y, 4))
-				& std_logic_vector(to_unsigned(x, 4));
+				& std_logic_vector(to_unsigned(x, 3));
 	b <= data(0);
 end arch ; -- arch

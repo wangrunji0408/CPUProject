@@ -16,7 +16,7 @@ end Renderer;
 architecture arch of Renderer is	
 	
 	signal r, g, b: u3;
-	signal grid_x, grid_y: natural; -- 40 * 30
+	signal grid_x, grid_y: natural; -- 80 * 30
 	signal char: character;
 	signal char_x, char_y: natural;
 	signal data: std_logic;
@@ -24,8 +24,8 @@ architecture arch of Renderer is
 begin
 	rom: entity work.FontReader port map (clk, char, char_x, char_y, data);
 	-- Read ROM
-	grid_x <= vga_x / 16;  grid_y <= vga_y / 16;
-	char_x <= vga_x mod 16;  char_y <= vga_y mod 16;
+	grid_x <= vga_x / 8;  grid_y <= vga_y / 16;
+	char_x <= vga_x mod 8;  char_y <= vga_y mod 16;
 	-- Output
 	color <= std_logic_vector(r) & std_logic_vector(g) & std_logic_vector(b);
 	process( vga_x, vga_y )

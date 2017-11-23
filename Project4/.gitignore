@@ -4,6 +4,7 @@
 *
 !.gitignore
 !*.vhd
+!*.bmp
 !test/
 !mock/
 !cpu/
