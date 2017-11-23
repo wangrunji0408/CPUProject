@@ -62,12 +62,12 @@ begin
 	reg1_addr_origin <= reg1_addr;
 	reg2_addr_origin <= reg2_addr;
 
-	reg1_data <= memWriteReg.data when memWriteReg.enable = '1' and memWriteReg.addr = reg1_addr
-			else exeWriteReg.data when exeWriteReg.enable = '1' and exeWriteReg.addr = reg1_addr
+	reg1_data <= exeWriteReg.data when exeWriteReg.enable = '1' and exeWriteReg.addr = reg1_addr
+			else memWriteReg.data when memWriteReg.enable = '1' and memWriteReg.addr = reg1_addr
 			else reg1_data_origin;
 
-	reg2_data <= memWriteReg.data when memWriteReg.enable = '1' and memWriteReg.addr = reg2_addr
-			else exeWriteReg.data when exeWriteReg.enable = '1' and exeWriteReg.addr = reg2_addr
+	reg2_data <= exeWriteReg.data when exeWriteReg.enable = '1' and exeWriteReg.addr = reg2_addr
+			else memWriteReg.data when memWriteReg.enable = '1' and memWriteReg.addr = reg2_addr
 			else reg2_data_origin;
 
 	process (inst, pc, reg1_data, reg2_data)

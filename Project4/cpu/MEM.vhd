@@ -36,23 +36,26 @@ architecture arch of MEM is
 begin
 
 	-- BF01 0位：是否能写 1位：是否能读
-	stallReq <= mem_busy when isLW = '1' or isSW = '1';
+	stallReq <= mem_busy;
 
 	writeRegOut.enable <= writeReg.enable;
 	writeRegOut.addr   <= writeReg.addr;
 
 	mem_type <= ReadUart when isLW = '1' and aluOut = x"bf00" else
 			   WriteUart when isSW = '1' and aluOut = x"bf00" else
-			   ReadRam1 when isLW = '1' and aluOut < x"8000" else
-			   ReadRam2 when isLW = '1' and aluOut < x"b000" else
-			   WriteRam1 when isSW = '1' and aluOut < x"8000" else
-			   WriteRam2 when isSW = '1' and aluOut < x"b000" else
+			   ReadRam2 when isLW = '1' and aluOut < x"8000" else
+			   ReadRam1 when isLW = '1' else
+			   WriteRam2 when isSW = '1' and aluOut < x"8000" else
+			   WriteRam1 when isSW = '1' else
 			   None;
-	mem_addr <= aluOut;
-	writeRegOut.data <= mem_read_data when isLW = '1' else 
-						(0=>mem_busy, 1=>mem_busy, others=>'0') when isLW = '1' and aluOut = x"bf01" else 
-						aluOut;
-	mem_write_data <= writeReg.data when isSW = '1';
+	mem_addr <= aluOut when isLW = '1' or isSW = '1' else 
+				x"0000";
+	writeRegOut.data <= x"0003" when isLW = '1' and aluOut = x"bf01" else 
+						mem_read_data when isLW = '1' else 
+						x"0000" when isSW = '1' else
+						aluOut ;
+	mem_write_data <= writeMemData when isSW = '1' else 
+						x"0000";
 
 
 --	if isLW = '1'
