@@ -56,14 +56,10 @@ begin
 			last_btn := '1';
 			pause <= '1';
 		elsif rising_edge(clk) then
-			if step_mode = '1' then
+			step <= step + 1;	
+			pause <= '0';
+			if step_mode = '1' and not (last_btn = '0' and btn = '1') then
 				pause <= '1';
-				if last_btn = '0' and btn = '1' then -- press btn
-					step <= step + 1;	
-					pause <= '0';
-				end if;
-			else
-				pause <= '0';
 			end if;
 			last_btn := btn;
 		end if;
@@ -82,7 +78,7 @@ begin
 			mem_stallReq, mem_in.writeReg, mem_in.isLW, mem_in.isSW, mem_in.writeMemData, 
 			mem_in_aluOut, mem_out);
 	reg0: entity work.Reg port map (rst, clk, mem_out, reg1, reg2, reg1.data, reg2.data, debug.regs);
-	ctrl0: entity work.Ctrl port map (rst, pause, if_canread, mem_stallReq, ex_in.isLW, ex_in.writeReg.addr, reg1.addr, reg2.addr, stall, clear);
+	ctrl0: entity work.Ctrl port map (rst, pause, if_canread, mem_stallReq, ex_in.isLW, ex_in.writeReg.addr, reg1, reg2, stall, clear);
 
 	if_id0: entity work.IF_ID port map (rst, clk, stall(3), clear(3),
 			if_out.pc, if_out.inst, id_in.pc, id_in.inst);

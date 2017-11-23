@@ -29,7 +29,7 @@ begin
 				pc0 <= pc0 + branch.offset;
 			elsif branch.isJump = '1' then
 				pc0 <= branch.target;
-			else
+			elsif stall = '0' then
 				pc0 <= pc0 + 1;
 			end if;
 		end if;

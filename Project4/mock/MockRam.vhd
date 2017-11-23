@@ -8,6 +8,7 @@ use std.textio.all;
 entity MockRam is
 	generic (
 		SIZE: natural := 1024;
+		OFFSET: natural := 0;
 		FILE_PATH: string := "";
 		KERNEL: boolean := false
 	);
@@ -51,6 +52,7 @@ begin
 	-- end process ; -- readfile
 
 	process( rst, enable, read, write, addr )
+		variable inner_addr: integer;
 	begin
 		if rst = '0' then
 			if KERNEL then
@@ -62,16 +64,18 @@ begin
 				ram <= (others => x"0000");
 			end if;
 		else
+			inner_addr := to_integer(addr) - OFFSET;
+			assert inner_addr >= 0 report "Address out of range: " & toStr16(addr(15 downto 0)) severity error;
 			data <= (others => 'Z');
 			if enable = '0' and falling_edge(write) then
-				ram(to_integer(addr)) <= data after 8 ns;
+				ram(inner_addr) <= data after 8 ns;
 			end if;
 			if enable = '0' and falling_edge(read) then
 				data <= (others => 'X');
 			end if;
 			if enable = '0' and read = '0' then
 				data <= data, 
-						ram(to_integer(addr)) after 10 ns;
+						ram(inner_addr) after 10 ns;
 			end if;
 		end if;
 	end process ;

@@ -17,7 +17,7 @@ entity Ctrl is
 		-- (其它写寄存器指令可走数据旁路解决冲突)
 		ex_isLW: in std_logic;
 		ex_writeReg: in RegAddr;
-		id_readReg1, id_readReg2: in RegAddr;
+		id_readReg1, id_readReg2: in RegPort;
 		-- 给挡板的暂停/清除信号 4PC 3IF/ID 2ID/EX 1EX/MEM 0Reg(Write)
 		stall, clear: out std_logic_vector(4 downto 0) 
 	) ;
@@ -36,7 +36,8 @@ begin
 			stall <= "11111";
 		elsif mem_stallReq = '1' then
 			stall <= "11110";
-		elsif ex_isLW = '1' and (ex_writeReg = id_readReg1 or ex_writeReg = id_readReg2) then
+		elsif ex_isLW = '1' and ((id_readReg1.enable = '1' and ex_writeReg = id_readReg1.addr)
+			 or (id_readReg2.enable = '1' and ex_writeReg = id_readReg2.addr)) then
 			stall <= "11000";
 			clear <= "00100";
 		elsif if_canread = '0' then

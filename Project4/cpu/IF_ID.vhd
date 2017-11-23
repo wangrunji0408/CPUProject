@@ -29,7 +29,7 @@ begin
 				id_pc <= x"0000";
 				id_inst <= x"0000";
 			elsif stall = '0' then
-				id_pc <= if_pc;
+				id_pc <= if_pc + 1;
 				id_inst <= if_inst;
 			end if;
 		end if;

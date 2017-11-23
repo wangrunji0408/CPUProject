@@ -35,7 +35,7 @@ architecture arch of RamUartCtrl is
 
 begin
 
-	process( mem_type, clk, ram1data, ram2data, mem_addr, mem_write_data, if_addr )
+	process( mem_type, clk, ram1data, ram2data, mem_addr, mem_write_data, if_addr, uart_write_busy )
 	begin
 		mem_read_data <= x"0000";
 		if_canread <= '1'; if_data <= ram2data;
@@ -85,7 +85,7 @@ begin
 			uart_write <= '1';
 			uart_write_busy <= '0';
 			count <= 0;
-		elsif rising_edge(clk) then
+		elsif falling_edge(clk) then
 			count <= count + 1;
 			case count is 
 			when 0 => uart_write_busy <= '1'; 

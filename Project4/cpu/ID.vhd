@@ -125,9 +125,8 @@ begin
 				end if;
 			when INST_LI =>
 				instType <= I_LI;            
-				reg1_enable <= '1'; reg1_addr <= getRx(inst);
 				aluInput <= (OP_ADD, zeroExtend(getIm8(inst)), x"0000");
-				writeReg <= ('1', reg1_addr, x"0000");
+				writeReg <= ('1', getRx(inst), x"0000");
 			when INST_LW =>
 				instType <= I_LW;            
 				isLW <= '1';
