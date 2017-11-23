@@ -224,13 +224,13 @@ begin
 				report "Failed at case " & integer'image(i) & ". writeRegOut"
 				severity error;
 			assert p.mem_type = std.mem_type
-				report "Failed at case " & integer'image(i) & ". mem_type"
+				report "Failed at case " & integer'image(i) & ". mem_type " & MEMTYPE'image(p.mem_type) & "!=" & MEMTYPE'image(std.mem_type)
 				severity error;
 			assert p.mem_addr = std.mem_addr
-				report "Failed at case " & integer'image(i) & ". mem_addr"
+				report "Failed at case " & integer'image(i) & ". mem_addr " & toStr16(p.mem_addr) &"!="& toStr16(std.mem_addr)
 				severity error;
 			assert p.mem_write_data = std.mem_write_data
-				report "Failed at case " & integer'image(i) & ". mem_write_data"
+				report "Failed at case " & integer'image(i) & ". mem_write_data " & toStr16(p.mem_write_data) & "!=" & toStr16(std.mem_write_data)
 				severity error;
 			wait for 2 ns;
 
