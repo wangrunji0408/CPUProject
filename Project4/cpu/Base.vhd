@@ -89,6 +89,29 @@ package Base is
 		I_ERR
 	);
 
+	type IF_ID_Data is record
+		pc: u16;
+		inst: Inst;
+	end record;
+
+	type ID_MEM_Data is record
+		writeReg: RegPort;
+		isLW: std_logic;
+		isSW: std_logic;
+		writeMemData: u16;
+	end record;
+
+	type CPUDebug is record
+		step: natural;
+		regs: RegData;
+		instType: InstType;
+		id_in: IF_ID_Data;
+		ex_in, mem_in: ID_MEM_Data;
+		ex_in_aluInput: AluInput;
+		mem_in_aluOut: u16;
+		mem_out: RegPort;
+	end record;
+
 	constant NULL_REGPORT : RegPort := ('0', x"0", x"0000");
 	constant NULL_RAMPORT : RamPort := ('1', '1', '1', "00" & x"0000", x"0000");
 	constant NULL_ALUINPUT : AluInput := (OP_NOP, x"0000", x"0000");
@@ -100,6 +123,10 @@ package Base is
 	function toString (x: unsigned) return string;
 	function to_u4 (x: integer) return u4;
 	function to_u16 (x: integer) return u16;
+	function show_AluInput (x: AluInput) return string; --len=13
+	function show_RegPort (x: RegPort) return string; --len=7
+	function show_IF_ID_Data (x: IF_ID_Data) return string;	--len=21
+	function show_ID_MEM_Data (x: ID_MEM_Data) return string; --len=15
 	function DisplayNumber (number: u4) return std_logic_vector;
 
 	function signExtend (number: u8) return u16;
@@ -248,8 +275,8 @@ package body Base is
 	function toStr2 (x: u16) return string is 
 		variable s: string(1 to 16);
 	begin
-		for i in 0 to 15 loop
-			case x(i) is
+		for i in 1 to 16 loop
+			case x(i-1) is
 				when '0' => s(i) := '0';
 				when '1' => s(i) := '1';
 				when 'Z' => s(i) := 'Z';
@@ -337,4 +364,32 @@ package body Base is
 		end case;
 	end function;
 
+	function show_AluInput (x: AluInput) return string is -- len = 13
+		variable op: string(1 to 6);
+	begin
+		op := AluOp'image(x.op);
+		return op(4 to 6) & " " & toStr16(x.a) & " " & toStr16(x.b);
+	end function;
+
+	function show_RegPort (x: RegPort) return string is -- len = 7
+	begin
+		if x.enable = '0' then return "NULLREG";
+		else return "R" & toHex(x.addr) & "=" & toStr16(x.data);
+		end if;
+	end function;
+
+	function show_IF_ID_Data (x: IF_ID_Data) return string is -- len = 21
+	begin
+		return toStr16(x.pc) & " " & toStr2(x.inst); 
+	end function;
+
+	function show_ID_MEM_Data (x: ID_MEM_Data) return string is -- len = 15
+		variable s: string(1 to 4) := "    ";
+	begin
+		if x.isLW = '1' then 		s := " LW ";
+		elsif x.isSW = '1' then 	s := " SW ";
+		end if;
+		return show_RegPort(x.writeReg) & s & toStr16(x.writeMemData);
+	end function;
+	
 end package body;

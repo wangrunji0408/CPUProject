@@ -159,7 +159,8 @@ begin
 				writeMemData <= reg1_data;
 				aluInput <= (OP_ADD, reg2_data, signExtend(getIm8(inst)));
 			when INST_SET0 =>
-				case getRx(inst) is
+				oprx := getRx(inst);
+				case oprx is
 					when x"3" =>  -- ADDSP
 						instType <= I_ADDSP;            
 						reg1_enable <= '1'; reg1_addr <= REG_SP;
@@ -187,7 +188,8 @@ begin
 					when others => null;
 				end case;
 			when INST_SET1 =>
-				if getSubOp(inst) = "00000" then 
+				subopcode := getSubOp(inst);
+				if subopcode = "00000" then 
 					oprx := getRy(inst);
 					if (oprx = x"0") then  -- JR
 						instType <= I_JR;
@@ -203,7 +205,7 @@ begin
 					reg1_enable <= '1'; reg1_addr <= getRx(inst);
 					reg2_enable <= '1'; reg2_addr <= getRy(inst);
 					writeReg <= ('1', reg1_addr, x"0000");
-					case getSubOp(inst) is
+					case subopcode is
 						when "01100" =>  -- AND
 							instType <= I_AND;
 							aluInput <= (OP_AND, reg1_data, reg2_data);

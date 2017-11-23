@@ -50,7 +50,7 @@ architecture arch of Top is
 
 	signal digit0, digit1: u4;
 
-	signal d_regs: RegData;
+	signal debug: CPUDebug;
 	
 begin
 
@@ -74,7 +74,7 @@ begin
 	end process ; -- make_clk_vga
 
 	renderer0: entity work.Renderer 
-		port map (rst, clk_vga, vga_x, vga_y, color, d_regs);	
+		port map (rst, clk_vga, vga_x, vga_y, color, debug);	
 	vga1: entity work.vga_controller 
 		--generic map (1440,80,152,232,'0',900,1,3,28,'1') -- 60Hz clk=106Mhz
 		-- generic map (1024,24,136,160,'0',768,3,6,29,'0') -- 60Hz clk=65Mhz
@@ -85,13 +85,13 @@ begin
 	vga_b <= unsigned(color_out(2 downto 0));
 
 	ruc: entity work.RamUartCtrl 
-		port map ( rst, clk, 
+		port map ( rst, clk50, 
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, if_addr, if_data, if_canread,
 			ram1addr, ram2addr, ram1data, ram2data, ram1read, ram1write, ram1enable, ram2read, ram2write, ram2enable,
 			uart_data_ready, uart_tbre, uart_tsre, uart_read, uart_write);
 	cpu0: entity work.CPU 
-		port map (rst, clk50, 
+		port map (rst, clk50, key(0), '1',
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, if_addr, if_data, if_canread, 
-			d_regs); 
+			debug); 
 	
 end arch ; -- arch

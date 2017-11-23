@@ -108,32 +108,32 @@ begin
 			wait for 18 ns;
 
 			assert p.instType = std.instType
-				report "Failed at case " & integer'image(i) & ". instType"
+				report "Failed at case " & integer'image(i) & ": " & InstType'image(std.instType) & ". instType"
 				severity error;
 			if std.instType /= I_ERR then
 			assert p.reg1 = std.reg1
-				report "Failed at case " & integer'image(i) & ". Reg1"
+				report "Failed at case " & integer'image(i) & ": " & InstType'image(std.instType) & ". Reg1"
 				severity error;
 			assert p.reg2 = std.reg2
-				report "Failed at case " & integer'image(i) & ". Reg2"
+				report "Failed at case " & integer'image(i) & ": " & InstType'image(std.instType) & ". Reg2"
 				severity error;
 			assert p.branch = std.branch
-				report "Failed at case " & integer'image(i) & ". branch"
+				report "Failed at case " & integer'image(i) & ": " & InstType'image(std.instType) & ". branch"
 				severity error;
 			assert p.writeReg = std.writeReg
-				report "Failed at case " & integer'image(i) & ". writeReg"
+				report "Failed at case " & integer'image(i) & ": " & InstType'image(std.instType) & ". writeReg"
 				severity error;
 			assert p.isLW = std.isLW
-				report "Failed at case " & integer'image(i) & ". isLW"
+				report "Failed at case " & integer'image(i) & ": " & InstType'image(std.instType) & ". isLW"
 				severity error;
 			assert p.isSW = std.isSW
-				report "Failed at case " & integer'image(i) & ". isSW"
+				report "Failed at case " & integer'image(i) & ": " & InstType'image(std.instType) & ". isSW"
 				severity error;
 			assert p.writeMemData = std.writeMemData
-				report "Failed at case " & integer'image(i) & ". writeMemData"
+				report "Failed at case " & integer'image(i) & ": " & InstType'image(std.instType) & ". writeMemData"
 				severity error;
 			assert p.aluInput = std.aluInput
-				report "Failed at case " & integer'image(i) & ". aluInput"
+				report "Failed at case " & integer'image(i) & ": " & InstType'image(std.instType) & ". aluInput"
 				severity error;
 			end if;			
 		
