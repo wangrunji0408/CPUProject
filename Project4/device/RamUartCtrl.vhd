@@ -35,7 +35,7 @@ architecture arch of RamUartCtrl is
 
 begin
 
-	process( mem_type, clk, ram1data, ram2data, mem_write_data )
+	process( mem_type, clk, ram1data, ram2data, mem_addr, mem_write_data, if_addr )
 	begin
 		mem_read_data <= x"0000";
 		if_canread <= '1'; if_data <= ram2data;
@@ -43,7 +43,7 @@ begin
 		-- RAM默认输出
 		ram1enable <= '1'; ram1read <= '1'; ram1write <= '1';
 		ram1addr <= "00" & mem_addr; ram1data <= (others => 'Z');
-		ram2enable <= '1'; ram2read <= '1'; ram2write <= '1';
+		ram2enable <= '0'; ram2read <= '0'; ram2write <= '1';
 		ram2addr <= "00" & if_addr; ram2data <= (others => 'Z');
 		-- UART默认输出
 		uart_read <= '1'; -- uart_write <= '1';
@@ -57,13 +57,12 @@ begin
 			ram1enable <= '0'; ram1write <= clk; 
 			ram1data <= mem_write_data;
 		when ReadRam2 =>
-			ram2enable <= '0'; ram2read <= '0';
 			ram2addr <= "00" & mem_addr;
 			mem_read_data <= ram2data;
 			if_canread <= '0'; if_data <= x"0000";
 		when WriteRam2 =>
-			ram2enable <= '0'; ram2write <= clk; 
-			ram2addr <= "00" & mem_addr;			
+			ram2read <= '1'; ram2write <= clk; 
+			ram2addr <= "00" & mem_addr;
 			ram2data <= mem_write_data;
 			if_canread <= '0'; if_data <= x"0000";
 		when ReadUart =>

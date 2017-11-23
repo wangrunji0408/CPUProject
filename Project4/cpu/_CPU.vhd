@@ -5,7 +5,7 @@ use work.Base.all;
 
 entity CPU is
 	port (
-		clk, rst, btn: in std_logic;
+		rst, clk, btn: in std_logic;
 		step_mode: in std_logic;
 		
 		------ MEM访问RAM/串口的接口 ------
@@ -40,6 +40,7 @@ architecture arch of CPU is
 begin
 
 	debug.step <= step;
+	debug.branch <= branch;
 	debug.id_in <= id_in;
 	debug.ex_in <= ex_in;
 	debug.mem_in <= mem_in;
@@ -55,9 +56,13 @@ begin
 			last_btn := '1';
 			pause <= '1';
 		elsif rising_edge(clk) then
-			pause <= '1';
-			if last_btn = '0' and btn = '1' then -- press btn
-				step <= step + 1;	
+			if step_mode = '1' then
+				pause <= '1';
+				if last_btn = '0' and btn = '1' then -- press btn
+					step <= step + 1;	
+					pause <= '0';
+				end if;
+			else
 				pause <= '0';
 			end if;
 			last_btn := btn;
