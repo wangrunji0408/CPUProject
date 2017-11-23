@@ -10,7 +10,7 @@ architecture arch of TestID is
 
 	type TestCase is record
 		-- description
-		title: string(1 to 10);
+		instType: InstType;
 		-- input
 		inst: Inst;
 		pc: u16;
@@ -30,16 +30,16 @@ architecture arch of TestID is
 	signal p: TestCase;
 	signal regData: RegData := (others => x"0000");
 	
-	type TestCases is array (0 to 1) of TestCase;
+	type TestCases is array (0 to 2) of TestCase;
 
 	constant cases: TestCases := ( -- 每个test_case对应一个时钟周期
-		(
-			title => "ADDIU     ",
+		(-- ADDIU
 			inst => INST_ADDIU & o"2" & x"FF",
 			pc => x"0000",
 			exe_writeReg => NULL_REGPORT,
 			mem_writeReg => NULL_REGPORT,
 			-- output
+			instType => I_ADDIU,			
 			reg1 => ('1', x"2", x"0002"),
 			reg2 => NULL_REGPORT,
 			branch => NULL_PCBRANCH,	
@@ -49,13 +49,13 @@ architecture arch of TestID is
 			writeMemData => x"0000",
 			aluInput => (OP_ADD, x"0002", x"FFFF")
 		),
-		(
-			title => "ADDIU     ",
+		(-- EXE旁路生效
 			inst => INST_ADDIU & o"2" & x"FF",
 			pc => x"0000",
-			exe_writeReg => NULL_REGPORT,
+			exe_writeReg => ('1', x"2", x"AAAA"),
 			mem_writeReg => NULL_REGPORT,
 			-- output
+			instType => I_ADDIU,
 			reg1 => ('1', x"2", x"0002"),
 			reg2 => NULL_REGPORT,
 			branch => NULL_PCBRANCH,	
@@ -63,7 +63,23 @@ architecture arch of TestID is
 			isLW => '0',
 			isSW => '0',
 			writeMemData => x"0000",
-			aluInput => (OP_ADD, x"0002", x"FFFF")
+			aluInput => (OP_ADD, x"AAAA", x"FFFF")
+		),
+		(-- MEM旁路生效
+			inst => INST_ADDIU & o"2" & x"FF",
+			pc => x"0000",
+			exe_writeReg => ('1', x"2", x"AAAA"),
+			mem_writeReg => ('1', x"2", x"BBBB"),
+			-- output
+			instType => I_ADDIU,
+			reg1 => ('1', x"2", x"0002"),
+			reg2 => NULL_REGPORT,
+			branch => NULL_PCBRANCH,	
+			writeReg => ('1', x"2", x"0000"),
+			isLW => '0',
+			isSW => '0',
+			writeMemData => x"0000",
+			aluInput => (OP_ADD, x"BBBB", x"FFFF")
 		)
 	);
 
@@ -78,7 +94,7 @@ begin
 			p.reg1.enable, p.reg2.enable, p.reg1.addr, p.reg2.addr, p.reg1.data, p.reg2.data,
 			p.branch, p.exe_writeReg, p.mem_writeReg, 
 			p.writeReg, p.isLW, p.isSW, p.writeMemData, 
-			p.aluInput);
+			p.aluInput, p.instType);
 
 	process
 		variable std: TestCase;
@@ -91,6 +107,10 @@ begin
 			p.mem_writeReg <= std.mem_writeReg;
 			wait for 18 ns;
 
+			assert p.instType = std.instType
+				report "Failed at case " & integer'image(i) & ". instType"
+				severity error;
+			if std.instType /= I_ERR then
 			assert p.reg1 = std.reg1
 				report "Failed at case " & integer'image(i) & ". Reg1"
 				severity error;
@@ -115,8 +135,8 @@ begin
 			assert p.aluInput = std.aluInput
 				report "Failed at case " & integer'image(i) & ". aluInput"
 				severity error;
+			end if;			
 		
-			-- asserts ...
 			wait for 2 ns;
 		end loop ; -- 
 

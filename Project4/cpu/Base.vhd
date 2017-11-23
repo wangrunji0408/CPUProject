@@ -79,6 +79,16 @@ package Base is
 
 	type MEMType is (None, ReadRam1, WriteRam1, ReadRam2, WriteRam2, ReadUart, WriteUart);
 
+	type InstType is (
+		I_AND, I_OR, I_ADDU, I_SUBU, I_SLT, I_CMP,
+		I_ADDIU, I_ADDIU3, I_ADDSP, I_ADDSP3, I_SLL, I_SRA, I_SRL, I_SLTUI, I_NOT, I_LI,
+		I_MFIH, I_MFPC, I_MTIH, I_MTSP,
+		I_B, I_BEQZ, I_BNEZ, I_BTEQZ, I_JR,
+		I_LW, I_LW_SP, I_SW, I_SW_SP, I_SW_RS,
+		I_NOP,
+		I_ERR
+	);
+
 	constant NULL_REGPORT : RegPort := ('0', x"0", x"0000");
 	constant NULL_RAMPORT : RamPort := ('1', '1', '1', "00" & x"0000", x"0000");
 	constant NULL_ALUINPUT : AluInput := (OP_NOP, x"0000", x"0000");
@@ -97,6 +107,7 @@ package Base is
     function signExtend5 (number: u5) return u16;
     function signExtend11 (number: u11) return u16;
 	function zeroExtend (number: u8) return u16;
+	function shiftExtend (number: u3) return u16;
 
 	-- Get part from instruction
 	function getOp (x: Inst) return InstOpcode;
@@ -223,6 +234,15 @@ package body Base is
 	function zeroExtend (number: u8) return u16 is
 	begin
 		return x"00" & number;
+	end function;
+
+	function shiftExtend (number: u3) return u16 is
+	begin
+		if (number = "000") then
+			return x"0008";
+		else
+			return x"000" & "0" & number;
+		end if;
 	end function;
 
 	function toStr2 (x: u16) return string is 
