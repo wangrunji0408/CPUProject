@@ -89,7 +89,7 @@ begin
 		isSW <= '0';
 		writeMemData <= x"0000";
 		aluInput <= NULL_ALUINPUT;
-		opcode := getOp(inst);
+		opcode := inst(15 downto 11); -- getOp() will fail when using ISim
 		case(opcode) is
 			when INST_ADDIU =>
 				instType <= I_ADDIU;

@@ -53,6 +53,9 @@ begin
 
 	light <= (others => '0');
 
+	vga_r <= o"0"; vga_g <= o"0"; vga_b <= o"0";
+	vga_vs <= '0'; vga_hs <= '0';
+
 	ruc: entity work.RamUartCtrl 
 		port map ( rst, clk50, 
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, if_addr, if_data, if_canread,

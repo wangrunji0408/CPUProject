@@ -36,10 +36,10 @@ architecture arch of MEM is
 begin
 
 	-- BF01 0位：是否能写 1位：是否能读
-	mem_type <= ReadRam1;
+	mem_type <= None;
 	mem_addr <= x"0000";
 	mem_write_data <= x"0000";
 	stallReq <= mem_busy;
-	writeRegOut <= writeReg;
+	writeRegOut <= (writeReg.enable, writeReg.addr, aluOut);
 
 end arch ; -- arch

@@ -105,6 +105,7 @@ package Base is
 		step: natural;
 		regs: RegData;
 		instType: InstType;
+		branch: PCBranch;
 		id_in: IF_ID_Data;
 		ex_in, mem_in: ID_MEM_Data;
 		ex_in_aluInput: AluInput;

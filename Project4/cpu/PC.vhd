@@ -19,7 +19,7 @@ end PC;
 architecture arch of PC is	
 	signal pc0: u16;
 begin
-	
+	pc <= pc0;
 	process( rst, clk )
 	begin
 		if rst = '0' then
@@ -30,7 +30,7 @@ begin
 			elsif branch.isJump = '1' then
 				pc0 <= branch.target;
 			else
-				pc0 <= pc0 + 4;
+				pc0 <= pc0 + 1;
 			end if;
 		end if;
 	end process ;
