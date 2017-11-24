@@ -195,7 +195,7 @@ BEGIN:          ;检测命令
 	NOP	
 	
 
-	;检测是否为R命令		
+	;检测是否为R命令		00ac
 	LI R0 0x0052
 	CMP R0 R1
 	BTEQZ SHOWREGS	

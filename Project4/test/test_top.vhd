@@ -44,8 +44,7 @@ begin
 	begin
 		rst <= '0'; wait for 10 ns;
 		rst <= '1'; wait for 10 ns;
-		wait for 5 us;
-		report "Test End" severity error;
+		wait;
 	end process ; -- 
 
 	ruc: entity work.RamUartCtrl 

@@ -120,6 +120,8 @@ package Base is
 	
 	function toStr2 (x: u16) return string;
 	function toStr16 (x: u16) return string;
+	function toHex8 (x: u8) return string;
+	function charToU8 (x: character) return u8;
 	function toHex (x: u4) return character;
 	function toString (x: unsigned) return string;
 	function to_u4 (x: integer) return u4;
@@ -298,6 +300,16 @@ package body Base is
 			hex(4-I) := toHex(fourbit);
 		end loop;
 		return hex;
+	end function;
+
+	function toHex8 (x: u8) return string is
+	begin
+		return toHex(x(7 downto 4)) & toHex(x(3 downto 0));
+	end function;
+
+	function charToU8 (x: character) return u8 is
+	begin
+		return to_unsigned(character'pos(x), 8);
 	end function;
 
 	function toHex (x: u4) return character is 

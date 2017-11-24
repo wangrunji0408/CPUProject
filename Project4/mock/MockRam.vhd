@@ -65,7 +65,8 @@ begin
 			end if;
 		else
 			inner_addr := to_integer(addr) - OFFSET;
-			assert inner_addr >= 0 report "Address out of range: " & toStr16(addr(15 downto 0)) severity error;
+			assert enable = '0' and inner_addr >= 0 
+				report "Address out of range: " & toStr16(addr(15 downto 0)) severity error;
 			data <= (others => 'Z');
 			if enable = '0' and falling_edge(write) then
 				ram(inner_addr) <= data after 8 ns;
