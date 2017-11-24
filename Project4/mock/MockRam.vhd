@@ -24,35 +24,14 @@ architecture arch of MockRam is
 	type TRam is array (0 to SIZE-1) of u16;
 	signal ram: TRam;
 begin
-	-- readfile : process
-	-- 	file filein: text;
-	-- 	variable fstatus: FILE_OPEN_STATUS; 
-	-- 	variable buf: line; 
-	-- 	variable byte: bit_vector(7 downto 0);
-	-- begin
-	-- 	if FILE_PATH'length > 0 then
-	-- 		report "Ready to open file: " & FILE_PATH;			
-	-- 		file_open(fstatus, filein, FILE_PATH, READ_MODE);			
-	-- 		if fstatus /= open_ok then
-	-- 			report "Failed to open file: " & FILE_PATH severity error;
-	-- 		end if;
-	-- 		readline(filein, buf);
-	-- 		for i in 0 to SIZE-1 loop
-	-- 			exit when endfile(filein);
-	-- 			read(buf, byte); -- nvc fatal: unimplemented
-	-- 			ram(i)(7 downto 0) <= unsigned(to_stdlogicvector(byte));
-	-- 			read(buf, byte);
-	-- 			ram(i)(15 downto 8) <= unsigned(to_stdlogicvector(byte));
-	-- 			report integer'image(i) & ": " & toStr16(ram(i));
-	-- 		end loop ;
-	-- 		file_close(filein);
-	-- 		report "Load to RAM from " & FILE_PATH;
-	-- 	end if;
-	-- 	wait;
-	-- end process ; -- readfile
 
 	process( rst, enable, read, write, addr )
 		variable inner_addr: integer;
+
+		type binfile is file of character;
+		file filein: binfile;
+		variable fstatus: FILE_OPEN_STATUS; 
+		variable char: character;
 	begin
 		if rst = '0' then
 			if KERNEL then
@@ -60,6 +39,21 @@ begin
 					ram(i)(7 downto 0) <= kernelData(i*2);
 					ram(i)(15 downto 8) <= kernelData(i*2+1);
 				end loop ; -- copy_to_ram
+			elsif FILE_PATH'length > 0 then
+				report "Ready to open file: " & FILE_PATH;			
+				file_open(fstatus, filein, FILE_PATH, READ_MODE);			
+				if fstatus /= open_ok then
+					report "Failed to open file: " & FILE_PATH severity error;
+				end if;
+				for i in 0 to SIZE-1 loop
+					exit when endfile(filein);
+					read(filein, char); -- nvc fatal: unimplemented
+					ram(i)(7 downto 0) <= to_unsigned(character'pos(char), 8);
+					read(filein, char);
+					ram(i)(15 downto 8) <= to_unsigned(character'pos(char), 8);
+				end loop ;
+				file_close(filein);
+				report "Load to RAM from " & FILE_PATH;
 			else
 				ram <= (others => x"0000");
 			end if;
