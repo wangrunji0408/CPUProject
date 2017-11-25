@@ -70,7 +70,7 @@ begin
 			else memWriteReg.data when memWriteReg.enable = '1' and memWriteReg.addr = reg2_addr
 			else reg2_data_origin;
 
-	process (inst, pc, reg1_data, reg2_data)
+	process (inst, pc, reg1_data, reg2_data, reg1_addr, reg2_addr)
 		variable opcode : InstOpcode;
 		variable subopcode : InstOpcode;
 		variable oprx : RegAddr;

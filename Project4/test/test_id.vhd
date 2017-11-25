@@ -30,7 +30,7 @@ architecture arch of TestID is
 	signal p: TestCase;
 	signal regData: RegData := (others => x"0000");
 	
-	type TestCases is array (0 to 2) of TestCase;
+	type TestCases is array (0 to 11) of TestCase;
 
 	constant cases: TestCases := ( -- 每个test_case对应一个时钟周期
 		(-- ADDIU
@@ -57,7 +57,7 @@ architecture arch of TestID is
 			-- output
 			instType => I_ADDIU3,			
 			reg1 => ('1', x"2", x"0002"),
-			reg2 => ('0', x"1", x"0001"),
+			reg2 => ('0', x"1", x"0000"),
 			branch => NULL_PCBRANCH,	
 			writeReg => ('1', x"1", x"0000"),
 			isLW => '0',
@@ -72,7 +72,7 @@ architecture arch of TestID is
 			mem_writeReg => NULL_REGPORT,
 			-- output
 			instType => I_ADDSP3,			
-			reg1 => ('0', x"2", x"0002"),
+			reg1 => ('0', x"2", x"0000"),
 			reg2 => ('1', REG_SP, x"0008"),
 			branch => NULL_PCBRANCH,	
 			writeReg => ('1', x"2", x"0000"),
@@ -168,7 +168,7 @@ architecture arch of TestID is
 			mem_writeReg => NULL_REGPORT,
 			-- output
 			instType => I_LI,			
-			reg1 => ('0', x"2", x"0002"),
+			reg1 => ('0', x"2", x"0000"),
 			reg2 => NULL_REGPORT,
 			branch => NULL_PCBRANCH,	
 			writeReg => ('1', x"2", x"0000"),
@@ -178,14 +178,14 @@ architecture arch of TestID is
 			aluInput => (OP_ADD, x"00FF", x"0000")
 		),
         (-- LW
-			inst => LW & "001" & "002" & "11111",
+			inst => INST_LW & "001" & "010" & "11111",
 			pc => x"0000",
 			exe_writeReg => NULL_REGPORT,
 			mem_writeReg => NULL_REGPORT,
 			-- output
 			instType => I_LW,			
 			reg1 => ('1', x"1", x"0001"),
-			reg2 => ('0', x"2", x"0002"),
+			reg2 => ('0', x"2", x"0000"),
 			branch => NULL_PCBRANCH,	
 			writeReg => ('1', x"2", x"0000"),
 			isLW => '1',
@@ -197,7 +197,7 @@ architecture arch of TestID is
 			inst => INST_ADDIU & o"2" & x"FF",
 			pc => x"0000",
 			exe_writeReg => ('1', x"2", x"AAAA"),
-			mem_writeReg => NULL_REGPORT,
+			mem_writeReg => ('1', x"2", x"BBBB"),
 			-- output
 			instType => I_ADDIU,
 			reg1 => ('1', x"2", x"0002"),
@@ -212,7 +212,7 @@ architecture arch of TestID is
 		(-- MEM旁路生效
 			inst => INST_ADDIU & o"2" & x"FF",
 			pc => x"0000",
-			exe_writeReg => ('1', x"2", x"AAAA"),
+			exe_writeReg => NULL_REGPORT,
 			mem_writeReg => ('1', x"2", x"BBBB"),
 			-- output
 			instType => I_ADDIU,
@@ -259,13 +259,13 @@ begin
 				report "Failed at case " & integer'image(i) & ": " & InstType'image(std.instType) & ". Reg1"
 				severity error;
 			assert p.reg2 = std.reg2
-				report "Failed at case " & integer'image(i) & ": " & InstType'image(std.instType) & ". Reg2"
+				report "Failed at case " & integer'image(i) & ": " & InstType'image(std.instType) & ". Reg2 = " & tostring(p.reg2.data)
 				severity error;
 			assert p.branch = std.branch
 				report "Failed at case " & integer'image(i) & ": " & InstType'image(std.instType) & ". branch"
 				severity error;
 			assert p.writeReg = std.writeReg
-				report "Failed at case " & integer'image(i) & ": " & InstType'image(std.instType) & ". writeReg"
+				report "Failed at case " & integer'image(i) & ": " & InstType'image(std.instType) & ". writeReg = " & tostring(p.reg2.addr)
 				severity error;
 			assert p.isLW = std.isLW
 				report "Failed at case " & integer'image(i) & ": " & InstType'image(std.instType) & ". isLW"
@@ -277,7 +277,7 @@ begin
 				report "Failed at case " & integer'image(i) & ": " & InstType'image(std.instType) & ". writeMemData"
 				severity error;
 			assert p.aluInput = std.aluInput
-				report "Failed at case " & integer'image(i) & ": " & InstType'image(std.instType) & ". aluInput"
+				report "Failed at case " & integer'image(i) & ": " & InstType'image(std.instType) & ". aluInput = " & tostring(p.aluInput.b)
 				severity error;
 			end if;			
 		
