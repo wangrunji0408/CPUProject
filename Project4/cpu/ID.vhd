@@ -99,12 +99,12 @@ begin
 			when INST_ADDIU3 =>
 				instType <= I_ADDIU3;
 				reg1_enable <= '1'; reg1_addr <= getRx(inst);
-				reg2_enable <= '1'; reg2_addr <= getRy(inst);
+				reg2_addr <= getRy(inst);
 				aluInput <= (OP_ADD, reg1_data, signExtend4(inst(3 downto 0)));
 				writeReg <= ('1', reg2_addr, x"0000");
 			when INST_ADDSP3 =>
 				instType <= I_ADDSP3;            
-				reg1_enable <= '1'; reg1_addr <= getRx(inst);
+				reg1_addr <= getRx(inst);
 				reg2_enable <= '1'; reg2_addr <= REG_SP;
 				aluInput <= (OP_ADD, reg2_data, signExtend(getIm8(inst)));
 				writeReg <= ('1', reg1_addr, x"0000");
@@ -116,6 +116,8 @@ begin
 				reg1_enable <= '1'; reg1_addr <= getRx(inst);
 				if (reg1_data = x"0000") then
 					branch <= ('1', '0', signExtend(getIm8(inst)), x"0000");
+                else 
+                    null;
 				end if;
 			when INST_BNEZ =>
 				instType <= I_BNEZ;            
@@ -124,14 +126,15 @@ begin
 					branch <= ('1', '0', signExtend(getIm8(inst)), x"0000");
 				end if;
 			when INST_LI =>
-				instType <= I_LI;            
+				instType <= I_LI;
+                reg1_addr <= getRx(inst);
 				aluInput <= (OP_ADD, zeroExtend(getIm8(inst)), x"0000");
-				writeReg <= ('1', getRx(inst), x"0000");
+				writeReg <= ('1', reg1_addr, x"0000");
 			when INST_LW =>
 				instType <= I_LW;            
 				isLW <= '1';
 				reg1_enable <= '1'; reg1_addr <= getRx(inst);
-				reg2_enable <= '1'; reg2_addr <= getRy(inst);
+				reg2_addr <= getRy(inst);
 				aluInput <= (OP_ADD, reg1_data, signExtend5(inst(4 downto 0)));
 				writeReg <= ('1', reg2_addr, x"0000");
 			when INST_LW_SP =>

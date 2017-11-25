@@ -51,18 +51,21 @@ begin
 	digit0raw <= DisplayNumber(digit0);
 	digit1raw <= DisplayNumber(digit1);
 
-	light <= (others => '0');
+	light <= (0 => mem_busy, 1 => uart_data_ready, others => '0');
 
 	vga_r <= o"0"; vga_g <= o"0"; vga_b <= o"0";
 	vga_vs <= '0'; vga_hs <= '0';
 
+	digit0 <= to_u4(count);
+	
+
 	ruc: entity work.RamUartCtrl 
-		port map ( rst, clk50, 
+		port map ( rst, clk11, 
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, if_addr, if_data, if_canread,
 			ram1addr, ram2addr, ram1data, ram2data, ram1read, ram1write, ram1enable, ram2read, ram2write, ram2enable,
 			uart_data_ready, uart_tbre, uart_tsre, uart_read, uart_write);
 
-	process(rst, clk50)
+	process(rst, clk11)
 		variable addr: u16 := x"0000";
 	begin
 		if rst = '0' then
@@ -71,7 +74,7 @@ begin
 			mem_write_data <= x"0000";
 			count <= 0;
 			addr := x"0000";
-		elsif rising_edge(clk50) and mem_busy = '0' then
+		elsif rising_edge(clk11) and mem_busy = '0' then
 			count <= count + 1;
 			case count  is
 			when 0 => 

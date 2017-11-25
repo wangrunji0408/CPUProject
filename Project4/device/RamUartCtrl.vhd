@@ -35,7 +35,7 @@ architecture arch of RamUartCtrl is
 
 begin
 
-	process( mem_type, clk, ram1data, ram2data, mem_addr, mem_write_data, if_addr, uart_write_busy )
+	process( mem_type, ram1data, ram2data, mem_addr, mem_write_data, if_addr, uart_write_busy, uart_data_ready )
 	begin
 		mem_read_data <= x"0000";
 		if_canread <= '1'; if_data <= ram2data;
