@@ -98,6 +98,7 @@ begin
 				mem_type <= WriteUart;
 				mem_write_data <= mem_read_data + 1;
 			when 6 => 
+				mem_type <= None;			
 				addr := x"0000";
 				count <= 0;
 			when others => count <= 0;

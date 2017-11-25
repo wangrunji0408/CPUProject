@@ -17,22 +17,23 @@ entity PC is
 end PC;
 
 architecture arch of PC is	
-	signal pc0: u16;
+	signal last_pc, o_pc: u16;
+	signal l_branch: PCBranch;
 begin
-	pc <= pc0;
-	process( rst, clk )
-	begin
-		if rst = '0' then
-			pc0 <= x"0000";
-		elsif rising_edge(clk) then
-			if branch.isOffset = '1' then
-				pc0 <= pc0 + branch.offset;
-			elsif branch.isJump = '1' then
-				pc0 <= branch.target;
-			elsif stall = '0' then
-				pc0 <= pc0 + 1;
-			end if;
-		end if;
-	end process ;
+	pc <= o_pc;
+	o_pc <= last_pc + l_branch.offset when l_branch.isOffset = '1'else 
+			l_branch.target when l_branch.isJump = '1' else 
+			last_pc + 1;
+
+process( rst, clk )
+begin
+	if rst = '0' then
+		last_pc <= x"FFFF";
+		l_branch <= NULL_PCBRANCH;
+	elsif rising_edge(clk) and stall = '0' then
+		last_pc <= o_pc;
+		l_branch <= branch;
+	end if;
+end process ;
 
 end arch ; -- arch
