@@ -185,10 +185,10 @@ architecture arch of TestID is
 			-- output
 			instType => I_LW,			
 			reg1 => ('1', x"1", x"0001"),
-			reg2 => NULL_REGPORT,
+			reg2 => ('0', x"2", x"0002"),
 			branch => NULL_PCBRANCH,	
 			writeReg => ('1', x"2", x"0000"),
-			isLW => '0',
+			isLW => '1',
 			isSW => '0',
 			writeMemData => x"0000",
 			aluInput => (OP_ADD, x"0001", x"FFFF")
