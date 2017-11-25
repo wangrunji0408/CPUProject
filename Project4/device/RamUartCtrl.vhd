@@ -31,7 +31,7 @@ end RamUartCtrl;
 architecture arch of RamUartCtrl is	
 
 	signal uart_write_busy: std_logic;
-	signal count: natural;	
+	signal count: natural range 0 to 15;	
 
 begin
 

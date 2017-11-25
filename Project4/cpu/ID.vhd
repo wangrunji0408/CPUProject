@@ -15,7 +15,7 @@ entity ID is
 
 		-- enable和addr同时也输出到Ctrl模块，以判断寄存器冲突 
 		reg1_enable, reg2_enable: out std_logic;
-		reg1_addr_origin, reg2_addr_origin: out RegAddr;
+		reg1_addr_origin, reg2_addr_origin: out RegAddr;		
 		reg1_data_origin, reg2_data_origin: in u16;
 
 		------ 输出到PC ------
@@ -56,7 +56,7 @@ end ID;
 
 architecture arch of ID is	
 	signal reg1_data, reg2_data: u16;
-	signal reg1_addr, reg2_addr: RegAddr;
+	signal reg1_addr, reg2_addr: RegAddr;	
 begin
 
 	reg1_addr_origin <= reg1_addr;
@@ -109,10 +109,10 @@ begin
 				aluInput <= (OP_ADD, reg2_data, signExtend(getIm8(inst)));
 				writeReg <= ('1', reg1_addr, x"0000");
 			when INST_B =>
-				instType <= I_B;            
+				instType <= I_B;
 				branch <= ('1', '0', signExtend11(inst(10 downto 0)), x"0000");
 			when INST_BEQZ =>
-				instType <= I_BEQZ;            
+				instType <= I_BEQZ;
 				reg1_enable <= '1'; reg1_addr <= getRx(inst);
 				if (reg1_data = x"0000") then
 					branch <= ('1', '0', signExtend(getIm8(inst)), x"0000");
@@ -120,7 +120,7 @@ begin
                     null;
 				end if;
 			when INST_BNEZ =>
-				instType <= I_BNEZ;            
+				instType <= I_BNEZ;
 				reg1_enable <= '1'; reg1_addr <= getRx(inst);
 				if (reg1_data /= x"0000") then
 					branch <= ('1', '0', signExtend(getIm8(inst)), x"0000");
@@ -131,23 +131,22 @@ begin
 				aluInput <= (OP_ADD, zeroExtend(getIm8(inst)), x"0000");
 				writeReg <= ('1', reg1_addr, x"0000");
 			when INST_LW =>
-				instType <= I_LW;            
+				instType <= I_LW;
 				isLW <= '1';
 				reg1_enable <= '1'; reg1_addr <= getRx(inst);
 				reg2_addr <= getRy(inst);
 				aluInput <= (OP_ADD, reg1_data, signExtend5(inst(4 downto 0)));
 				writeReg <= ('1', reg2_addr, x"0000");
 			when INST_LW_SP =>
-				instType <= I_LW_SP;            
+				instType <= I_LW_SP;
 				isLW <= '1';
-				reg1_enable <= '1'; reg1_addr <= getRx(inst);
-				reg2_enable <= '1'; reg2_addr <= REG_SP;
-				aluInput <= (OP_ADD, reg2_data, signExtend(getIm8(inst)));
-				writeReg <= ('1', reg1_addr, x"0000");
+				reg1_enable <= '1'; reg1_addr <= REG_SP;
+				aluInput <= (OP_ADD, reg1_data, signExtend(getIm8(inst)));
+				writeReg <= ('1', getRx(inst), x"0000");
 			when INST_NOP =>
 				instType <= I_NOP;
 			when INST_SW =>
-				instType <= I_SW;            
+				instType <= I_SW;
 				isSW <= '1';
 				reg1_enable <= '1'; reg1_addr <= getRx(inst);
 				reg2_enable <= '1'; reg2_addr <= getRy(inst);
@@ -164,29 +163,28 @@ begin
 				oprx := getRx(inst);
 				case oprx is
 					when x"3" =>  -- ADDSP
-						instType <= I_ADDSP;            
+						instType <= I_ADDSP;
 						reg1_enable <= '1'; reg1_addr <= REG_SP;
 						aluInput <= (OP_ADD, reg1_data, signExtend(getIm8(inst)));
-						writeReg <= ('1', reg1_addr, x"0000");
+						writeReg <= ('1', REG_SP, x"0000");
 					when x"2" =>  -- SW_RS
-						instType <= I_SW_RS;            
+						instType <= I_SW_RS;
 						isSW <= '1';
 						reg1_enable <= '1'; reg1_addr <= REG_SP;
 						reg2_enable <= '1'; reg2_addr <= REG_RA;
 						writeMemData <= reg2_data;
 						aluInput <= (OP_ADD, reg1_data, signExtend(getIm8(inst)));
 					when x"0" =>  -- BTEQZ
-						instType <= I_BTEQZ;            
+						instType <= I_BTEQZ;
 						reg1_enable <= '1'; reg1_addr <= REG_T;
 						if (reg1_data = x"0000") then
 							branch <= ('1', '0', signExtend(getIm8(inst)), x"0000");
 						end if;
 					when x"4" =>  -- MTSP
 						instType <= I_MTSP;
-						reg1_enable <= '1'; reg1_addr <= REG_SP;
-						reg2_enable <= '1'; reg2_addr <= getRy(inst);
-						writeReg <= ('1', reg1_addr, x"0000");
-						aluInput <= (OP_ADD, reg2_data, x"0000");
+						reg1_enable <= '1'; reg1_addr <= getRy(inst);
+						writeReg <= ('1', REG_SP, x"0000");
+						aluInput <= (OP_ADD, reg1_data, x"0000");
 					when others => null;
 				end case;
 			when INST_SET1 =>
@@ -199,8 +197,7 @@ begin
 						branch <= ('0', '1', x"0000", reg1_data);
 					elsif (oprx = x"2") then  -- MFPC
 						instType <= I_MFPC;
-						reg1_enable <= '1'; reg1_addr <= getRx(inst);
-						writeReg <= ('1', reg1_addr, x"0000");
+						writeReg <= ('1', getRx(inst), x"0000");
 						aluInput <= (OP_ADD, pc, x"0000");
 					end if;
 				else
@@ -217,6 +214,7 @@ begin
 							aluInput <= (OP_EQ, reg1_data, reg2_data);
 						when "01111" =>  -- NOT
 							instType <= I_NOT;
+							reg1_enable <= '0'; reg1_addr <= x"0";
 							aluInput <= (OP_NOT, reg2_data, x"0000");
 						when "01101" =>  -- OR
 							instType <= I_OR;
@@ -240,22 +238,21 @@ begin
 				reg1_enable <= '1'; reg1_addr <= getRx(inst);
 				reg2_enable <= '1'; reg2_addr <= getRy(inst);
 				writeReg <= ('1', getRz(inst), x"0000");
-				aluInput <= (aluOp, reg1_data, reg2_data);                
+				aluInput <= (aluOp, reg1_data, reg2_data);    
 			when INST_SET3 =>
-				subopcode := getSubOp(inst);                
+				subopcode := getSubOp(inst);    
 				if (subopcode = "00000") then  -- MFIH
 					instType <= I_MFIH;
-					reg1_addr <= getRx(inst);
-					reg2_addr <= REG_IH;
+					reg1_enable <= '1'; reg1_addr <= REG_IH;
+					writeReg <= ('1', getRx(inst), x"0000");
+					aluInput <= (OP_ADD, reg1_data, x"0000");
 				elsif (subopcode = "00001") then  -- MTIH
 					instType <= I_MTIH;
-					reg1_addr <= REG_IH;
-					reg2_addr <= getRx(inst);
+					reg1_enable <= '1'; reg1_addr <= getRx(inst);
+					writeReg <= ('1', REG_IH, x"0000");
+					aluInput <= (OP_ADD, reg1_data, x"0000");
 				end if;
-				reg1_enable <= '1';
-				reg2_enable <= '1';
-				writeReg <= ('1', reg1_addr, x"0000");
-				aluInput <= (OP_ADD, reg2_data, x"0000");
+				
 			when INST_SET4 =>
 				opu := inst(1 downto 0);
 				if (opu = "00") then  -- SLL
@@ -263,15 +260,14 @@ begin
 					aluOp := OP_SLL;
 				elsif (opu = "11") then  -- SRA
 					instType <= I_SRA;
-					aluOp := OP_SRA;                    
+					aluOp := OP_SRA;        
 				elsif (opu = "10") then  -- SRL
 					instType <= I_SRL;
 					aluOp := OP_SRL;
 				end if;
-				reg1_enable <= '1'; reg1_addr <= getRx(inst);
-				reg2_enable <= '1'; reg2_addr <= getRy(inst);
-				writeReg <= ('1', reg1_addr, x"0000");
-				aluInput <= (aluOp, reg2_data, shiftExtend(inst(4 downto 2)));
+				reg1_enable <= '1'; reg1_addr <= getRy(inst);
+				writeReg <= ('1', getRx(inst), x"0000");
+				aluInput <= (aluOp, reg1_data, shiftExtend(inst(4 downto 2)));
 			when others => null;
 		end case;
 	end process;
