@@ -1,0 +1,21 @@
+# ISE 生成文件简直太可怕了
+# gitignore模板都镇不住地
+# 只好转成白名单了
+*
+!.gitignore
+!*.vhd
+!*.bmp
+!*.xco
+!test/
+!mock/
+!cpu/
+!data/
+!device/
+!ipcore_dir/
+!*.vhdl
+!makefile
+!*.xise
+!*.ucf
+!*.coe
+!*.py
+!*.png
