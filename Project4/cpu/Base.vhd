@@ -124,6 +124,7 @@ package Base is
 	function charToU8 (x: character) return u8;
 	function toHex (x: u4) return character;
 	function toString (x: unsigned) return string;
+	function showInst (x: InstType) return string;
 	function to_u4 (x: integer) return u4;
 	function to_u16 (x: integer) return u16;
 	function show_AluInput (x: AluInput) return string; --len=13
@@ -403,6 +404,45 @@ package body Base is
 		elsif x.isSW = '1' then 	s := " SW ";
 		end if;
 		return show_RegPort(x.writeReg) & s & toStr16(x.writeMemData);
+	end function;
+
+	function showInst (x: InstType) return string is
+	begin
+		case( x ) is
+			when I_AND => return "AND   "; 
+			when I_OR => return "OR    "; 
+			when I_ADDU => return "ADDU  "; 
+			when I_SUBU => return "SUBU  "; 
+			when I_SLT => return "SLT   "; 
+			when I_CMP => return "CMP   ";
+			when I_ADDIU => return "ADDIU "; 
+			when I_ADDIU3 => return "ADDIU3"; 
+			when I_ADDSP => return "ADDSP "; 
+			when I_ADDSP3 => return "ADDSP3"; 
+			when I_SLL => return "SLL   "; 
+			when I_SRA => return "SRA   "; 
+			when I_SRL => return "SRL   "; 
+			when I_SLTUI => return "SLTUI "; 
+			when I_NOT => return "NOT   "; 
+			when I_LI => return "LI    ";
+			when I_MFIH => return "MFIH  "; 
+			when I_MFPC => return "MFPC  "; 
+			when I_MTIH => return "MTIH  "; 
+			when I_MTSP => return "MTSP  ";
+			when I_B => return "B     "; 
+			when I_BEQZ => return "BEQZ  "; 
+			when I_BNEZ => return "BNEZ  "; 
+			when I_BTEQZ => return "BTEQZ "; 
+			when I_JR => return "JR    ";
+			when I_LW => return "LW    "; 
+			when I_LW_SP => return "LW_SP "; 
+			when I_SW => return "SW    "; 
+			when I_SW_SP => return "SW_SP "; 
+			when I_SW_RS => return "SW_RS ";
+			when I_NOP => return "NOP   ";
+			when I_ERR => return "ERROR!";
+			when others => return "others";
+		end case ;
 	end function;
 	
 end package body;

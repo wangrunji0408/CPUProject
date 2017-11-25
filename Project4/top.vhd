@@ -32,7 +32,7 @@ architecture arch of Top is
 
 	signal color, color_out: TColor;
 	signal vga_x, vga_y: integer;
-	signal clk_vga: std_logic;
+	signal clk_vga, clk_stable: std_logic;
 
 	signal ascii_new: std_logic;
 	signal ascii_code: std_logic_vector(6 downto 0);
@@ -57,12 +57,15 @@ begin
 	digit0raw <= DisplayNumber(digit0);
 	digit1raw <= DisplayNumber(digit1);
 
+	digit0 <= x"0";
+	digit1 <= x"0";
+
 	light <= (others => '0');
+
+	deb: entity work.debounce port map(clk50, clk, clk_stable);
 
 	ps2: entity work.ps2_keyboard_to_ascii 
 		port map (clk50, ps2_clk, ps2_data, ascii_new, ascii_code);
-	digit1 <= unsigned("0" & ascii_code(6 downto 4));
-	digit0 <= unsigned(ascii_code(3 downto 0));
 
 	make_clk_vga : process( clk50 )
 	begin
@@ -90,7 +93,7 @@ begin
 			ram1addr, ram2addr, ram1data, ram2data, ram1read, ram1write, ram1enable, ram2read, ram2write, ram2enable,
 			uart_data_ready, uart_tbre, uart_tsre, uart_read, uart_write);
 	cpu0: entity work.CPU 
-		port map (rst, clk50, key(0), '1',
+		port map (rst, clk50, clk_stable, '1',
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, if_addr, if_data, if_canread, 
 			debug); 
 	

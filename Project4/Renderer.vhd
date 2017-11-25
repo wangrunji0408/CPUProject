@@ -56,17 +56,17 @@ begin
 			char <= entity_str(grid_x + 1);
 		elsif inZone(grid_x, 3, 24, grid_y, 1, 2) then --len=21
 			-- PC & 16位指令 
-			char <= show_IF_ID_Data(debug.id_in)(grid_x - 3 + 1);
+			char <= show_IF_ID_Data(debug.id_in)(grid_x - 3);
 		elsif inZone(grid_x, 25, 31, grid_y, 1, 2) then --len=6
 			-- 识别的指令 
-			inst_name := InstType'image(debug.instType);
+			inst_name := showInst(debug.instType);
 			char <= inst_name(grid_x - 25 + 1);
 		elsif inZone(grid_x, 0, 2, grid_y, 2, 3) then
 			entity_str := "EX";
 			char <= entity_str(grid_x + 1);
 		elsif inZone(grid_x, 3, 18, grid_y, 2, 3) then --len=15
 			-- EX的输入 
-			char <= show_ID_MEM_Data(debug.ex_in)(grid_x - 3 + 1);
+			char <= show_ID_MEM_Data(debug.ex_in)(grid_x - 3);
 		elsif inZone(grid_x, 19, 32, grid_y, 2, 3) then --len=13
 			-- EX AluInput
 			char <= show_AluInput(debug.ex_in_aluInput)(grid_x - 19 + 1);
@@ -75,7 +75,7 @@ begin
 			char <= entity_str(grid_x + 1);
 		elsif inZone(grid_x, 3, 18, grid_y, 3, 4) then --len=15
 			-- MEM的输入 
-			char <= show_ID_MEM_Data(debug.mem_in)(grid_x - 3 + 1);
+			char <= show_ID_MEM_Data(debug.mem_in)(grid_x - 3);
 		elsif inZone(grid_x, 19, 23, grid_y, 3, 4) then --len=4
 			-- MEM AluOut
 			char <= toStr16(debug.mem_in_aluOut)(grid_x - 19 + 1);
