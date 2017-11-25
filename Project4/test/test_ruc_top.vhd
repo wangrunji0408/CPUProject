@@ -51,7 +51,8 @@ begin
 	digit0raw <= DisplayNumber(digit0);
 	digit1raw <= DisplayNumber(digit1);
 
-	light <= (others => '0');
+	light <= (0 => mem_busy, others => '0');
+	digit1 <= to_u4(count);
 
 	vga_r <= o"0"; vga_g <= o"0"; vga_b <= o"0";
 	vga_vs <= '0'; vga_hs <= '0';
