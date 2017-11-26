@@ -89,6 +89,15 @@ package Base is
 		I_ERR
 	);
 
+	type CPUMode is (STEP, BREAK_POINT);
+	type MidCtrl is (PASS, STALL, CLEAR, STORE, RESTORE);
+	type MidCtrls is array (4 downto 0) of MidCtrl;
+
+	type IF_Data is record
+		pc: u16;
+		branch: PCBranch;
+	end record;
+
 	type IF_ID_Data is record
 		pc: u16;
 		inst: Inst;
@@ -103,9 +112,11 @@ package Base is
 
 	type CPUDebug is record
 		step: natural;
+		mode: CPUMode;
+		breakPointPC: u16;
 		regs: RegData;
 		instType: InstType;
-		branch: PCBranch;
+		if_in: IF_Data;
 		id_in: IF_ID_Data;
 		ex_in, mem_in: ID_MEM_Data;
 		ex_in_aluInput: AluInput;
@@ -124,10 +135,14 @@ package Base is
 	function charToU8 (x: character) return u8;
 	function toHex (x: u4) return character;
 	function toString (x: unsigned) return string;
+	function showInst (x: InstType) return string;
 	function to_u4 (x: integer) return u4;
 	function to_u16 (x: integer) return u16;
+	function show_Mode (mode: CPUMode; pc: u16) return string; --len=15
 	function show_AluInput (x: AluInput) return string; --len=13
 	function show_RegPort (x: RegPort) return string; --len=7
+	function show_Branch (x: PCBranch) return string; --len=6
+	function show_IF_Data (x: IF_Data) return string; --len=11
 	function show_IF_ID_Data (x: IF_ID_Data) return string;	--len=21
 	function show_ID_MEM_Data (x: ID_MEM_Data) return string; --len=15
 	function DisplayNumber (number: u4) return std_logic_vector;
@@ -377,6 +392,14 @@ package body Base is
 		end case;
 	end function;
 
+	function show_Mode (mode: CPUMode; pc: u16) return string is -- len = 15
+	begin
+		case( mode ) is
+		when STEP => 		return "Step           ";
+		when BREAK_POINT => return "BreakPoint=" & toStr16(pc);
+		end case ;
+	end function;
+
 	function show_AluInput (x: AluInput) return string is -- len = 13
 		variable op: string(1 to 6);
 	begin
@@ -391,6 +414,22 @@ package body Base is
 		end if;
 	end function;
 
+	function show_Branch (x: PCBranch) return string is --len=6
+	begin
+		if x.isOffset = '1' then
+			return "+=" & toStr16(x.offset);
+		elsif x.isJump = '1' then
+			return "<=" & toStr16(x.target);
+		else
+			return "++    ";
+		end if;
+	end function;
+
+	function show_IF_Data (x: IF_Data) return string is --len=11
+	begin
+		return toStr16(x.pc) & " " & show_Branch(x.branch);
+	end function;
+
 	function show_IF_ID_Data (x: IF_ID_Data) return string is -- len = 21
 	begin
 		return toStr16(x.pc) & " " & toStr2(x.inst); 
@@ -403,6 +442,45 @@ package body Base is
 		elsif x.isSW = '1' then 	s := " SW ";
 		end if;
 		return show_RegPort(x.writeReg) & s & toStr16(x.writeMemData);
+	end function;
+
+	function showInst (x: InstType) return string is
+	begin
+		case( x ) is
+			when I_AND => 		return "AND   "; 
+			when I_OR => 		return "OR    "; 
+			when I_ADDU => 		return "ADDU  "; 
+			when I_SUBU => 		return "SUBU  "; 
+			when I_SLT => 		return "SLT   "; 
+			when I_CMP => 		return "CMP   ";
+			when I_ADDIU => 	return "ADDIU "; 
+			when I_ADDIU3 => 	return "ADDIU3"; 
+			when I_ADDSP => 	return "ADDSP "; 
+			when I_ADDSP3 => 	return "ADDSP3"; 
+			when I_SLL => 		return "SLL   "; 
+			when I_SRA => 		return "SRA   "; 
+			when I_SRL => 		return "SRL   "; 
+			when I_SLTUI => 	return "SLTUI "; 
+			when I_NOT => 		return "NOT   "; 
+			when I_LI => 		return "LI    ";
+			when I_MFIH => 		return "MFIH  "; 
+			when I_MFPC => 		return "MFPC  "; 
+			when I_MTIH => 		return "MTIH  "; 
+			when I_MTSP => 		return "MTSP  ";
+			when I_B => 		return "B     "; 
+			when I_BEQZ => 		return "BEQZ  "; 
+			when I_BNEZ => 		return "BNEZ  "; 
+			when I_BTEQZ => 	return "BTEQZ "; 
+			when I_JR => 		return "JR    ";
+			when I_LW => 		return "LW    "; 
+			when I_LW_SP => 	return "LW_SP "; 
+			when I_SW => 		return "SW    "; 
+			when I_SW_SP => 	return "SW_SP "; 
+			when I_SW_RS => 	return "SW_RS ";
+			when I_NOP => 		return "NOP   ";
+			when I_ERR => 		return "ERROR!";
+			when others => 		return "others";
+		end case ;
 	end function;
 	
 end package body;

@@ -4,11 +4,15 @@ use ieee.numeric_std.all;
 use work.Base.all;
 
 -- 控制模块
--- 接受MEM暂停请求，检测寄存器冲突，发出暂停指令
+-- 响应外部输入，生成控制信号
+-- 在运行时：接受MEM暂停请求，检测寄存器冲突，发出暂停指令
 entity Ctrl is
 	port (
-		-- 全局重置/暂停
-		rst, pause: in std_logic;
+		-- 控制信号
+		rst, clk, btn0, btn1: in std_logic;
+		-- 断点PC
+		pc: in u16;
+		breakPointPC: in u16;
 		-- 当IF无法取指时，暂停
 		if_canread: in std_logic;
 		-- 当MEM读串口时，请求暂停
@@ -18,31 +22,73 @@ entity Ctrl is
 		ex_isLW: in std_logic;
 		ex_writeReg: in RegAddr;
 		id_readReg1, id_readReg2: in RegPort;
-		-- 给挡板的暂停/清除信号 4PC 3IF/ID 2ID/EX 1EX/MEM 0Reg(Write)
-		stall, clear: out std_logic_vector(4 downto 0) 
+		-- 给挡板的信号 4/IF 3IF/ID 2ID/EX 1EX/MEM 0Reg(Write)
+		ctrls: out MidCtrls;
+		count: buffer natural;
+		mode: buffer CPUMode
 	) ;
 end Ctrl;
 
-architecture arch of Ctrl is	
+architecture arch of Ctrl is
+	signal gctrl: MidCtrl;
 begin
-	process( rst, pause, ex_isLW, ex_writeReg, id_readReg1, id_readReg2, mem_stallReq )
+	process( gctrl, ex_isLW, ex_writeReg, id_readReg1, id_readReg2, mem_stallReq, if_canread, pc, breakPointPC, mode )
 	begin
-		stall <= "00000";
-		clear <= "00000";
-		
-		if rst = '0' then
-			clear <= "11111";
-		elsif pause = '1' then
-			stall <= "11111";
+		if gctrl /= PASS then
+			ctrls <= (others => gctrl);
+		elsif mode = BREAK_POINT and pc = breakPointPC then
+			ctrls <= (others => STALL);
 		elsif mem_stallReq = '1' then
-			stall <= "11110";
+			ctrls <= (STALL, STALL, STALL, STALL, PASS);
 		elsif ex_isLW = '1' and ((id_readReg1.enable = '1' and ex_writeReg = id_readReg1.addr)
 			 or (id_readReg2.enable = '1' and ex_writeReg = id_readReg2.addr)) then
-			stall <= "11000";
-			clear <= "00100";
+			ctrls <= (STALL, STALL, CLEAR, PASS, PASS);
 		elsif if_canread = '0' then
-			stall <= "10000";
-			clear <= "01000";
+			ctrls <= (STALL, CLEAR, PASS, PASS, PASS);
+		else
+			ctrls <= (others => PASS);		
+		end if;
+	end process ;
+
+	process( rst, clk )
+		variable last_btn0, last_btn1: std_logic;
+		variable btn0_t: std_logic_vector(1 downto 0);
+	begin
+		if rst = '0' then 
+			gctrl <= CLEAR;
+			mode <= STEP; 
+			count <= 0;
+		elsif rising_edge(clk) then
+
+			-- 按钮控制 btn0
+			btn0_t := last_btn0 & btn0;
+			case btn0_t is
+				when "11" => 					-- 不按按钮时 ...
+					if mode = STEP then	
+						gctrl <= STALL;
+					elsif mode = BREAK_POINT then
+						gctrl <= PASS;
+					end if;
+				when "10" => gctrl <= STORE;	-- 按下按钮时 暂存输入
+				when "00" => gctrl <= CLEAR;	-- 按住按钮时 清空
+				when "01" => gctrl <= RESTORE;	-- 松开按钮时 恢复输入
+				when others => null;
+			end case ;
+
+			-- 计数
+			if gctrl = PASS then
+				count <= count + 1;
+			end if;
+
+			-- 切换模式 btn1
+			if last_btn1 = '0' and btn1 = '1' then
+				if mode = STEP then mode <= BREAK_POINT;
+				else 				mode <= STEP; 
+				end if;
+			end if;
+			
+			last_btn0 := btn0;
+			last_btn1 := btn1;
 		end if;
 	end process ;
 

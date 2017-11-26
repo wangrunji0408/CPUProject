@@ -6,7 +6,7 @@
 !*.vhd
 !*.bmp
 !*.xco
-!*.ngc
+!*.xaw
 !test/
 !mock/
 !cpu/

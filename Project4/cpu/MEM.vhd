@@ -33,6 +33,7 @@ entity MEM is
 end MEM;
 
 architecture arch of MEM is	
+	signal isCom: boolean;
 begin
 
 	-- BF01 0位：是否能写 1位：是否能读
@@ -41,21 +42,23 @@ begin
 	writeRegOut.enable <= writeReg.enable;
 	writeRegOut.addr   <= writeReg.addr;
 
+	isCom <= aluOut(15 downto 4) = x"bf0";
+
 	mem_type <= ReadUart when isLW = '1' and aluOut = x"bf00" else
 			   WriteUart when isSW = '1' and aluOut = x"bf00" else
-			   None when aluOut >= x"bf00" and aluOut < x"bf10" else
-			   ReadRam2 when isLW = '1' and aluOut < x"8000" else
+			   None when isCom else
+			   ReadRam2 when isLW = '1' and aluOut(15) = '0' else
 			   ReadRam1 when isLW = '1' else
-			   WriteRam2 when isSW = '1' and aluOut < x"8000" else
+			   WriteRam2 when isSW = '1' and aluOut(15) = '0' else
 			   WriteRam1 when isSW = '1' else
 			   None;
-	mem_addr <= aluOut when (isLW = '1' or isSW = '1') and (aluOut<x"bf00" or aluOut > x"bf0f")else 
+	mem_addr <= aluOut when (isLW = '1' or isSW = '1') and not isCom else 
 				x"0000";
 	writeRegOut.data <= x"0003" when isLW = '1' and aluOut = x"bf01" else 
 						mem_read_data when isLW = '1' else 
 						x"0000" when isSW = '1' else
 						aluOut ;
-	mem_write_data <= writeMemData when isSW = '1' and (aluOut <= x"bf00" or aluOut > x"bf0f")else 
+	mem_write_data <= writeMemData when isSW = '1' and (not isCom or aluOut = x"bf00") else 
 						x"0000";
 
 

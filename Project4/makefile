@@ -11,7 +11,6 @@ test: build
 
 build: 
 	nvc -a cpu/Base.vhd cpu/KernelData.vhd device/*.vhd mock/*.vhd cpu/*.vhd *.vhd test/*.vhd
-	nvc -e cpu
 
 clean:
 	rm -r work

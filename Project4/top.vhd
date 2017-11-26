@@ -6,7 +6,7 @@ use work.Base.all;
 entity Top is
 	port (
 		clk, rst: in std_logic;
-		clk11, clk50: in std_logic;
+		clk11, clk50_in: in std_logic;
 		switch: in u16;
 		light: out u16;
 		
@@ -50,6 +50,10 @@ architecture arch of Top is
 
 	signal digit0, digit1: u4;
 
+	signal clk_stable: std_logic;
+	signal key_stable: std_logic_vector(3 downto 0);
+	signal clk50, clk40: std_logic;
+
 	signal debug: CPUDebug;
 	
 begin
@@ -57,12 +61,19 @@ begin
 	digit0raw <= DisplayNumber(digit0);
 	digit1raw <= DisplayNumber(digit1);
 
+	digit0 <= x"0";
+	digit1 <= x"0";
+
 	light <= (others => '0');
+
+	-- 稳定按钮信号
+	deb: entity work.debounce port map(clk50, clk, clk_stable);
+	deb_keys: for i in 0 to 3 generate
+		deb_key: entity work.debounce port map(clk50, key(i), key_stable(i));
+	end generate ;
 
 	ps2: entity work.ps2_keyboard_to_ascii 
 		port map (clk50, ps2_clk, ps2_data, ascii_new, ascii_code);
-	digit1 <= unsigned("0" & ascii_code(6 downto 4));
-	digit0 <= unsigned(ascii_code(3 downto 0));
 
 	make_clk_vga : process( clk50 )
 	begin
@@ -72,6 +83,8 @@ begin
 			clk_vga <= not clk_vga;
 		end if;
 	end process ; -- make_clk_vga
+
+	dcm40: entity work.DCM port map (clk50_in, rst, clk40, clk50);
 
 	renderer0: entity work.Renderer 
 		port map (rst, clk_vga, vga_x, vga_y, color, debug);	
@@ -90,8 +103,8 @@ begin
 			ram1addr, ram2addr, ram1data, ram2data, ram1read, ram1write, ram1enable, ram2read, ram2write, ram2enable,
 			uart_data_ready, uart_tbre, uart_tsre, uart_read, uart_write);
 	cpu0: entity work.CPU 
-		port map (rst, clk50, key(0), '1',
+		port map (rst, clk50, clk_stable, key_stable(3),
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, if_addr, if_data, if_canread, 
-			debug); 
+			switch, debug); 
 	
 end arch ; -- arch
