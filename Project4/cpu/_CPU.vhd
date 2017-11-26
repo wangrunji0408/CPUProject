@@ -51,7 +51,7 @@ begin
 	debug.breakPointPC <= breakPointPC;
 
 	ctrl0: entity work.Ctrl port map (rst, clk, btn0, btn1, 
-		if_out.pc, breakPointPC,
+		id_in.pc, breakPointPC,
 		ruc_if_canread, mem_stallReq, ex_in.isLW, ex_in.writeReg.addr, reg1, reg2,
 		ctrls, step, mode);	
 

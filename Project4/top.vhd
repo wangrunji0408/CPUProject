@@ -6,7 +6,7 @@ use work.Base.all;
 entity Top is
 	port (
 		clk, rst: in std_logic;
-		clk11, clk50: in std_logic;
+		clk11, clk50_in: in std_logic;
 		switch: in u16;
 		light: out u16;
 		
@@ -52,6 +52,7 @@ architecture arch of Top is
 
 	signal clk_stable: std_logic;
 	signal key_stable: std_logic_vector(3 downto 0);
+	signal clk50, clk40: std_logic;
 
 	signal debug: CPUDebug;
 	
@@ -82,6 +83,8 @@ begin
 			clk_vga <= not clk_vga;
 		end if;
 	end process ; -- make_clk_vga
+
+	dcm40: entity work.DCM port map (clk50_in, rst, clk40, clk50);
 
 	renderer0: entity work.Renderer 
 		port map (rst, clk_vga, vga_x, vga_y, color, debug);	
