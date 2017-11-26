@@ -42,13 +42,15 @@ begin
 				report "Write UART: "  & toHex8(data);
 			end if;
 
-			if read = '1' then
+			if rising_edge(read) then
+				ram1data <= zzzz;	
+			elsif read = '1' then
 				data_ready <= '1';
 			elsif falling_edge(read) then
 				dataToRead := datas(i);
-				ram1data <= x"00" & dataToRead;
+				ram1data <= x"00" & dataToRead;				
 				report "Read UART: " & toHex8(dataToRead);
-				i := (i + 1) mod datas'length;
+				i := (i + 1) mod datas'length;	
 			end if;
 		end if;
 	end process ; -- 

@@ -49,6 +49,7 @@ begin
 			   None when isCom else
 			   ReadRam2 when isLW = '1' and aluOut(15) = '0' else
 			   ReadRam1 when isLW = '1' else
+			   None when isSW = '1' and aluOut(15 downto 14) = "00" else -- Can not write < 0x4000
 			   WriteRam2 when isSW = '1' and aluOut(15) = '0' else
 			   WriteRam1 when isSW = '1' else
 			   None;

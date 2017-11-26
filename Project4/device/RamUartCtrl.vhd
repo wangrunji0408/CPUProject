@@ -30,6 +30,7 @@ end RamUartCtrl;
 
 architecture arch of RamUartCtrl is	
 
+	signal uart_read_data: u16;
 	signal uart_busy: std_logic;
 	signal count: natural range 0 to 15;	
 
@@ -65,7 +66,7 @@ begin
 			if_canread <= '0'; if_data <= x"0000";
 		when ReadUart =>
 			mem_busy <= uart_busy;
-			mem_read_data <= ram1data;
+			mem_read_data <= uart_read_data;
 		when WriteUart =>
 			mem_busy <= uart_busy;
 			ram1data <= mem_write_data;
@@ -88,7 +89,9 @@ begin
 					-- wait until data_ready=1
 					if uart_data_ready = '1' then uart_read <= '0';
 					else count <= count; end if;
-				when 1 => uart_read <= '1'; uart_busy <= '0'; count <= count; -- stop
+				when 1 => 
+					uart_read_data <= ram1data; 
+					uart_read <= '1'; uart_busy <= '0'; count <= count; -- stop
 				when others => count <= 0;
 				end case;
 			elsif mem_type = WriteUart then

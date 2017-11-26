@@ -52,7 +52,7 @@ architecture arch of Top is
 
 	signal clk_stable: std_logic;
 	signal key_stable: std_logic_vector(3 downto 0);
-	signal clk50, clk40: std_logic;
+	signal clk50, clk40, clk25, clk12, clk6, clk_cpu: std_logic;
 
 	signal debug: CPUDebug;
 	
@@ -61,30 +61,64 @@ begin
 	digit0raw <= DisplayNumber(digit0);
 	digit1raw <= DisplayNumber(digit1);
 
-	digit0 <= x"0";
-	digit1 <= x"0";
+	process( clk40 )
+		variable aa : integer;
+	begin
+		if rst = '0' then
+			aa := 0;
+			digit0 <= x"0";
+		elsif rising_edge(clk40) then
+			aa := aa + 1;
+			if aa = 40000000 then
+				aa := 0;
+				digit0 <= digit0 + 1;
+			end if;
+		end if;
+	end process ; -- 
+	digit1 <= x"0";	
 
-	light <= (others => '0');
+	light <= x"000" & unsigned(key);
 
 	-- 稳定按钮信号
-	deb: entity work.debounce port map(clk50, clk, clk_stable);
+	deb: entity work.debounce port map(clk_cpu, clk, clk_stable);
 	deb_keys: for i in 0 to 3 generate
-		deb_key: entity work.debounce port map(clk50, key(i), key_stable(i));
+		deb_key: entity work.debounce port map(clk_cpu, key(i), key_stable(i));
 	end generate ;
 
 	ps2: entity work.ps2_keyboard_to_ascii 
 		port map (clk50, ps2_clk, ps2_data, ascii_new, ascii_code);
 
-	make_clk_vga : process( clk50 )
+	make_clk25 : process( clk50 )
 	begin
 		if rst = '0' then
-			clk_vga <= '1';
+			clk25 <= '1';
 		elsif rising_edge(clk50) then
-			clk_vga <= not clk_vga;
+			clk25 <= not clk25;
 		end if;
-	end process ; -- make_clk_vga
+	end process ; -- make_clk25
 
-	dcm40: entity work.DCM port map (clk50_in, rst, clk40, clk50);
+	make_clk12 : process( clk25 )
+	begin
+		if rst = '0' then
+			clk12 <= '1';
+		elsif rising_edge(clk25) then
+			clk12 <= not clk12;
+		end if;
+	end process ; -- make_clk12
+
+	make_clk6 : process( clk12 )
+	begin
+		if rst = '0' then
+			clk6 <= '1';
+		elsif rising_edge(clk12) then
+			clk6 <= not clk6;
+		end if;
+	end process ; -- make_clk6
+
+	dcm40: entity work.DCM port map (clk50_in, rst, open, clk50, clk40);
+
+	clk_vga <= clk25;
+	clk_cpu <= clk25;
 
 	renderer0: entity work.Renderer 
 		port map (rst, clk_vga, vga_x, vga_y, color, debug);	
@@ -98,12 +132,12 @@ begin
 	vga_b <= unsigned(color_out(2 downto 0));
 
 	ruc: entity work.RamUartCtrl 
-		port map ( rst, clk50, 
+		port map ( rst, clk_cpu, 
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, if_addr, if_data, if_canread,
 			ram1addr, ram2addr, ram1data, ram2data, ram1read, ram1write, ram1enable, ram2read, ram2write, ram2enable,
 			uart_data_ready, uart_tbre, uart_tsre, uart_read, uart_write);
 	cpu0: entity work.CPU 
-		port map (rst, clk50, clk_stable, key_stable(3),
+		port map (rst, clk_cpu, clk_stable, key_stable(3),
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, if_addr, if_data, if_canread, 
 			switch, debug); 
 	

@@ -58,6 +58,8 @@ begin
 			gctrl <= CLEAR;
 			mode <= STEP; 
 			count <= 0;
+			last_btn0 := '1';
+			last_btn1 := '1'; 
 		elsif rising_edge(clk) then
 
 			-- 按钮控制 btn0

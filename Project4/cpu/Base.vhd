@@ -139,7 +139,8 @@ package Base is
 	function to_u4 (x: integer) return u4;
 	function to_u16 (x: integer) return u16;
 	function show_Mode (mode: CPUMode; pc: u16) return string; --len=15
-	function show_AluInput (x: AluInput) return string; --len=13
+	function show_AluOp(x: AluOp) return string; --len=3
+	function show_AluInput (x: AluInput) return string; --len=17
 	function show_RegPort (x: RegPort) return string; --len=7
 	function show_Branch (x: PCBranch) return string; --len=6
 	function show_IF_Data (x: IF_Data) return string; --len=11
@@ -397,14 +398,12 @@ package body Base is
 		case( mode ) is
 		when STEP => 		return "Step           ";
 		when BREAK_POINT => return "BreakPoint=" & toStr16(pc);
-		end case ;
+		end case;
 	end function;
 
-	function show_AluInput (x: AluInput) return string is -- len = 13
-		variable op: string(1 to 6);
+	function show_AluInput (x: AluInput) return string is -- len = 17
 	begin
-		op := AluOp'image(x.op);
-		return op(4 to 6) & " " & toStr16(x.a) & " " & toStr16(x.b);
+		return "ALU:" & show_AluOp(x.op) & " " & toStr16(x.a) & " " & toStr16(x.b);
 	end function;
 
 	function show_RegPort (x: RegPort) return string is -- len = 7
@@ -436,12 +435,33 @@ package body Base is
 	end function;
 
 	function show_ID_MEM_Data (x: ID_MEM_Data) return string is -- len = 15
-		variable s: string(1 to 4) := "    ";
+		variable s: string(1 to 8) := " --     ";
 	begin
-		if x.isLW = '1' then 		s := " LW ";
-		elsif x.isSW = '1' then 	s := " SW ";
+		if x.isLW = '1' then 		s := " LW     ";
+		elsif x.isSW = '1' then 	s := " SW " & toStr16(x.writeMemData);
 		end if;
-		return show_RegPort(x.writeReg) & s & toStr16(x.writeMemData);
+		return show_RegPort(x.writeReg) & s;
+	end function;
+
+	function show_AluOp(x: AluOp) return string is
+	begin
+		case( x ) is
+			when OP_NOP => return "NOP";
+			when OP_ADD => return "ADD"; 
+			when OP_SUB => return "SUB"; 
+			when OP_AND => return "AND"; 
+			when OP_OR  => return "OR "; 
+			when OP_XOR => return "XOR"; 
+			when OP_NOT => return "NOT"; 
+			when OP_SLL => return "SLL"; 
+			when OP_SRL => return "SRL"; 
+			when OP_SRA => return "SRA"; 
+			when OP_ROL => return "ROL";
+			when OP_LTU => return "LTU"; 
+			when OP_LTS => return "LTS"; 
+			when OP_EQ  => return "EQ ";
+			when others => return "???";
+		end case ;
 	end function;
 
 	function showInst (x: InstType) return string is
