@@ -179,6 +179,8 @@ begin
 						reg1_enable <= '1'; reg1_addr <= REG_T;
 						if (reg1_data = x"0000") then
 							branch <= ('1', '0', signExtend(getIm8(inst)), x"0000");
+                        else 
+                            null;
 						end if;
 					when x"4" =>  -- MTSP
 						instType <= I_MTSP;
@@ -199,6 +201,8 @@ begin
 						instType <= I_MFPC;
 						writeReg <= ('1', getRx(inst), x"0000");
 						aluInput <= (OP_ADD, pc, x"0000");
+                    else
+                        null;
 					end if;
 				else
 					reg1_enable <= '1'; reg1_addr <= getRx(inst);

@@ -129,7 +129,7 @@ architecture arch of TestID is
 			writeMemData => x"0000",
 			aluInput => NULL_ALUINPUT
 		),
-        (-- BENE
+        (-- BENZ
 			inst => INST_BNEZ & o"2" & x"FF",
 			pc => x"0000",
 			exe_writeReg => NULL_REGPORT,
@@ -192,6 +192,246 @@ architecture arch of TestID is
 			isSW => '0',
 			writeMemData => x"0000",
 			aluInput => (OP_ADD, x"0001", x"FFFF")
+		),
+        (-- LW_SP
+			inst => INST_LW_SP & o"2" & x"FF",
+			pc => x"0000",
+			exe_writeReg => NULL_REGPORT,
+			mem_writeReg => NULL_REGPORT,
+			-- output
+			instType => I_LW_SP,			
+			reg1 => ('1', REG_SP, x"0008"),
+			reg2 => NULL_REGPORT,
+			branch => NULL_PCBRANCH,	
+			writeReg => ('1', x"2", x"0000"),
+			isLW => '1',
+			isSW => '0',
+			writeMemData => x"0000",
+			aluInput => (OP_ADD, x"0008", x"FFFF")
+		),
+        (-- NOP
+			inst => INST_NOP & "000" & "000" & "00000",
+			pc => x"0000",
+			exe_writeReg => NULL_REGPORT,
+			mem_writeReg => NULL_REGPORT,
+			-- output
+			instType => I_NOP,			
+			reg1 => NULL_REGPORT,
+			reg2 => NULL_REGPORT,
+			branch => NULL_PCBRANCH,	
+			writeReg => NULL_REGPORT,
+			isLW => '0',
+			isSW => '0',
+			writeMemData => x"0000",
+			aluInput => NULL_ALUINPUT
+		),
+        (-- SW
+			inst => INST_SW & "001" & "010" & "11111",
+			pc => x"0000",
+			exe_writeReg => NULL_REGPORT,
+			mem_writeReg => NULL_REGPORT,
+			-- output
+			instType => I_SW,			
+			reg1 => ('1', x"1", x"0001"),
+			reg2 => ('1', x"2", x"0002"),
+			branch => NULL_PCBRANCH,	
+			writeReg => NULL_REGPORT,
+			isLW => '0',
+			isSW => '1',
+			writeMemData => x"0002",
+			aluInput => (OP_ADD, x"0001", x"FFFF")
+		),
+        (-- SW_SP
+			inst => INST_SW_SP & o"2" & x"FF",
+			pc => x"0000",
+			exe_writeReg => NULL_REGPORT,
+			mem_writeReg => NULL_REGPORT,
+			-- output
+			instType => I_SW_SP,			
+			reg1 => ('1', x"2", x"0002"),
+			reg2 => ('1', REG_SP, x"0008"),
+			branch => NULL_PCBRANCH,	
+			writeReg => NULL_REGPORT,
+			isLW => '0',
+			isSW => '1',
+			writeMemData => x"0002",
+			aluInput => (OP_ADD, x"0008", x"FFFF")
+		),
+        (-- ADDSP
+			inst => INST_SET0 & "011" & x"FF",
+			pc => x"0000",
+			exe_writeReg => NULL_REGPORT,
+			mem_writeReg => NULL_REGPORT,
+			-- output
+			instType => I_ADDSP,			
+			reg1 => ('1', REG_SP, x"0008"),
+			reg2 => NULL_REGPORT,
+			branch => NULL_PCBRANCH,	
+			writeReg => ('1', REG_SP, x"0000"),
+			isLW => '0',
+			isSW => '0',
+			writeMemData => x"0000",
+			aluInput => (OP_ADD, x"0008", x"FFFF")
+		),
+        (-- SW_RS
+			inst => INST_SET0 & "010" & x"FF",
+			pc => x"0000",
+			exe_writeReg => NULL_REGPORT,
+			mem_writeReg => NULL_REGPORT,
+			-- output
+			instType => I_SW_RS,			
+			reg1 => ('1', REG_SP, x"0008"),
+			reg2 => ('1', REG_RA, x"000A"),
+			branch => NULL_PCBRANCH,	
+			writeReg => NULL_REGPORT,
+			isLW => '0',
+			isSW => '1',
+			writeMemData => x"000A",
+			aluInput => (OP_ADD, x"0008", x"FFFF")
+		),
+        (-- BTEQZ
+			inst => INST_SET0 & "000" & x"FF",
+			pc => x"0000",
+			exe_writeReg => NULL_REGPORT,
+			mem_writeReg => NULL_REGPORT,
+			-- output
+			instType => I_BTEQZ,			
+			reg1 => ('1', REG_T, x"000B"),
+			reg2 => NULL_REGPORT,
+			branch => NULL_PCBRANCH,	
+			writeReg => NULL_REGPORT,
+			isLW => '0',
+			isSW => '0',
+			writeMemData => x"0000",
+			aluInput => NULL_ALUINPUT
+		),
+        (-- MTSP
+			inst => INST_SET0 & "100" & o"2" & "00000",
+			pc => x"0000",
+			exe_writeReg => NULL_REGPORT,
+			mem_writeReg => NULL_REGPORT,
+			-- output
+			instType => I_MTSP,			
+			reg1 => ('1', x"2", x"0002"),
+			reg2 => NULL_REGPORT,
+			branch => NULL_PCBRANCH,	
+			writeReg => ('1', REG_SP, x"0000"),
+			isLW => '0',
+			isSW => '0',
+			writeMemData => x"0000",
+			aluInput => (OP_ADD, x"0002", x"0000")
+		),
+        (-- JR
+			inst => INST_SET1 & "100" & x"00",
+			pc => x"0000",
+			exe_writeReg => NULL_REGPORT,
+			mem_writeReg => NULL_REGPORT,
+			-- output
+			instType => I_JR,			
+			reg1 => ('1', x"2", x"0002"),
+			reg2 => NULL_REGPORT,
+			branch => ('0', '1', x"0000", x"0002"),	
+			writeReg => NULL_REGPORT,
+			isLW => '0',
+			isSW => '0',
+			writeMemData => x"0000",
+			aluInput => NULL_ALUINPUT
+		),
+        (-- MFPC
+			inst => INST_SET1 & "100" & o"2" & "00000",
+			pc => x"0011",
+			exe_writeReg => NULL_REGPORT,
+			mem_writeReg => NULL_REGPORT,
+			-- output
+			instType => I_MFPC,			
+			reg1 => ('1', x"4", x"0004"),
+			reg2 => NULL_REGPORT,
+			branch => NULL_PCBRANCH,	
+			writeReg => ('1', x"4", x"0000"),
+			isLW => '0',
+			isSW => '0',
+			writeMemData => x"0000",
+			aluInput => (OP_ADD, x"0011", x"0000")
+		),
+        (-- MTSP
+			inst => INST_MTSP & "100" & o"2" & "00000",
+			pc => x"0000",
+			exe_writeReg => NULL_REGPORT,
+			mem_writeReg => NULL_REGPORT,
+			-- output
+			instType => I_MTSP,			
+			reg1 => ('1', x"2", x"0002"),
+			reg2 => NULL_REGPORT,
+			branch => NULL_PCBRANCH,	
+			writeReg => ('1', REG_SP, x"0000"),
+			isLW => '0',
+			isSW => '0',
+			writeMemData => x"0000",
+			aluInput => (OP_ADD, x"0002", x"0000")
+		),
+        (-- MTSP
+			inst => INST_MTSP & "100" & o"2" & "00000",
+			pc => x"0000",
+			exe_writeReg => NULL_REGPORT,
+			mem_writeReg => NULL_REGPORT,
+			-- output
+			instType => I_MTSP,			
+			reg1 => ('1', x"2", x"0002"),
+			reg2 => NULL_REGPORT,
+			branch => NULL_PCBRANCH,	
+			writeReg => ('1', REG_SP, x"0000"),
+			isLW => '0',
+			isSW => '0',
+			writeMemData => x"0000",
+			aluInput => (OP_ADD, x"0002", x"0000")
+		),
+        (-- MTSP
+			inst => INST_MTSP & "100" & o"2" & "00000",
+			pc => x"0000",
+			exe_writeReg => NULL_REGPORT,
+			mem_writeReg => NULL_REGPORT,
+			-- output
+			instType => I_MTSP,			
+			reg1 => ('1', x"2", x"0002"),
+			reg2 => NULL_REGPORT,
+			branch => NULL_PCBRANCH,	
+			writeReg => ('1', REG_SP, x"0000"),
+			isLW => '0',
+			isSW => '0',
+			writeMemData => x"0000",
+			aluInput => (OP_ADD, x"0002", x"0000")
+		),
+        (-- MTSP
+			inst => INST_MTSP & "100" & o"2" & "00000",
+			pc => x"0000",
+			exe_writeReg => NULL_REGPORT,
+			mem_writeReg => NULL_REGPORT,
+			-- output
+			instType => I_MTSP,			
+			reg1 => ('1', x"2", x"0002"),
+			reg2 => NULL_REGPORT,
+			branch => NULL_PCBRANCH,	
+			writeReg => ('1', REG_SP, x"0000"),
+			isLW => '0',
+			isSW => '0',
+			writeMemData => x"0000",
+			aluInput => (OP_ADD, x"0002", x"0000")
+		),
+        (-- MTSP
+			inst => INST_MTSP & "100" & o"2" & "00000",
+			pc => x"0000",
+			exe_writeReg => NULL_REGPORT,
+			mem_writeReg => NULL_REGPORT,
+			-- output
+			instType => I_MTSP,			
+			reg1 => ('1', x"2", x"0002"),
+			reg2 => NULL_REGPORT,
+			branch => NULL_PCBRANCH,	
+			writeReg => ('1', REG_SP, x"0000"),
+			isLW => '0',
+			isSW => '0',
+			writeMemData => x"0000",
+			aluInput => (OP_ADD, x"0002", x"0000")
 		),
 		(-- EXE旁路生效
 			inst => INST_ADDIU & o"2" & x"FF",
