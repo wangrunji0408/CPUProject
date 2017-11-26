@@ -47,11 +47,7 @@ begin
 		-- 每步显示序号和指令
 		
 		char <= ' ';
-		if inZone(grid_x, 0, 2, grid_y, 5, 6) then
-			-- 序号
-			step_str := toStr16(to_u16(debug.step));
-			char <= step_str(grid_x + 3);
-		elsif inZone(grid_x, 0, 2, grid_y, 0, 1) then
+		if inZone(grid_x, 0, 2, grid_y, 0, 1) then
 			entity_str := "IF";
 			char <= entity_str(grid_x + 1);
 		elsif inZone(grid_x, 3, 14, grid_y, 0, 1) then --len=11
@@ -100,6 +96,13 @@ begin
 				reg_data_str := toStr16(debug.regs(reg_id));			
 				char <= reg_data_str(grid_x - reg_zone_x - 1);				
 			end if;
+		elsif inZone(grid_x, 0, 2, grid_y, 15, 16) then
+			-- 序号
+			step_str := toStr16(to_u16(debug.step));
+			char <= step_str(grid_x + 3);
+		elsif inZone(grid_x, 3, 18, grid_y, 15, 16) then --len=15
+			-- Mode & BreakPointPC
+			char <= show_Mode(debug.mode, debug.breakPointPC)(grid_x - 3);
 		end if;
 
 		r <= data & data & data;

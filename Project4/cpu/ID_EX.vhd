@@ -7,7 +7,8 @@ use work.Base.all;
 -- 时钟上升沿时，简单地将参数从输入传递到输出
 entity ID_EX is
 	port (
-		rst, clk, stall, clear: in std_logic;
+		rst, clk: in std_logic;
+		ctrl: in MidCtrl;		
 		-- ID
 		id_writeReg: in RegPort;
 		id_isLW, id_isSW: in std_logic;
@@ -22,6 +23,11 @@ entity ID_EX is
 end ID_EX;
 
 architecture arch of ID_EX is	
+
+	signal t_writeReg: RegPort;		
+	signal t_isLW, t_isSW: std_logic;
+	signal t_writeMemData: u16;
+	signal t_aluInput: AluInput;
 begin
 	process( rst, clk )
 	begin
@@ -31,20 +37,39 @@ begin
 			ex_isSW <= '0';
 			ex_writeMemData <= x"0000";
 			ex_aluInput <= NULL_ALUINPUT;
+			t_writeReg <= NULL_REGPORT;
+			t_isLW <= '0';
+			t_isSW <= '0';
+			t_writeMemData <= x"0000";
+			t_aluInput <= NULL_ALUINPUT;
 		elsif rising_edge(clk) then
-			if clear = '1' then
-				ex_writeReg <= NULL_REGPORT;
-				ex_isLW <= '0';
-				ex_isSW <= '0';
-				ex_writeMemData <= x"0000";
-				ex_aluInput <= NULL_ALUINPUT;
-			elsif stall = '0' then
-				ex_writeReg <= id_writeReg;
-				ex_isLW <= id_isLW;
-				ex_isSW <= id_isSW;
-				ex_writeMemData <= id_writeMemData;
-				ex_aluInput <= id_aluInput;
-			end if;
+			case( ctrl ) is
+				when CLEAR =>	
+					ex_writeReg <= NULL_REGPORT;
+					ex_isLW <= '0';
+					ex_isSW <= '0';
+					ex_writeMemData <= x"0000";
+					ex_aluInput <= NULL_ALUINPUT;
+				when PASS =>
+					ex_writeReg <= id_writeReg;
+					ex_isLW <= id_isLW;
+					ex_isSW <= id_isSW;
+					ex_writeMemData <= id_writeMemData;
+					ex_aluInput <= id_aluInput;
+				when STORE =>
+					t_writeReg <= id_writeReg;
+					t_isLW <= id_isLW;
+					t_isSW <= id_isSW;
+					t_writeMemData <= id_writeMemData;
+					t_aluInput <= id_aluInput;
+				when RESTORE =>
+					ex_writeReg <= t_writeReg;
+					ex_isLW <= t_isLW;
+					ex_isSW <= t_isSW;
+					ex_writeMemData <= t_writeMemData;
+					ex_aluInput <= t_aluInput;
+				when STALL =>	null;
+			end case ;
 		end if;
 	end process ;
 

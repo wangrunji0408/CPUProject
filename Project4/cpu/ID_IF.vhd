@@ -6,31 +6,31 @@ use work.Base.all;
 -- 译码/取指 中间层
 entity ID_IF is
 	port (
-		rst, clk, stall, clear: in std_logic;
+		rst, clk: in std_logic;
+		ctrl: in MidCtrl;
 		-- ID
-		id_pc: in u16;
-		id_branch: in PCBranch;
+		id_out: in IF_Data;
 		-- IF
-		if_pc: out u16;
-		if_branch: out PCBranch
+		if_in: out IF_Data
 	) ;
 end ID_IF;
 
 architecture arch of ID_IF is	
+	signal t: IF_Data;
 begin
 	process( rst, clk )
 	begin
 		if rst = '0' then
-			if_pc <= x"0000";
-			if_branch <= NULL_PCBRANCH;
+			if_in <= (x"0000", NULL_PCBRANCH);
+			t <= (x"0000", NULL_PCBRANCH);
 		elsif rising_edge(clk) then
-			if clear = '1' then
-				if_pc <= x"0000";
-				if_branch <= NULL_PCBRANCH;
-			elsif stall = '0' then
-				if_pc <= id_pc;
-				if_branch <= id_branch;
-			end if;
+			case( ctrl ) is
+			when CLEAR => 	if_in <= (x"0000", NULL_PCBRANCH);
+			when PASS =>	if_in <= id_out;
+			when STORE =>	t <= id_out;
+			when RESTORE =>	if_in <= t;
+			when STALL =>	null;
+			end case ;
 		end if;
 	end process ;
 end arch ; -- arch

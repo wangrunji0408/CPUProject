@@ -89,6 +89,10 @@ package Base is
 		I_ERR
 	);
 
+	type CPUMode is (STEP, BREAK_POINT);
+	type MidCtrl is (PASS, STALL, CLEAR, STORE, RESTORE);
+	type MidCtrls is array (4 downto 0) of MidCtrl;
+
 	type IF_Data is record
 		pc: u16;
 		branch: PCBranch;
@@ -108,6 +112,8 @@ package Base is
 
 	type CPUDebug is record
 		step: natural;
+		mode: CPUMode;
+		breakPointPC: u16;
 		regs: RegData;
 		instType: InstType;
 		if_in: IF_Data;
@@ -132,6 +138,7 @@ package Base is
 	function showInst (x: InstType) return string;
 	function to_u4 (x: integer) return u4;
 	function to_u16 (x: integer) return u16;
+	function show_Mode (mode: CPUMode; pc: u16) return string; --len=15
 	function show_AluInput (x: AluInput) return string; --len=13
 	function show_RegPort (x: RegPort) return string; --len=7
 	function show_Branch (x: PCBranch) return string; --len=6
@@ -383,6 +390,14 @@ package body Base is
 			when "1111" => return "1110001"; --F;
 			when others => return "0000000";
 		end case;
+	end function;
+
+	function show_Mode (mode: CPUMode; pc: u16) return string is -- len = 15
+	begin
+		case( mode ) is
+		when STEP => 		return "Step           ";
+		when BREAK_POINT => return "BreakPoint=" & toStr16(pc);
+		end case ;
 	end function;
 
 	function show_AluInput (x: AluInput) return string is -- len = 13

@@ -32,7 +32,7 @@ architecture arch of Top is
 
 	signal color, color_out: TColor;
 	signal vga_x, vga_y: integer;
-	signal clk_vga, clk_stable: std_logic;
+	signal clk_vga: std_logic;
 
 	signal ascii_new: std_logic;
 	signal ascii_code: std_logic_vector(6 downto 0);
@@ -50,6 +50,9 @@ architecture arch of Top is
 
 	signal digit0, digit1: u4;
 
+	signal clk_stable: std_logic;
+	signal key_stable: std_logic_vector(3 downto 0);
+
 	signal debug: CPUDebug;
 	
 begin
@@ -62,7 +65,11 @@ begin
 
 	light <= (others => '0');
 
+	-- 稳定按钮信号
 	deb: entity work.debounce port map(clk50, clk, clk_stable);
+	deb_keys: for i in 0 to 3 generate
+		deb_key: entity work.debounce port map(clk50, key(i), key_stable(i));
+	end generate ;
 
 	ps2: entity work.ps2_keyboard_to_ascii 
 		port map (clk50, ps2_clk, ps2_data, ascii_new, ascii_code);
@@ -93,8 +100,8 @@ begin
 			ram1addr, ram2addr, ram1data, ram2data, ram1read, ram1write, ram1enable, ram2read, ram2write, ram2enable,
 			uart_data_ready, uart_tbre, uart_tsre, uart_read, uart_write);
 	cpu0: entity work.CPU 
-		port map (rst, clk50, clk_stable, '1',
+		port map (rst, clk50, clk_stable, key_stable(3),
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, if_addr, if_data, if_canread, 
-			debug); 
+			switch, debug); 
 	
 end arch ; -- arch

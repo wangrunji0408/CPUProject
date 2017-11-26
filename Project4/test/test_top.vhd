@@ -8,7 +8,7 @@ end TestTop;
 
 architecture arch of TestTop is	
 
-	signal clk, rst: std_logic;
+	signal clk, rst, btn3: std_logic;
 	signal clk11, clk50: std_logic;
 
 	signal ram1addr, ram2addr: u18;
@@ -42,8 +42,14 @@ begin
 
 	process
 	begin
+		clk <= '1'; btn3 <= '1';
 		rst <= '0'; wait for 10 ns;
 		rst <= '1'; wait for 10 ns;
+		btn3 <= '0'; wait for 50 ns;
+		btn3 <= '1'; wait for 50 ns;
+		wait for 402 ns;
+		clk <= '0'; wait for 50 ns;
+		clk <= '1'; wait for 50 ns;
 		wait;
 	end process ; -- 
 
@@ -53,9 +59,9 @@ begin
 			ram1addr, ram2addr, ram1data, ram2data, ram1read, ram1write, ram1enable, ram2read, ram2write, ram2enable,
 			uart_data_ready, uart_tbre, uart_tsre, uart_read, uart_write);
 	cpu0: entity work.CPU 
-		port map (rst, clk50, '1', '0',
+		port map (rst, clk50, clk, btn3,
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, if_addr, if_data, if_canread, 
-			debug); 
+			x"006F", debug); 
 
 	ram1: entity work.MockRam
 		generic map (SIZE => 32768, OFFSET => 32768)
