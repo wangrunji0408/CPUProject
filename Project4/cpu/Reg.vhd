@@ -7,6 +7,7 @@ use work.Base.all;
 entity Reg is
 	port (
 		rst, clk: in std_logic;
+		ctrl: in MidCtrl;
 		write: in RegPort;
 		read1, read2: in RegPort;	-- read.data is null, unable to read.
 		read1_dataout, read2_dataout: out u16;
@@ -16,7 +17,7 @@ end Reg;
 
 architecture arch of Reg is	
 
-	signal Regs:RegData;
+	signal Regs: RegData;
 
 begin
 	d_regs <= Regs;

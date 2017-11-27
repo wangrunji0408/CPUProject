@@ -55,27 +55,12 @@ architecture arch of Top is
 	signal clk50, clk40, clk25, clk12, clk6, clk_cpu: std_logic;
 
 	signal debug: CPUDebug;
+	signal io: IODebug;
 	
 begin
 
 	digit0raw <= DisplayNumber(digit0);
 	digit1raw <= DisplayNumber(digit1);
-
-	process( clk40 )
-		variable aa : integer;
-	begin
-		if rst = '0' then
-			aa := 0;
-			digit0 <= x"0";
-		elsif rising_edge(clk40) then
-			aa := aa + 1;
-			if aa = 40000000 then
-				aa := 0;
-				digit0 <= digit0 + 1;
-			end if;
-		end if;
-	end process ; -- 
-	digit1 <= x"0";	
 
 	light <= x"000" & unsigned(key);
 
@@ -121,7 +106,7 @@ begin
 	clk_cpu <= clk25;
 
 	renderer0: entity work.Renderer 
-		port map (rst, clk_vga, vga_x, vga_y, color, debug);	
+		port map (rst, clk_vga, vga_x, vga_y, color, debug, io);	
 	vga1: entity work.vga_controller 
 		--generic map (1440,80,152,232,'0',900,1,3,28,'1') -- 60Hz clk=106Mhz
 		-- generic map (1024,24,136,160,'0',768,3,6,29,'0') -- 60Hz clk=65Mhz
@@ -140,5 +125,8 @@ begin
 		port map (rst, clk_cpu, clk_stable, key_stable(3),
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, if_addr, if_data, if_canread, 
 			switch, debug); 
+
+	logger: entity work.IOLogger port map (rst, clk_cpu, debug.id_in.pc,
+			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, io);
 	
 end arch ; -- arch

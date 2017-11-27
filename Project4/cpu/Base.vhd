@@ -110,6 +110,13 @@ package Base is
 		writeMemData: u16;
 	end record;
 
+	type IOEvent is record
+		pc: u16;
+		mode: MEMType;
+		addr, data: u16;
+	end record;
+	type IODebug is array (0 to 15) of IOEvent;
+
 	type CPUDebug is record
 		step: natural;
 		mode: CPUMode;
@@ -128,6 +135,7 @@ package Base is
 	constant NULL_RAMPORT : RamPort := ('1', '1', '1', "00" & x"0000", x"0000");
 	constant NULL_ALUINPUT : AluInput := (OP_NOP, x"0000", x"0000");
 	constant NULL_PCBRANCH : PCBranch := ('0', '0', x"0000", x"0000");
+	constant NULL_IOEVENT: IOEvent := (x"0000", None, x"0000", x"0000");	
 	
 	function toStr2 (x: u16) return string;
 	function toStr16 (x: u16) return string;
@@ -138,6 +146,8 @@ package Base is
 	function showInst (x: InstType) return string;
 	function to_u4 (x: integer) return u4;
 	function to_u16 (x: integer) return u16;
+	constant show_IOEvent_Title: string(1 to 17) := " PC     Addr Data";
+	function show_IOEvent (x: IOEvent) return string; -- len = 17
 	function show_Mode (mode: CPUMode; pc: u16) return string; --len=15
 	function show_AluOp(x: AluOp) return string; --len=3
 	function show_AluInput (x: AluInput) return string; --len=17
@@ -399,6 +409,21 @@ package body Base is
 		when STEP => 		return "Step           ";
 		when BREAK_POINT => return "BreakPoint=" & toStr16(pc);
 		end case;
+	end function;
+
+	function show_IOEvent (x: IOEvent) return string is -- len = 17
+		variable mode_str: string(1 to 2) := "--";
+	begin
+		case( x.mode ) is
+			when ReadRam1 => mode_str := "R1";
+			when ReadRam2 => mode_str := "R2";
+			when ReadUart => mode_str := "RU";
+			when WriteRam1 => mode_str := "W1";
+			when WriteRam2 => mode_str := "W2";
+			when WriteUart => mode_str := "WU";
+			when others => null;
+		end case ;
+		return toStr16(x.pc) & " " & mode_str & " " & toStr16(x.addr) & " " & toStr16(x.data);
 	end function;
 
 	function show_AluInput (x: AluInput) return string is -- len = 17

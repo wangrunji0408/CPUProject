@@ -7,6 +7,7 @@ use std.textio.all;
 
 entity MockRam is
 	generic (
+		ID: natural := 0;
 		SIZE: natural := 1024;
 		OFFSET: natural := 0;
 		FILE_PATH: string := "";
@@ -63,12 +64,16 @@ begin
 				report "Address out of range: " & toStr16(addr(15 downto 0)) severity error;
 			data <= (others => 'Z');
 			if enable = '0' and falling_edge(write) then
+				report "WriteRAM" & natural'image(ID) & "[" & toStr16(addr(15 downto 0)) & "]=" & toStr16(data);
 				ram(inner_addr) <= data after 8 ns;
 			end if;
 			if enable = '0' and falling_edge(read) then
 				data <= (others => 'X');
 			end if;
 			if enable = '0' and read = '0' then
+				if not (ID = 2 and addr(15 downto 14) = "00") then -- not report fetch inst
+				report "Read RAM" & natural'image(ID) & "[" & toStr16(addr(15 downto 0)) & "]=" & toStr16(ram(inner_addr));
+				end if;
 				data <= data, 
 						ram(inner_addr) after 10 ns;
 			end if;

@@ -31,6 +31,7 @@ architecture arch of TestTop is
 	signal if_canread: std_logic; -- 当MEM操作RAM2时不可读
 
 	signal debug: CPUDebug;
+	signal io: IODebug;
 	
 begin
 
@@ -47,9 +48,6 @@ begin
 		rst <= '1'; wait for 10 ns;
 		btn3 <= '0'; wait for 50 ns;
 		btn3 <= '1'; wait for 50 ns;
-		wait for 402 ns;
-		clk <= '0'; wait for 50 ns;
-		clk <= '1'; wait for 50 ns;
 		wait;
 	end process ; -- 
 
@@ -61,13 +59,15 @@ begin
 	cpu0: entity work.CPU 
 		port map (rst, clk50, clk, btn3,
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, if_addr, if_data, if_canread, 
-			x"006F", debug); 
+			x"FFFF", debug); 
+	logger: entity work.IOLogger port map (rst, clk50, debug.id_in.pc,
+			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, io);
 
 	ram1: entity work.MockRam
-		generic map (SIZE => 32768, OFFSET => 32768)
+		generic map (ID => 1, SIZE => 32768, OFFSET => 32768)
 		port map (rst, ram1addr, ram1data, ram1read, ram1write, ram1enable);
 	ram2: entity work.MockRam
-		generic map (SIZE => 32768, FILE_PATH => "../exe/kernel.bin")
+		generic map (ID => 2, SIZE => 32768, FILE_PATH => "../exe/kernel.bin")
 		port map (rst, ram2addr, ram2data, ram2read, ram2write, ram2enable);
 	uart: entity work.MockUart
 		port map (ram1enable, ram1data, uart_read, uart_write, uart_data_ready, uart_tbre, uart_tsre);

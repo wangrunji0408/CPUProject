@@ -44,7 +44,7 @@ begin
 			 or (id_readReg2.enable = '1' and ex_writeReg = id_readReg2.addr)) then
 			ctrls <= (STALL, STALL, CLEAR, PASS, PASS);
 		elsif if_canread = '0' then
-			ctrls <= (STALL, CLEAR, PASS, PASS, PASS);
+			ctrls <= (STALL, STALL, CLEAR, PASS, PASS);
 		else
 			ctrls <= (others => PASS);		
 		end if;

@@ -45,12 +45,12 @@ begin
 			t_aluOut <= x"0000";
 		elsif rising_edge(clk) then
 			case( ctrl ) is
-				when CLEAR =>	
-					mem_writeReg <= NULL_REGPORT;
-					mem_isLW <= '0';
-					mem_isSW <= '0';
-					mem_writeMemData <= x"0000";
-					mem_aluOut <= x"0000";
+				-- when CLEAR =>	
+				-- 	mem_writeReg <= NULL_REGPORT;
+				-- 	mem_isLW <= '0';
+				-- 	mem_isSW <= '0';
+				-- 	mem_writeMemData <= x"0000";
+				-- 	mem_aluOut <= x"0000";
 				when PASS =>
 					mem_writeReg <= ex_writeReg;
 					mem_isLW <= ex_isLW;
@@ -63,7 +63,7 @@ begin
 					t_isSW <= ex_isSW;
 					t_writeMemData <= ex_writeMemData;
 					t_aluOut <= ex_aluOut;
-				when RESTORE =>
+				when RESTORE | CLEAR =>
 					mem_writeReg <= t_writeReg;
 					mem_isLW <= t_isLW;
 					mem_isSW <= t_isSW;

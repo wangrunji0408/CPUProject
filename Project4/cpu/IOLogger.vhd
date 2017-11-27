@@ -1,0 +1,62 @@
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+use work.Base.all;
+
+entity IOLogger is
+	port (
+		rst, clk: in std_logic;
+		pc: in u16;
+		------ 对MEM接口 ------
+		mem_type: in MEMType;
+		mem_addr: in u16;
+		mem_write_data: in u16;
+		mem_read_data: in u16;
+		mem_busy: in std_logic;
+		------ Debug ------
+		info: buffer IODebug
+	) ;
+end IOLogger;
+
+architecture arch of IOLogger is
+
+	signal newEvent_f, readFinish_f: boolean;
+begin
+
+	process( rst, clk )
+		variable last_type: MEMType;
+		variable last_addr: u16;
+		variable newEvent, readFinish: boolean;
+		variable info_v: IODebug;
+	begin
+		info <= info_v;
+		newEvent_f <= newEvent;
+		readFinish_f <= readFinish;
+
+		if rst = '0' then
+			info_v := (others => NULL_IOEVENT);
+			last_type := None;
+			last_addr := x"0000";
+		elsif rising_edge(clk) then
+			newEvent := mem_type /= None and mem_busy = '0' and
+				(mem_type /= last_type or mem_addr /= last_addr);
+			readFinish := last_type = ReadRam1 or last_type = ReadRam2 
+						or (last_type = ReadUart and mem_busy = '0');
+			
+			if readFinish then
+				info_v(0).data := mem_read_data;
+			end if;
+
+			if newEvent then
+				move : for i in 15 downto 1 loop
+					info_v(i) := info_v(i-1);
+				end loop ;
+				info_v(0) := (pc, mem_type, mem_addr, mem_write_data);
+			end if;
+
+			last_type := mem_type;
+			last_addr := mem_addr;
+		end if;
+	end process ;
+
+end arch ; -- arch

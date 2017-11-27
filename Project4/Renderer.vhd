@@ -9,7 +9,8 @@ entity Renderer is
 		rst, clk: in std_logic;
 		vga_x, vga_y: in natural;
 		color: out TColor;
-		debug: in CPUDebug
+		debug: in CPUDebug;
+		io: in IODebug
 	) ;
 end Renderer;
 
@@ -30,9 +31,11 @@ begin
 	color <= std_logic_vector(r) & std_logic_vector(g) & std_logic_vector(b);
 	process( vga_x, vga_y )
 		constant reg_zone_x: natural := 40;
-		constant reg_zone_y: natural := 0;
+		constant reg_zone_y: natural := 1;
 		variable reg_id: natural;
 		variable reg_data_str: string(1 to 4);
+		constant io_zone_x: natural := 50;
+		constant io_zone_y: natural := 0;
 		variable entity_str: string(1 to 2);
 		variable step_str: string(1 to 4);
 		variable inst_name: string(1 to 8);
@@ -89,12 +92,19 @@ begin
 			char <= show_RegPort(debug.mem_out)(grid_x - 3 + 1);
 		elsif inZone(grid_x, reg_zone_x, reg_zone_x+6, grid_y, reg_zone_y, reg_zone_y+16) then
 			-- 寄存器 
+			reg_id := grid_y - reg_zone_y;			
 			if grid_x = reg_zone_x then
-				reg_id := grid_y - reg_zone_y;		
 				char <= toHex(to_u4(reg_id));
 			elsif grid_x >= reg_zone_x + 2 then
-				reg_data_str := toStr16(debug.regs(reg_id));			
+				reg_data_str := toStr16(debug.regs(grid_y - reg_zone_y));			
 				char <= reg_data_str(grid_x - reg_zone_x - 1);				
+			end if;
+		elsif inZone(grid_x, io_zone_x, io_zone_x+17, grid_y, io_zone_y, io_zone_y+17) then
+			-- IO
+			if grid_y = io_zone_y then	
+				char <= show_IOEvent_Title(grid_x - io_zone_x +1);
+			elsif grid_x >= reg_zone_x + 2 then
+				char <= show_IOEvent(io(grid_y-1))(grid_x - io_zone_x);				
 			end if;
 		elsif inZone(grid_x, 0, 2, grid_y, 15, 16) then
 			-- 序号
