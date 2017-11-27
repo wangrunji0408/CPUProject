@@ -27,6 +27,7 @@ begin
 		variable last_type: MEMType;
 		variable last_addr: u16;
 		variable newEvent, readFinish: boolean;
+		variable data: u16;
 		variable info_v: IODebug;
 	begin
 		info <= info_v;
@@ -38,20 +39,26 @@ begin
 			last_type := None;
 			last_addr := x"0000";
 		elsif rising_edge(clk) then
-			newEvent := mem_type /= None and mem_busy = '0' and
-				(mem_type /= last_type or mem_addr /= last_addr);
-			readFinish := last_type = ReadRam1 or last_type = ReadRam2 
-						or (last_type = ReadUart and mem_busy = '0');
-			
-			if readFinish then
-				info_v(0).data := mem_read_data;
+			if mem_type = None then 
+				newEvent := false;
+			elsif mem_type = ReadUart or mem_type = WriteUart then
+				newEvent := mem_busy = '0';
+			else -- RAM IO
+				newEvent := mem_type /= last_type or mem_addr /= last_addr;
 			end if;
 
 			if newEvent then
 				move : for i in 15 downto 1 loop
 					info_v(i) := info_v(i-1);
 				end loop ;
-				info_v(0) := (pc, mem_type, mem_addr, mem_write_data);
+
+				if mem_type = ReadUart or mem_type = ReadRam1 or mem_type = ReadRam2 then
+					data := mem_read_data;
+				else
+					data := mem_write_data;
+				end if;
+
+				info_v(0) := (pc, mem_type, mem_addr, data);
 			end if;
 
 			last_type := mem_type;
