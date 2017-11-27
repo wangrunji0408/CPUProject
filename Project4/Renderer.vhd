@@ -29,7 +29,7 @@ begin
 	-- Output
 	color <= std_logic_vector(r) & std_logic_vector(g) & std_logic_vector(b);
 	process( vga_x, vga_y )
-		constant reg_zone_x: natural := 34;
+		constant reg_zone_x: natural := 40;
 		constant reg_zone_y: natural := 0;
 		variable reg_id: natural;
 		variable reg_data_str: string(1 to 4);
@@ -69,9 +69,9 @@ begin
 		elsif inZone(grid_x, 3, 18, grid_y, 2, 3) then --len=15
 			-- EX的输入 
 			char <= show_ID_MEM_Data(debug.ex_in)(grid_x - 3);
-		elsif inZone(grid_x, 19, 32, grid_y, 2, 3) then --len=13
+		elsif inZone(grid_x, 19, 36, grid_y, 2, 3) then --len=17
 			-- EX AluInput
-			char <= show_AluInput(debug.ex_in_aluInput)(grid_x - 19 + 1);
+			char <= show_AluInput(debug.ex_in_aluInput)(grid_x - 19);
 		elsif inZone(grid_x, 0, 2, grid_y, 3, 4) then
 			entity_str := "ME";
 			char <= entity_str(grid_x + 1);
@@ -100,7 +100,7 @@ begin
 			-- 序号
 			step_str := toStr16(to_u16(debug.step));
 			char <= step_str(grid_x + 3);
-		elsif inZone(grid_x, 3, 18, grid_y, 15, 16) then --len=15
+		elsif inZone(grid_x, 3, 19, grid_y, 15, 16) then --len=15
 			-- Mode & BreakPointPC
 			char <= show_Mode(debug.mode, debug.breakPointPC)(grid_x - 3);
 		end if;
