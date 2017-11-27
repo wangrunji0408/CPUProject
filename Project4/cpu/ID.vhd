@@ -218,7 +218,7 @@ begin
 							aluInput <= (OP_EQ, reg1_data, reg2_data);
 						when "01111" =>  -- NOT
 							instType <= I_NOT;
-							reg1_enable <= '0'; reg1_addr <= x"0";
+							reg1_enable <= '0';
 							aluInput <= (OP_NOT, reg2_data, x"0000");
 						when "01101" =>  -- OR
 							instType <= I_OR;
@@ -238,6 +238,8 @@ begin
 				elsif (opu = "11") then  -- SUBU
 					instType <= I_SUBU;
 					aluOp := OP_SUB;
+                else
+                    null;
 				end if;
 				reg1_enable <= '1'; reg1_addr <= getRx(inst);
 				reg2_enable <= '1'; reg2_addr <= getRy(inst);
@@ -255,6 +257,8 @@ begin
 					reg1_enable <= '1'; reg1_addr <= getRx(inst);
 					writeReg <= ('1', REG_IH, x"0000");
 					aluInput <= (OP_ADD, reg1_data, x"0000");
+                else
+                    null;
 				end if;
 				
 			when INST_SET4 =>
@@ -268,6 +272,8 @@ begin
 				elsif (opu = "10") then  -- SRL
 					instType <= I_SRL;
 					aluOp := OP_SRL;
+                else
+                    null;
 				end if;
 				reg1_enable <= '1'; reg1_addr <= getRy(inst);
 				writeReg <= ('1', getRx(inst), x"0000");
