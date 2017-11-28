@@ -15,10 +15,10 @@ entity ID_EX is
 		id_writeMemData: in u16;
 		id_aluInput: in AluInput;
 		-- EX
-		ex_writeReg: out RegPort;		
-		ex_isLW, ex_isSW: out std_logic;
-		ex_writeMemData: out u16;
-		ex_aluInput: out AluInput
+		ex_writeReg: buffer RegPort;		
+		ex_isLW, ex_isSW: buffer std_logic;
+		ex_writeMemData: buffer u16;
+		ex_aluInput: buffer AluInput
 	) ;
 end ID_EX;
 
@@ -57,11 +57,11 @@ begin
 					ex_writeMemData <= id_writeMemData;
 					ex_aluInput <= id_aluInput;
 				when STORE =>
-					t_writeReg <= id_writeReg;
-					t_isLW <= id_isLW;
-					t_isSW <= id_isSW;
-					t_writeMemData <= id_writeMemData;
-					t_aluInput <= id_aluInput;
+					t_writeReg <= ex_writeReg;
+					t_isLW <= ex_isLW;
+					t_isSW <= ex_isSW;
+					t_writeMemData <= ex_writeMemData;
+					t_aluInput <= ex_aluInput;
 				when RESTORE =>
 					ex_writeReg <= t_writeReg;
 					ex_isLW <= t_isLW;

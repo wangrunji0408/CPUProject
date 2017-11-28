@@ -34,6 +34,9 @@ architecture arch of Ctrl is
 begin
 	process( gctrl, ex_isLW, ex_writeReg, id_readReg1, id_readReg2, mem_stallReq, if_canread, pc, breakPointPC, mode )
 	begin
+		-- 注意
+		-- IF IF/ID 的控制必须同步
+		--   因为IF依赖于ID的跳转信号
 		if gctrl /= PASS then
 			ctrls <= (others => gctrl);
 		elsif mode = BREAK_POINT and pc = breakPointPC then
@@ -51,29 +54,31 @@ begin
 	end process ;
 
 	process( rst, clk )
-		variable last_btn0, last_btn1: std_logic;
-		variable btn0_t: std_logic_vector(1 downto 0);
+		variable last_btn0, last2_btn0, last_btn1: std_logic;
+		variable btn0_t: std_logic_vector(2 downto 0);
 	begin
 		if rst = '0' then 
 			gctrl <= CLEAR;
 			mode <= STEP; 
 			count <= 0;
 			last_btn0 := '1';
+			last2_btn0 := '1'; 
 			last_btn1 := '1'; 
 		elsif rising_edge(clk) then
 
 			-- 按钮控制 btn0
-			btn0_t := last_btn0 & btn0;
+			btn0_t := last2_btn0 & last_btn0 & btn0;
 			case btn0_t is
-				when "11" => 					-- 不按按钮时 ...
+				when "111" => 							-- 不按按钮时 ...
 					if mode = STEP then	
 						gctrl <= STALL;
 					elsif mode = BREAK_POINT then
 						gctrl <= PASS;
 					end if;
-				when "10" => gctrl <= STORE;	-- 按下按钮时 暂存输入
-				when "00" => gctrl <= CLEAR;	-- 按住按钮时 清空
-				when "01" => gctrl <= RESTORE;	-- 松开按钮时 恢复输入
+				when "110" => 		gctrl <= STORE;		-- 按下按钮时 暂存输出
+				when "000"|"100" => gctrl <= CLEAR;		-- 按住按钮时 清空
+				when "001" => 		gctrl <= RESTORE;	-- 松开按钮时 恢复输出
+				when "011" => 		gctrl <= PASS;		-- 下一周期时 正常
 				when others => null;
 			end case ;
 
@@ -89,6 +94,7 @@ begin
 				end if;
 			end if;
 			
+			last2_btn0 := last_btn0;
 			last_btn0 := btn0;
 			last_btn1 := btn1;
 		end if;

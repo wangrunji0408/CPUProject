@@ -65,9 +65,9 @@ begin
 	light <= x"000" & unsigned(key);
 
 	-- 稳定按钮信号
-	deb: entity work.debounce port map(clk_cpu, clk, clk_stable);
+	deb: entity work.debounce port map(clk50, clk, clk_stable);
 	deb_keys: for i in 0 to 3 generate
-		deb_key: entity work.debounce port map(clk_cpu, key(i), key_stable(i));
+		deb_key: entity work.debounce port map(clk50, key(i), key_stable(i));
 	end generate ;
 
 	ps2: entity work.ps2_keyboard_to_ascii 
@@ -100,10 +100,10 @@ begin
 		end if;
 	end process ; -- make_clk6
 
-	dcm40: entity work.DCM port map (clk50_in, rst, open, clk50, clk40);
-
+	--dcm40: entity work.DCM port map (clk50_in, rst, clk40, clk50);
+	clk50 <= clk50_in;
 	clk_vga <= clk25;
-	clk_cpu <= clk25;
+	clk_cpu <= clk50;
 
 	renderer0: entity work.Renderer 
 		port map (rst, clk_vga, vga_x, vga_y, color, debug, io);	

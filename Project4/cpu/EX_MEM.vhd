@@ -15,10 +15,10 @@ entity EX_MEM is
 		ex_writeMemData: in u16;
 		ex_aluOut: in u16;
 		-- MEM
-		mem_writeReg: out RegPort;		
-		mem_isLW, mem_isSW: out std_logic;
-		mem_writeMemData: out u16;
-		mem_aluOut: out u16
+		mem_writeReg: buffer RegPort;		
+		mem_isLW, mem_isSW: buffer std_logic;
+		mem_writeMemData: buffer u16;
+		mem_aluOut: buffer u16
 	) ;
 end EX_MEM;
 
@@ -45,12 +45,12 @@ begin
 			t_aluOut <= x"0000";
 		elsif rising_edge(clk) then
 			case( ctrl ) is
-				-- when CLEAR =>	
-				-- 	mem_writeReg <= NULL_REGPORT;
-				-- 	mem_isLW <= '0';
-				-- 	mem_isSW <= '0';
-				-- 	mem_writeMemData <= x"0000";
-				-- 	mem_aluOut <= x"0000";
+				when CLEAR =>	
+					mem_writeReg <= NULL_REGPORT;
+					mem_isLW <= '0';
+					mem_isSW <= '0';
+					mem_writeMemData <= x"0000";
+					mem_aluOut <= x"0000";
 				when PASS =>
 					mem_writeReg <= ex_writeReg;
 					mem_isLW <= ex_isLW;
@@ -58,12 +58,12 @@ begin
 					mem_writeMemData <= ex_writeMemData;
 					mem_aluOut <= ex_aluOut;
 				when STORE =>
-					t_writeReg <= ex_writeReg;
-					t_isLW <= ex_isLW;
-					t_isSW <= ex_isSW;
-					t_writeMemData <= ex_writeMemData;
-					t_aluOut <= ex_aluOut;
-				when RESTORE | CLEAR =>
+					t_writeReg <= mem_writeReg;
+					t_isLW <= mem_isLW;
+					t_isSW <= mem_isSW;
+					t_writeMemData <= mem_writeMemData;
+					t_aluOut <= mem_aluOut;
+				when RESTORE =>
 					mem_writeReg <= t_writeReg;
 					mem_isLW <= t_isLW;
 					mem_isSW <= t_isSW;

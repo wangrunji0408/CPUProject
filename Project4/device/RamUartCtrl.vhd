@@ -79,9 +79,9 @@ begin
 	begin
 		if rst = '0' or (mem_type /= WriteUart and mem_type /= ReadUart) then
 			uart_read <= '1'; uart_write <= '1';
-			uart_busy <= '0';
+			uart_busy <= '1';
 			count <= 0;
-		elsif falling_edge(clk) then
+		elsif rising_edge(clk) then
 			count <= count + 1;
 			if mem_type = ReadUart then
 				case count is 

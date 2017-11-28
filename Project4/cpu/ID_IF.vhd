@@ -11,7 +11,7 @@ entity ID_IF is
 		-- ID
 		id_out: in IF_Data;
 		-- IF
-		if_in: out IF_Data
+		if_in: buffer IF_Data
 	) ;
 end ID_IF;
 
@@ -27,7 +27,7 @@ begin
 			case( ctrl ) is
 			when CLEAR => 	if_in <= (x"0000", NULL_PCBRANCH);
 			when PASS =>	if_in <= id_out;
-			when STORE =>	t <= id_out;
+			when STORE =>	t <= if_in;
 			when RESTORE =>	if_in <= t;
 			when STALL =>	null;
 			end case ;
