@@ -22,7 +22,8 @@ begin
 		variable i: natural := 0;
 		type ReadDatas is array (0 to 127) of u8;
 		constant datas: ReadDatas := (
-			-- Case1
+			-- Case1: Execute fib program
+			charToU8('G'), x"00", x"40",
 			charToU8('R'),
 			-- Case2: Write 4000=0800 4001=0801 then read
 			charToU8('A'), 
