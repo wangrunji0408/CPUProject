@@ -26,7 +26,7 @@ architecture arch of TestMEM is
 
 	signal p: TestCase;
 	
-	type TestCases is array (0 to 10) of TestCase;
+	type TestCases is array (0 to 11) of TestCase;
 
 	constant cases: TestCases := ( -- 每个test_case对应一个时钟周期
 		( -- 只写寄存器
@@ -74,7 +74,7 @@ architecture arch of TestMEM is
 			mem_addr => x"8002",
 			mem_write_data => x"0000"
 		),
-		( -- 写指令区
+		( -- 写系统程序（禁止）
 			writeReg => NULL_REGPORT,	
 			isLW => '0',
 			isSW => '1',
@@ -85,8 +85,23 @@ architecture arch of TestMEM is
 			-- output
 			stallReq => '0',
 			writeRegOut => NULL_REGPORT,
-			mem_type => WriteRAM2,
+			mem_type => None,
 			mem_addr => x"0001",
+			mem_write_data => x"ABCD"
+		),
+		( -- 写用户程序
+			writeReg => NULL_REGPORT,	
+			isLW => '0',
+			isSW => '1',
+			writeMemData => x"ABCD",
+			aluOut => x"4001",
+			mem_read_data => x"0000",
+			mem_busy => '0',
+			-- output
+			stallReq => '0',
+			writeRegOut => NULL_REGPORT,
+			mem_type => WriteRAM2,
+			mem_addr => x"4001",
 			mem_write_data => x"ABCD"
 		),
 		( -- 写数据区
@@ -119,18 +134,18 @@ architecture arch of TestMEM is
 			mem_addr => x"0000",
 			mem_write_data => x"0000"
 		),
-		( -- 读串口 BF01 (永远是可读可写？)
+		( -- 读串口 BF01
 			writeReg => ('1', x"2", x"0000"),
 			isLW => '1',
 			isSW => '0',
 			writeMemData => x"0000",
 			aluOut => x"BF01",
-			mem_read_data => x"0000",
+			mem_read_data => x"0003",
 			mem_busy => '0',
 			-- output
 			stallReq => '0',
 			writeRegOut => ('1', x"2", x"0003"),
-			mem_type => None,
+			mem_type => TestUart,
 			mem_addr => x"0000",
 			mem_write_data => x"0000"
 		),

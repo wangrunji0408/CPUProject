@@ -77,7 +77,7 @@ package Base is
 		data: u16;
 	end record;
 
-	type MEMType is (None, ReadRam1, WriteRam1, ReadRam2, WriteRam2, ReadUart, WriteUart);
+	type MEMType is (None, ReadRam1, WriteRam1, ReadRam2, WriteRam2, ReadUart, WriteUart, TestUart);
 
 	type InstType is (
 		I_AND, I_OR, I_ADDU, I_SUBU, I_SLT, I_CMP,

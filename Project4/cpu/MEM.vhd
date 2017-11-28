@@ -46,6 +46,7 @@ begin
 
 	mem_type <= ReadUart when isLW = '1' and aluOut = x"bf00" else
 			   WriteUart when isSW = '1' and aluOut = x"bf00" else
+			   TestUart when isLW = '1' and aluOut = x"bf01" else
 			   None when isCom else
 			   ReadRam2 when isLW = '1' and aluOut(15) = '0' else
 			   ReadRam1 when isLW = '1' else
@@ -55,8 +56,7 @@ begin
 			   None;
 	mem_addr <= aluOut when (isLW = '1' or isSW = '1') and not isCom else 
 				x"0000";
-	writeRegOut.data <= x"0003" when isLW = '1' and aluOut = x"bf01" else 
-						mem_read_data when isLW = '1' else 
+	writeRegOut.data <= mem_read_data when isLW = '1' else 
 						x"0000" when isSW = '1' else
 						aluOut ;
 	mem_write_data <= writeMemData when isSW = '1' and (not isCom or aluOut = x"bf00") else 

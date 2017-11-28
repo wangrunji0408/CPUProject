@@ -12,7 +12,7 @@ entity IOLogger is
 		mem_addr: in u16;
 		mem_write_data: in u16;
 		mem_read_data: in u16;
-		mem_busy: in std_logic;
+		mem_busy: in std_logic;		
 		------ Debug ------
 		info: buffer IODebug
 	) ;
@@ -39,20 +39,14 @@ begin
 			last_type := None;
 			last_addr := x"0000";
 		elsif rising_edge(clk) then
-			if mem_type = None then 
-				newEvent := false;
-			elsif mem_type = ReadUart or mem_type = WriteUart then
-				newEvent := mem_busy = '0';
-			else -- RAM IO
-				newEvent := mem_type /= last_type or mem_addr /= last_addr;
-			end if;
+			newEvent := mem_type /= None and (mem_type /= last_type or mem_addr /= last_addr);
 
 			if newEvent then
 				move : for i in 15 downto 1 loop
 					info_v(i) := info_v(i-1);
 				end loop ;
 
-				if mem_type = ReadUart or mem_type = ReadRam1 or mem_type = ReadRam2 then
+				if mem_type = ReadUart or mem_type = ReadRam1 or mem_type = ReadRam2 or mem_type = TestUart then
 					data := mem_read_data;
 				else
 					data := mem_write_data;

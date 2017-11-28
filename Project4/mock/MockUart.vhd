@@ -40,21 +40,23 @@ begin
 			data_ready <= '0'; tbre <= '0'; tsre <= '0';
 		elsif read = '0' and write = '0' then
 			report "UART read = write = 0. Mess!" severity warning;
+		elsif rising_edge(ram1enable) then
+			data_ready <= '1'; tbre <= '1'; tsre <= '1';
 		else
 			if falling_edge(write) then
 				data := ram1data(7 downto 0);
 				tbre <= '0'; tsre <= '0';
 			elsif rising_edge(write) then
-				tbre <= '1' after 50 ns;
-				tsre <= '1' after 100 ns;
+				tbre <= '1' after 150 ns;
+				tsre <= '1' after 300 ns;
 				report "Write UART: "  & toHex8(data);
 			end if;
 
 			if rising_edge(read) then
 				ram1data <= zzzz;	
-			elsif read = '1' then
-				data_ready <= '1';
+				data_ready <= '1' after 500 ns;
 			elsif falling_edge(read) then
+				data_ready <= '0';
 				dataToRead := datas(i);
 				ram1data <= x"00" & dataToRead;				
 				report "Read UART: " & toHex8(dataToRead);
