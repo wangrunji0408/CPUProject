@@ -64,7 +64,7 @@ architecture arch of Top is
 
 	signal clk_stable: std_logic;
 	signal key_stable: std_logic_vector(3 downto 0);
-	signal clk50, clk40, clk25, clk_cpu: std_logic;
+	signal clk50, clk40, clk25, clk_cpu, locked: std_logic;
 
 	signal debug: CPUDebug;
 	signal io: IODebug;
@@ -75,7 +75,7 @@ begin
 	digit0raw <= DisplayNumber(digit0);
 	digit1raw <= DisplayNumber(digit1);
 
-	light <= x"00" & "000" & uart2_data_ready & uart2_tbre & uart2_tsre & uart2_read & uart2_write;
+	light <= x"00" & "0" & clk40 & locked & uart2_data_ready & uart2_tbre & uart2_tsre & uart2_read & uart2_write;
 	digit0 <= uart2_data_read(7 downto 4);
 	digit1 <= uart2_data_read(3 downto 0);
 
@@ -97,10 +97,10 @@ begin
 		end if;
 	end process ; -- make_clk25
 
-	dcm40: entity work.DCM port map (clk50_in, rst, clk40, clk50);
-	-- clk50 <= clk50_in;
+	--dcm40: entity work.DCM port map (clk50_in, rst, clk40, clk50, open, locked);
+	clk50 <= clk50_in;
 	clk_vga <= clk25;
-	clk_cpu <= clk40;
+	clk_cpu <= clk50;
 
 	renderer0: entity work.Renderer 
 		port map (rst, clk_vga, vga_x, vga_y, color, debug, io, buf);	

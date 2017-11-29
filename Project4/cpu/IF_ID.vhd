@@ -19,18 +19,18 @@ end IF_ID;
 architecture arch of IF_ID is	
 	signal t: IF_ID_Data;
 begin
-	id_in.pc <= if_out.pc;
+
 	process( rst, clk )
 	begin
 		if rst = '0' then
-			id_in.inst <= x"0000";
-			t.inst <= x"0000";
+			id_in <= (x"0000", x"0000");
+			t <= (x"0000", x"0000");
 		elsif rising_edge(clk) then
 			case( ctrl ) is
-			when CLEAR =>	id_in.inst <= x"0000";
-			when PASS =>	id_in.inst <= if_out.inst;
-			when STORE =>	t.inst <= id_in.inst;
-			when RESTORE =>	id_in.inst <= t.inst;
+			when CLEAR =>	id_in <= (x"0000", x"0000");
+			when PASS =>	id_in <= if_out;
+			when STORE =>	t <= id_in;
+			when RESTORE =>	id_in <= t;
 			when STALL =>	null;
 			end case ;
 		end if;

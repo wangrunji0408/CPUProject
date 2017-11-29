@@ -268,3 +268,5 @@ INST "ram1addr<17>" TNM = RAM;
 NET "clk50_in" TNM_NET = clk50_in;
 TIMESPEC TS_clk50_in = PERIOD "clk50_in" 20 ns HIGH 50%;
 NET "clk50_in" CLOCK_DEDICATED_ROUTE = FALSE;
+#Created by Constraints Editor (xc3s1200e-fg320-4) - 2017/11/29
+TIMEGRP "RAM" OFFSET = OUT 10 ns AFTER "clk50_in";

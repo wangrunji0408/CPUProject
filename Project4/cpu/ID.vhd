@@ -110,12 +110,12 @@ begin
 				writeReg <= ('1', reg1_addr, x"0000");
 			when INST_B =>
 				instType <= I_B;
-				branch <= ('1', '0', signExtend11(inst(10 downto 0)), x"0000");
+				branch <= ('1', pc + signExtend11(inst(10 downto 0)));
 			when INST_BEQZ =>
 				instType <= I_BEQZ;
 				reg1_enable <= '1'; reg1_addr <= getRx(inst);
 				if (reg1_data = x"0000") then
-					branch <= ('1', '0', signExtend(getIm8(inst)), x"0000");
+					branch <= ('1', pc + signExtend(getIm8(inst)));
                 else 
                     null;
 				end if;
@@ -123,7 +123,7 @@ begin
 				instType <= I_BNEZ;
 				reg1_enable <= '1'; reg1_addr <= getRx(inst);
 				if (reg1_data /= x"0000") then
-					branch <= ('1', '0', signExtend(getIm8(inst)), x"0000");
+					branch <= ('1', pc + signExtend(getIm8(inst)));
 				end if;
 			when INST_LI =>
 				instType <= I_LI;
@@ -178,7 +178,7 @@ begin
 						instType <= I_BTEQZ;
 						reg1_enable <= '1'; reg1_addr <= REG_T;
 						if (reg1_data = x"0000") then
-							branch <= ('1', '0', signExtend(getIm8(inst)), x"0000");
+							branch <= ('1', pc + signExtend(getIm8(inst)));
                         else 
                             null;
 						end if;
@@ -196,7 +196,7 @@ begin
 					if (oprx = x"0") then  -- JR
 						instType <= I_JR;
 						reg1_enable <= '1'; reg1_addr <= getRx(inst);
-						branch <= ('0', '1', x"0000", reg1_data);
+						branch <= ('1', reg1_data);
 					elsif (oprx = x"2") then  -- MFPC
 						instType <= I_MFPC;
 						writeReg <= ('1', getRx(inst), x"0000");

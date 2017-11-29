@@ -6,7 +6,7 @@ use work.Base.all;
 -- 取指模块
 entity InstFetch is
 	port (
-		last_pc: in u16;		
+		new_pc: in u16;
 		branch: in PCBranch;
 		pc: out u16;
 		inst: out Inst;
@@ -21,10 +21,8 @@ end InstFetch;
 architecture arch of InstFetch is	
 	signal pc0: u16;
 begin
-	pc0 <= 	last_pc + branch.offset when branch.isOffset = '1'else 
-			branch.target when branch.isJump = '1' else 
-			last_pc + 1;
-	pc <= pc0;	
+	pc0 <= branch.target when branch.enable = '1' else new_pc;
+	pc <= pc0 + 1;
 	if_addr <= pc0;
 	inst <= if_data;
 

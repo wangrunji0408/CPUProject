@@ -83,14 +83,14 @@ architecture arch of TestID is
 		),
         (-- B
 			inst => INST_B & "111" & x"FF",
-			pc => x"0000",
+			pc => x"0002",
 			exe_writeReg => NULL_REGPORT,
 			mem_writeReg => NULL_REGPORT,
 			-- output
 			instType => I_B,			
 			reg1 => NULL_REGPORT,
 			reg2 => NULL_REGPORT,
-			branch => ('1', '0', x"FFFF", x"0000"),	
+			branch => ('1', x"0001"),	
 			writeReg => NULL_REGPORT,
 			isLW => '0',
 			isSW => '0',
@@ -115,14 +115,14 @@ architecture arch of TestID is
 		),
         (-- BEQZ
 			inst => INST_BEQZ & "000" & x"FF",
-			pc => x"0000",
+			pc => x"0002",
 			exe_writeReg => NULL_REGPORT,
 			mem_writeReg => NULL_REGPORT,
 			-- output
 			instType => I_BEQZ,			
 			reg1 => ('1', x"0", x"0000"),
 			reg2 => NULL_REGPORT,
-			branch => ('1', '0', x"FFFF", x"0000"),	
+			branch => ('1', x"0001"),	
 			writeReg => NULL_REGPORT,
 			isLW => '0',
 			isSW => '0',
@@ -131,14 +131,14 @@ architecture arch of TestID is
 		),
         (-- BENZ
 			inst => INST_BNEZ & o"2" & x"FF",
-			pc => x"0000",
+			pc => x"0002",
 			exe_writeReg => NULL_REGPORT,
 			mem_writeReg => NULL_REGPORT,
 			-- output
 			instType => I_BNEZ,			
 			reg1 => ('1', x"2", x"0002"),
 			reg2 => NULL_REGPORT,
-			branch => ('1', '0', x"FFFF", x"0000"),	
+			branch => ('1', x"0001"),	
 			writeReg => NULL_REGPORT,
 			isLW => '0',
 			isSW => '0',
@@ -323,14 +323,14 @@ architecture arch of TestID is
 		),
         (-- JR
 			inst => INST_SET1 & "100" & x"00",
-			pc => x"0000",
+			pc => x"0002",
 			exe_writeReg => NULL_REGPORT,
 			mem_writeReg => NULL_REGPORT,
 			-- output
 			instType => I_JR,			
 			reg1 => ('1', x"4", x"0004"),
 			reg2 => NULL_REGPORT,
-			branch => ('0', '1', x"0000", x"0004"),	
+			branch => ('1', x"0004"),	
 			writeReg => NULL_REGPORT,
 			isLW => '0',
 			isSW => '0',
@@ -643,7 +643,7 @@ begin
 	process
 		variable std: TestCase;
 	begin
-		for i in cases'length loop
+		for i in cases'range loop
 			std := cases(i);
 			p.inst <= std.inst;
 			p.pc <= std.pc;
