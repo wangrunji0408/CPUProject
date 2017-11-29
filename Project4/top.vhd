@@ -18,6 +18,13 @@ entity Top is
 		uart_data_ready, uart_tbre, uart_tsre: in std_logic;	-- UART flags 
 		uart_read, uart_write: out std_logic;					-- UART lock
 
+		u_rxd: in std_logic;
+		u_txd: out std_logic;	-- 串口2
+
+		flash_addr: out u23;
+		flash_data: inout u16;
+		flash_ctrl: out FlashCtrl;
+
 		ps2_clk, ps2_data: in std_logic;
 
 		vga_r, vga_g, vga_b: out u3;
@@ -47,6 +54,11 @@ architecture arch of Top is
 	signal if_addr: u16;
 	signal if_data: u16;
 	signal if_canread: std_logic; -- 当MEM操作RAM2时不可读
+
+	signal uart2_data_write, uart2_data_read: u16;
+	signal uart2_data_read_lv: std_logic_vector(7 downto 0);
+	signal uart2_data_ready, uart2_tbre, uart2_tsre: std_logic;
+	signal uart2_read, uart2_write: std_logic;
 
 	signal digit0, digit1: u4;
 
@@ -116,11 +128,23 @@ begin
 	vga_g <= unsigned(color_out(5 downto 3));
 	vga_b <= unsigned(color_out(2 downto 0));
 
+	flash_addr <= x"00000" & "000";
+	flash_data <= (others => 'Z');
+	flash_ctrl <= (others => '0');
+
+	uart2: entity work.uart 
+		port map (rst, clk11, u_rxd, uart2_read, uart2_write, 
+			std_logic_vector(uart2_data_write(7 downto 0)), uart2_data_read_lv, 
+			uart2_data_ready, open, open, uart2_tbre, uart2_tsre, u_txd);
+	uart2_data_read(7 downto 0) <= unsigned(uart2_data_read_lv);
+	uart2_data_read(15 downto 8) <= x"00";
+
 	ruc: entity work.RamUartCtrl 
 		port map ( rst, clk_cpu, 
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, if_addr, if_data, if_canread,
 			ram1addr, ram2addr, ram1data, ram2data, ram1read, ram1write, ram1enable, ram2read, ram2write, ram2enable,
-			uart_data_ready, uart_tbre, uart_tsre, uart_read, uart_write);
+			uart_data_ready, uart_tbre, uart_tsre, uart_read, uart_write,
+			uart2_data_write, uart2_data_read, uart2_data_ready, uart2_tbre, uart2_tsre, uart2_read, uart2_write);
 	cpu0: entity work.CPU 
 		port map (rst, clk_cpu, clk_stable, key_stable(3),
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, if_addr, if_data, if_canread, 

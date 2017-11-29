@@ -4,6 +4,7 @@ use ieee.numeric_std.all;
 
 package Base is
 	subtype u32 is unsigned(31 downto 0);
+	subtype u23 is unsigned(22 downto 0);
 	subtype u16 is unsigned(15 downto 0);
 	subtype u18 is unsigned(17 downto 0);
     subtype u11 is unsigned(10 downto 0);
@@ -55,6 +56,10 @@ package Base is
 		data: u16; -- is ram1_data
 	end record;
 
+	type FlashCtrl is record
+		byte, ce, ce1, ce2, oe, rp, sts, vpen, we: std_logic;
+	end record;
+
 	type PCBranch is record
 		isOffset, isJump: std_logic;
 		offset, target: u16;
@@ -77,7 +82,12 @@ package Base is
 		data: u16;
 	end record;
 
-	type MEMType is (None, ReadRam1, WriteRam1, ReadRam2, WriteRam2, ReadUart, WriteUart, TestUart);
+	type MEMType is (
+		None, 
+		ReadRam1, WriteRam1, ReadRam2, WriteRam2, 
+		ReadUart, WriteUart, TestUart,
+		ReadUart2, WriteUart2, TestUart2
+	);
 
 	type InstType is (
 		I_AND, I_OR, I_ADDU, I_SUBU, I_SLT, I_CMP,
@@ -418,9 +428,13 @@ package body Base is
 			when ReadRam1 => mode_str := "R1";
 			when ReadRam2 => mode_str := "R2";
 			when ReadUart => mode_str := "RU";
+			when ReadUart2 => mode_str := "RS";
 			when WriteRam1 => mode_str := "W1";
 			when WriteRam2 => mode_str := "W2";
 			when WriteUart => mode_str := "WU";
+			when WriteUart2 => mode_str := "WS";
+			when TestUart => mode_str := "TU";
+			when TestUart2 => mode_str := "TS";
 			when others => null;
 		end case ;
 		return toStr16(x.pc) & " " & mode_str & " " & toStr16(x.addr) & " " & toStr16(x.data);

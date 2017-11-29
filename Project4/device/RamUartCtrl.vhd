@@ -12,7 +12,7 @@ entity RamUartCtrl is
 		mem_addr: in u16;
 		mem_write_data: in u16;
 		mem_read_data: out u16;
-		mem_busy: out std_logic;	-- 串口操作可能很慢，busy=1表示尚未完成
+		mem_busy: out std_logic;	-- 废弃的信号，输出0
 		------ 对IF接口 ------
 		if_addr: in u16;
 		if_data: out u16;
@@ -24,7 +24,12 @@ entity RamUartCtrl is
 		ram2read, ram2write, ram2enable: out std_logic;
 		------ UART接口 ------
 		uart_data_ready, uart_tbre, uart_tsre: in std_logic;	-- UART flags 
-		uart_read, uart_write: out std_logic					-- UART lock
+		uart_read, uart_write: out std_logic;					-- UART lock
+		------ 串口2 ------
+		uart2_data_write: out u16;
+		uart2_data_read: in u16;
+		uart2_data_ready, uart2_tbre, uart2_tsre: in std_logic;
+		uart2_read, uart2_write: out std_logic
 	) ;
 end RamUartCtrl;
 
@@ -48,6 +53,8 @@ begin
 		ram2addr <= "00" & if_addr; ram2data <= (others => 'Z');
 		-- UART 默认输出
 		uart_read <= '1'; uart_write <= '1';
+		uart2_read <= '1'; uart2_write <= '1';
+		uart2_data_write <= x"0000";
 
 		case( mem_type ) is
 		when None => null;
@@ -74,6 +81,14 @@ begin
 			ram1data <= mem_write_data;
 		when TestUart =>
 			mem_read_data <= (0 => uart_tsre, 1 => uart_data_ready, others => '0');
+		when ReadUart2 =>
+			uart2_read <= '0';
+			mem_read_data <= uart2_data_read;
+		when WriteUart2 =>
+			uart2_write <= clk;
+			uart2_data_write <= mem_write_data;
+		when TestUart2 =>
+			mem_read_data <= (0 => uart2_tsre, 1 => uart2_data_ready, others => '0');
 		end case ;
 	end process ; -- 
 

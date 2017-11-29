@@ -18,6 +18,9 @@ architecture arch of TestTop is
 
 	signal uart_data_ready, uart_tbre, uart_tsre: std_logic;	-- UART flags 
 	signal uart_read, uart_write: std_logic;					-- UART lock
+	signal uart2_data, uart2_data_write, uart2_data_read: u16;
+	signal uart2_data_ready, uart2_tbre, uart2_tsre: std_logic;
+	signal uart2_read, uart2_write: std_logic;
 
 	------ 对MEM接口 ------
 	signal mem_type: MEMType;
@@ -55,7 +58,8 @@ begin
 		port map ( rst, clk50, 
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, if_addr, if_data, if_canread,
 			ram1addr, ram2addr, ram1data, ram2data, ram1read, ram1write, ram1enable, ram2read, ram2write, ram2enable,
-			uart_data_ready, uart_tbre, uart_tsre, uart_read, uart_write);
+			uart_data_ready, uart_tbre, uart_tsre, uart_read, uart_write,
+			uart2_data_write, uart2_data_read, uart2_data_ready, uart2_tbre, uart2_tsre, uart2_read, uart2_write);
 	cpu0: entity work.CPU 
 		port map (rst, clk50, clk, btn3,
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, if_addr, if_data, if_canread, 
@@ -67,9 +71,13 @@ begin
 		generic map (ID => 1, SIZE => 32768, OFFSET => 32768)
 		port map (rst, ram1addr, ram1data, ram1read, ram1write, ram1enable);
 	ram2: entity work.MockRam
-		generic map (ID => 2, SIZE => 32768, KERNEL_PATH => "../exe/kernel.bin", PROG_PATH => "../exe/Term_test/fib.bin")
+		generic map (ID => 2, SIZE => 32768, KERNEL_PATH => "../exe/kernel.bin", PROG_PATH => "../exe/Term_test/test_uart2.bin")
 		port map (rst, ram2addr, ram2data, ram2read, ram2write, ram2enable);
 	uart: entity work.MockUart
 		port map (ram1enable, ram1data, uart_read, uart_write, uart_data_ready, uart_tbre, uart_tsre);
+	uart2: entity work.MockUart
+		port map (rst, uart2_data, uart2_read, uart2_write, uart2_data_ready, uart2_tbre, uart2_tsre);
+	uart2_data_read <= uart2_data;
+	uart2_data <= uart2_data_write when uart2_read = '1' else (others => 'Z');
 	
 end arch ; -- arch
