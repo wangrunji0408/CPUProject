@@ -5,7 +5,8 @@ use work.Base.all;
 
 entity Boot is
 	port(
-		rst, clk: in std_logic;
+		rst, clk: in std_logic; -- rst is not real rst. give me rst=0 when want me work
+		start_addr : in u16;
 		-- FLASH --
 		flash_addr: out u16; -- 22 downto 1, first 6 block
 		flash_data: inout u16;
@@ -37,7 +38,7 @@ begin
 		then
 			done <= '0';
 			finish <= '0';
-			now_addr <= x"0000";
+			now_addr <= start_addr;
 			status <= 0;
 			OE <= '1';
 			WE <= '1';
