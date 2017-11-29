@@ -72,19 +72,13 @@ begin
 			char <= entity_str(grid_x + 1);
 		elsif inZone(grid_x, 3, 18, grid_y, 2, 3) then --len=15
 			-- EX的输入 
-			char <= show_ID_MEM_Data(debug.ex_in)(grid_x - 3);
-		elsif inZone(grid_x, 19, 36, grid_y, 2, 3) then --len=17
-			-- EX AluInput
-			char <= show_AluInput(debug.ex_in_aluInput)(grid_x - 19);
+			char <= show_ID_EX_Data(debug.ex_in)(grid_x - 3);
 		elsif inZone(grid_x, 0, 2, grid_y, 3, 4) then
 			entity_str := "ME";
 			char <= entity_str(grid_x + 1);
-		elsif inZone(grid_x, 3, 18, grid_y, 3, 4) then --len=15
+		elsif inZone(grid_x, 3, 23, grid_y, 3, 4) then --len=20
 			-- MEM的输入 
-			char <= show_ID_MEM_Data(debug.mem_in)(grid_x - 3);
-		elsif inZone(grid_x, 19, 23, grid_y, 3, 4) then --len=4
-			-- MEM AluOut
-			char <= toStr16(debug.mem_in_aluOut)(grid_x - 19 + 1);
+			char <= show_EX_MEM_Data(debug.mem_in)(grid_x - 3);
 		elsif inZone(grid_x, 0, 2, grid_y, 4, 5) then
 			entity_str := "RB";
 			char <= entity_str(grid_x + 1);

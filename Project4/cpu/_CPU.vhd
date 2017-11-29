@@ -27,9 +27,8 @@ architecture arch of CPU is
 
 	signal out_for_if, if_in: IF_Data;
 	signal if_out, id_in: IF_ID_Data;
-	signal id_out, ex_in, ex_out, mem_in: ID_MEM_Data;
-	signal id_out_aluInput, ex_in_aluInput: AluInput;
-	signal ex_out_aluOut, mem_in_aluOut: u16;
+	signal id_out, ex_in: ID_EX_Data;
+	signal ex_out, mem_in: EX_MEM_Data;
 	signal reg1, reg2, mem_out: RegPort;	
 	signal mem_stallReq: std_logic;
 
@@ -44,8 +43,6 @@ begin
 	debug.ex_in <= ex_in;
 	debug.mem_in <= mem_in;
 	debug.mem_out <= mem_out;
-	debug.ex_in_aluInput <= ex_in_aluInput;
-	debug.mem_in_aluOut <= mem_in_aluOut;
 	debug.step <= step;	
 	debug.mode <= mode;
 	debug.breakPointPC <= breakPointPC;
@@ -62,22 +59,19 @@ begin
 	id0: entity work.ID port map (id_in.inst, id_in.pc, 
 			reg1.enable, reg2.enable, reg1.addr, reg2.addr, reg1.data, reg2.data,
 			out_for_if.branch, ex_out.writeReg, mem_out, 
-			id_out.writeReg, id_out.isLW, id_out.isSW, id_out.writeMemData, id_out_aluInput,
+			id_out.writeReg, id_out.isLW, id_out.isSW, id_out.writeMemData, id_out.aluInput,
 			debug.instType);
-	ex0: entity work.EX port map (ex_in, ex_in_aluInput, ex_out, ex_out_aluOut);	
-	mem0: entity work.MEM port map (
-			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy,
-			mem_stallReq, mem_in.writeReg, mem_in.isLW, mem_in.isSW, mem_in.writeMemData, 
-			mem_in_aluOut, mem_out);
+	ex0: entity work.EX port map (ex_in, ex_out);
+
+	mem_type <= mem_in.mem_type;
+	mem_addr <= mem_in.mem_addr;
+	mem_write_data <= mem_in.mem_write_data;
+	mem0: entity work.MEM port map (mem_read_data, mem_in.writeReg, mem_in.isLW, mem_in.isSW, mem_out);
 	
 	id_if0: entity work.ID_IF port map (rst, clk, ctrls(4), out_for_if, if_in);
 	if_id0: entity work.IF_ID port map (rst, clk, ctrls(3), if_out, id_in);
-	id_ex0: entity work.ID_EX port map (rst, clk, ctrls(2),
-			id_out.writeReg, id_out.isLW, id_out.isSW, id_out.writeMemData, id_out_aluInput,
-			ex_in.writeReg, ex_in.isLW, ex_in.isSW, ex_in.writeMemData, ex_in_aluInput);
-	ex_mem0: entity work.EX_MEM port map (rst, clk, ctrls(1),
-			ex_out.writeReg, ex_out.isLW, ex_out.isSW, ex_out.writeMemData, ex_out_aluOut,
-			mem_in.writeReg, mem_in.isLW, mem_in.isSW, mem_in.writeMemData, mem_in_aluOut);
+	id_ex0: entity work.ID_EX port map (rst, clk, ctrls(2), id_out, ex_in);
+	ex_mem0: entity work.EX_MEM port map (rst, clk, ctrls(1), ex_out, mem_in);
 	reg0: entity work.Reg port map (rst, clk, ctrls(0), 
 			mem_out, reg1, reg2, reg1.data, reg2.data, debug.regs);
 	

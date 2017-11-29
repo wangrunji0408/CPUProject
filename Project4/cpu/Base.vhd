@@ -118,11 +118,21 @@ package Base is
 		inst: Inst;
 	end record;
 
-	type ID_MEM_Data is record
+	type ID_EX_Data is record
 		writeReg: RegPort;
 		isLW: std_logic;
 		isSW: std_logic;
 		writeMemData: u16;
+		aluInput: AluInput;
+	end record;
+
+	type EX_MEM_Data is record
+		writeReg: RegPort;
+		isLW: std_logic;
+		isSW: std_logic;
+		mem_type: MEMType;
+		mem_addr: u16;
+		mem_write_data: u16;
 	end record;
 
 	type IOEvent is record
@@ -140,9 +150,8 @@ package Base is
 		instType: InstType;
 		if_in: IF_Data;
 		id_in: IF_ID_Data;
-		ex_in, mem_in: ID_MEM_Data;
-		ex_in_aluInput: AluInput;
-		mem_in_aluOut: u16;
+		ex_in: ID_EX_Data;
+		mem_in: EX_MEM_Data;
 		mem_out: RegPort;
 	end record;
 
@@ -150,7 +159,10 @@ package Base is
 	constant NULL_RAMPORT : RamPort := ('1', '1', '1', "00" & x"0000", x"0000");
 	constant NULL_ALUINPUT : AluInput := (OP_NOP, x"0000", x"0000");
 	constant NULL_PCBRANCH : PCBranch := ('0', x"0000");
-	constant NULL_IOEVENT: IOEvent := (x"0000", None, x"0000", x"0000");	
+	constant NULL_IOEVENT: IOEvent := (x"0000", None, x"0000", x"0000");
+	constant NULL_IF_ID_DATA: IF_ID_Data := (x"0000", x"0000");
+	constant NULL_ID_EX_DATA: ID_EX_Data := (NULL_REGPORT, '0', '0', x"0000", NULL_ALUINPUT);	
+	constant NULL_EX_MEM_DATA: EX_MEM_Data := (NULL_REGPORT, '0', '0', None, x"0000", x"0000");
 	
 	function toStr2 (x: u16) return string;
 	function toStr16 (x: u16) return string;
@@ -165,13 +177,15 @@ package Base is
 	constant show_IOEvent_Title: string(1 to 17) := " PC     Addr Data";
 	function show_IOEvent (x: IOEvent) return string; -- len = 17
 	function show_Mode (mode: CPUMode; pc: u16) return string; --len=15
+	function show_MEMType (x: MEMType) return string; --len=2	
 	function show_AluOp(x: AluOp) return string; --len=3
 	function show_AluInput (x: AluInput) return string; --len=17
 	function show_RegPort (x: RegPort) return string; --len=7
 	function show_Branch (x: PCBranch) return string; --len=6
 	function show_IF_Data (x: IF_Data) return string; --len=11
 	function show_IF_ID_Data (x: IF_ID_Data) return string;	--len=21
-	function show_ID_MEM_Data (x: ID_MEM_Data) return string; --len=15
+	function show_ID_EX_Data (x: ID_EX_Data) return string; --len=15
+	function show_EX_MEM_Data (x: EX_MEM_Data) return string; --len=20
 	function DisplayNumber (number: u4) return std_logic_vector;
 
 	function signExtend (number: u8) return u16;
@@ -450,23 +464,26 @@ package body Base is
 		end case;
 	end function;
 
-	function show_IOEvent (x: IOEvent) return string is -- len = 17
-		variable mode_str: string(1 to 2) := "--";
+	function show_MEMType (x: MEMType) return string is -- len = 2
 	begin
-		case( x.mode ) is
-			when ReadRam1 => mode_str := "R1";
-			when ReadRam2 => mode_str := "R2";
-			when ReadUart => mode_str := "RU";
-			when ReadUart2 => mode_str := "RS";
-			when WriteRam1 => mode_str := "W1";
-			when WriteRam2 => mode_str := "W2";
-			when WriteUart => mode_str := "WU";
-			when WriteUart2 => mode_str := "WS";
-			when TestUart => mode_str := "TU";
-			when TestUart2 => mode_str := "TS";
-			when others => null;
+		case( x ) is
+			when ReadRam1 => return "R1";
+			when ReadRam2 => return "R2";
+			when ReadUart => return "RU";
+			when ReadUart2 => return "RS";
+			when WriteRam1 => return "W1";
+			when WriteRam2 => return "W2";
+			when WriteUart => return "WU";
+			when WriteUart2 => return "WS";
+			when TestUart => return "TU";
+			when TestUart2 => return "TS";
+			when others => return "--";
 		end case ;
-		return toStr16(x.pc) & " " & mode_str & " " & toStr16(x.addr) & " " & toStr16(x.data);
+	end function;
+
+	function show_IOEvent (x: IOEvent) return string is -- len = 17
+	begin
+		return toStr16(x.pc) & " " & show_MEMType(x.mode) & " " & toStr16(x.addr) & " " & toStr16(x.data);
 	end function;
 
 	function show_AluInput (x: AluInput) return string is -- len = 17
@@ -500,13 +517,18 @@ package body Base is
 		return toStr16(x.pc) & " " & toStr2(x.inst); 
 	end function;
 
-	function show_ID_MEM_Data (x: ID_MEM_Data) return string is -- len = 15
+	function show_ID_EX_Data (x: ID_EX_Data) return string is -- len = 15
 		variable s: string(1 to 8) := " --     ";
 	begin
 		if x.isLW = '1' then 		s := " LW     ";
 		elsif x.isSW = '1' then 	s := " SW " & toStr16(x.writeMemData);
 		end if;
 		return show_RegPort(x.writeReg) & s;
+	end function;
+
+	function show_EX_MEM_Data (x: EX_MEM_Data) return string is -- len = 20
+	begin
+		return show_RegPort(x.writeReg) & " " & show_MEMType(x.mem_type) & " " & toStr16(x.mem_addr) & " " & toStr16(x.mem_write_data);
 	end function;
 
 	function show_AluOp(x: AluOp) return string is

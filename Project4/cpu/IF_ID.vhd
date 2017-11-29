@@ -23,11 +23,11 @@ begin
 	process( rst, clk )
 	begin
 		if rst = '0' then
-			id_in <= (x"0000", x"0000");
-			t <= (x"0000", x"0000");
+			id_in <= NULL_IF_ID_DATA;
+			t <= NULL_IF_ID_DATA;
 		elsif rising_edge(clk) then
 			case( ctrl ) is
-			when CLEAR =>	id_in <= (x"0000", x"0000");
+			when CLEAR =>	id_in <= NULL_IF_ID_DATA;
 			when PASS =>	id_in <= if_out;
 			when STORE =>	t <= id_in;
 			when RESTORE =>	id_in <= t;
