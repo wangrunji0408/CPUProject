@@ -64,17 +64,20 @@ architecture arch of Top is
 
 	signal clk_stable: std_logic;
 	signal key_stable: std_logic_vector(3 downto 0);
-	signal clk50, clk40, clk25, clk12, clk6, clk_cpu: std_logic;
+	signal clk50, clk40, clk25, clk_cpu: std_logic;
 
 	signal debug: CPUDebug;
 	signal io: IODebug;
+	signal buf: DataBufInfo;
 	
 begin
 
 	digit0raw <= DisplayNumber(digit0);
 	digit1raw <= DisplayNumber(digit1);
 
-	light <= x"000" & unsigned(key);
+	light <= x"00" & "000" & uart2_data_ready & uart2_tbre & uart2_tsre & uart2_read & uart2_write;
+	digit0 <= uart2_data_read(7 downto 4);
+	digit1 <= uart2_data_read(3 downto 0);
 
 	-- 稳定按钮信号
 	deb: entity work.debounce port map(clk50, clk, clk_stable);
@@ -94,31 +97,13 @@ begin
 		end if;
 	end process ; -- make_clk25
 
-	make_clk12 : process( clk25 )
-	begin
-		if rst = '0' then
-			clk12 <= '1';
-		elsif rising_edge(clk25) then
-			clk12 <= not clk12;
-		end if;
-	end process ; -- make_clk12
-
-	make_clk6 : process( clk12 )
-	begin
-		if rst = '0' then
-			clk6 <= '1';
-		elsif rising_edge(clk12) then
-			clk6 <= not clk6;
-		end if;
-	end process ; -- make_clk6
-
-	--dcm40: entity work.DCM port map (clk50_in, rst, clk40, clk50);
-	clk50 <= clk50_in;
+	dcm40: entity work.DCM port map (clk50_in, rst, clk40, clk50);
+	-- clk50 <= clk50_in;
 	clk_vga <= clk25;
-	clk_cpu <= clk50;
+	clk_cpu <= clk40;
 
 	renderer0: entity work.Renderer 
-		port map (rst, clk_vga, vga_x, vga_y, color, debug, io);	
+		port map (rst, clk_vga, vga_x, vga_y, color, debug, io, buf);	
 	vga1: entity work.vga_controller 
 		--generic map (1440,80,152,232,'0',900,1,3,28,'1') -- 60Hz clk=106Mhz
 		-- generic map (1024,24,136,160,'0',768,3,6,29,'0') -- 60Hz clk=65Mhz
@@ -152,5 +137,5 @@ begin
 
 	logger: entity work.IOLogger port map (rst, clk_cpu, debug.id_in.pc,
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, io);
-	
+
 end arch ; -- arch

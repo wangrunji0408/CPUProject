@@ -20,6 +20,11 @@ package Base is
 	subtype RegAddr is u4;
 	subtype TColor is std_logic_vector(8 downto 0); 	--颜色：[R2R1R0 G2G1G0 B2B1B0]
 	type RegData is array (0 to 15) of u16;
+	type DataBuf is array (0 to 63) of u8;
+	type DataBufInfo is record
+		data: DataBuf;
+		writePos, readPos: natural range 0 to 63;
+	end record;
 
 	-- 特殊寄存器。和通用寄存器一起，统一编码为4位地址。
 	constant REG_SP: RegAddr := x"8";
@@ -151,6 +156,7 @@ package Base is
 	function toStr16 (x: u16) return string;
 	function toHex8 (x: u8) return string;
 	function charToU8 (x: character) return u8;
+	function charToU4 (x: character) return u4;
 	function toHex (x: u4) return character;
 	function toString (x: unsigned) return string;
 	function showInst (x: InstType) return string;
@@ -346,6 +352,29 @@ package body Base is
 	function charToU8 (x: character) return u8 is
 	begin
 		return to_unsigned(character'pos(x), 8);
+	end function;
+
+	function charToU4 (x: character) return u4 is
+	begin
+		case( x ) is
+			when '0' => return x"0";
+			when '1' => return x"1";
+			when '2' => return x"2";
+			when '3' => return x"3";
+			when '4' => return x"4";
+			when '5' => return x"5";
+			when '6' => return x"6";
+			when '7' => return x"7";
+			when '8' => return x"8";
+			when '9' => return x"9";
+			when 'a'|'A' => return x"A";
+			when 'b'|'B' => return x"B";
+			when 'c'|'C' => return x"C";
+			when 'd'|'D' => return x"D";
+			when 'e'|'E' => return x"E";
+			when 'f'|'F' => return x"F";		
+			when others => return x"0";
+		end case ;
 	end function;
 
 	function toHex (x: u4) return character is 

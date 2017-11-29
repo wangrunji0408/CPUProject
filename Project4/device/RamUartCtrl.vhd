@@ -80,7 +80,7 @@ begin
 			uart_write <= clk;
 			ram1data <= mem_write_data;
 		when TestUart =>
-			mem_read_data <= (0 => uart_tsre, 1 => uart_data_ready, others => '0');
+			mem_read_data <= (0 => uart_tsre and uart_tbre, 1 => uart_data_ready, others => '0');
 		when ReadUart2 =>
 			uart2_read <= '0';
 			mem_read_data <= uart2_data_read;
@@ -88,7 +88,7 @@ begin
 			uart2_write <= clk;
 			uart2_data_write <= mem_write_data;
 		when TestUart2 =>
-			mem_read_data <= (0 => uart2_tsre, 1 => uart2_data_ready, others => '0');
+			mem_read_data <= (0 => uart2_tsre and uart2_tbre, 1 => uart2_data_ready, others => '0');
 		end case ;
 	end process ; -- 
 

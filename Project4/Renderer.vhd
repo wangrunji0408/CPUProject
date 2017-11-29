@@ -10,7 +10,8 @@ entity Renderer is
 		vga_x, vga_y: in natural;
 		color: out TColor;
 		debug: in CPUDebug;
-		io: in IODebug
+		io: in IODebug;
+		buf: in DataBufInfo
 	) ;
 end Renderer;
 
@@ -106,13 +107,16 @@ begin
 			elsif grid_x >= reg_zone_x + 2 then
 				char <= show_IOEvent(io(grid_y-1))(grid_x - io_zone_x);				
 			end if;
-		elsif inZone(grid_x, 0, 2, grid_y, 15, 16) then
+		elsif inZone(grid_x, 0, 2, grid_y, 5, 6) then
 			-- 序号
 			step_str := toStr16(to_u16(debug.step));
 			char <= step_str(grid_x + 3);
-		elsif inZone(grid_x, 3, 19, grid_y, 15, 16) then --len=15
+		elsif inZone(grid_x, 3, 19, grid_y, 5, 6) then --len=15
 			-- Mode & BreakPointPC
 			char <= show_Mode(debug.mode, debug.breakPointPC)(grid_x - 3);
+		elsif inZone(grid_x, 0, 32, grid_y, 16, 18) then
+			char <= '0';
+			--char <= character'val(to_integer(buf.data((grid_y-16)*32+grid_x)));
 		end if;
 
 		r <= data & data & data;
