@@ -14,7 +14,7 @@ entity Ctrl is
 		pc: in u16;
 		breakPointPC: in u16;
 		-- 当IF无法取指时，暂停
-		if_canread: in std_logic;
+		if_stallReq: in std_logic;
 		-- 当MEM读串口时，请求暂停
 		mem_stallReq: in std_logic;
 		-- 当EX阶段指令为LW，且要写入的寄存器与ID阶段读寄存器冲突时，暂停ID及之前
@@ -32,7 +32,7 @@ end Ctrl;
 architecture arch of Ctrl is
 	signal gctrl: MidCtrl;
 begin
-	process( gctrl, ex_isLW, ex_writeReg, id_readReg1, id_readReg2, mem_stallReq, if_canread, pc, breakPointPC, mode )
+	process( gctrl, ex_isLW, ex_writeReg, id_readReg1, id_readReg2, mem_stallReq, if_stallReq, pc, breakPointPC, mode )
 	begin
 		-- 注意
 		-- IF IF/ID 的控制必须同步
@@ -46,7 +46,7 @@ begin
 		elsif ex_isLW = '1' and ((id_readReg1.enable = '1' and ex_writeReg = id_readReg1.addr)
 			 or (id_readReg2.enable = '1' and ex_writeReg = id_readReg2.addr)) then
 			ctrls <= (STALL, STALL, CLEAR, PASS, PASS);
-		elsif if_canread = '0' then
+		elsif if_stallReq = '1' then
 			ctrls <= (STALL, STALL, CLEAR, PASS, PASS);
 		else
 			ctrls <= (others => PASS);		

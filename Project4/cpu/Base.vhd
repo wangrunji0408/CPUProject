@@ -81,6 +81,11 @@ package Base is
 		a, b: u16;
 	end record;
 
+	type IFCachePort is record
+		enable: std_logic;
+		pc, inst: u16;
+	end record;
+
 	type RamPort is record
 		enable, read, write: std_logic;
 		addr: u18;
@@ -111,6 +116,7 @@ package Base is
 	type IF_Data is record
 		pc: u16;
 		branch: PCBranch;
+		isRefetch: std_logic;
 	end record;
 
 	type IF_ID_Data is record
@@ -155,11 +161,13 @@ package Base is
 		mem_out: RegPort;
 	end record;
 
+	constant NULL_IFCACHEPORT : IFCachePort := ('0', x"0000", x"0000");	
 	constant NULL_REGPORT : RegPort := ('0', x"0", x"0000");
 	constant NULL_RAMPORT : RamPort := ('1', '1', '1', "00" & x"0000", x"0000");
 	constant NULL_ALUINPUT : AluInput := (OP_NOP, x"0000", x"0000");
 	constant NULL_PCBRANCH : PCBranch := ('0', x"0000");
 	constant NULL_IOEVENT: IOEvent := (x"0000", None, x"0000", x"0000");
+	constant NULL_IF_DATA: IF_Data := (x"0000", NULL_PCBRANCH, '0');
 	constant NULL_IF_ID_DATA: IF_ID_Data := (x"0000", x"0000");
 	constant NULL_ID_EX_DATA: ID_EX_Data := (NULL_REGPORT, '0', '0', x"0000", NULL_ALUINPUT);	
 	constant NULL_EX_MEM_DATA: EX_MEM_Data := (NULL_REGPORT, '0', '0', None, x"0000", x"0000");

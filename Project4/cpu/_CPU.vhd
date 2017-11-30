@@ -30,11 +30,13 @@ architecture arch of CPU is
 	signal id_out, ex_in: ID_EX_Data;
 	signal ex_out, mem_in: EX_MEM_Data;
 	signal reg1, reg2, mem_out: RegPort;	
-	signal mem_stallReq: std_logic;
+	signal if_stallReq, mem_stallReq: std_logic;
 
 	signal step: natural;
 	signal mode: CPUMode;
 	signal ctrls: MidCtrls;
+
+	signal ifc_add, ifc_query, ifc_result: IFCachePort;
 	
 begin
 
@@ -49,13 +51,18 @@ begin
 
 	ctrl0: entity work.Ctrl port map (rst, clk, btn0, btn1, 
 			id_in.pc, breakPointPC,
-			ruc_if_canread, mem_stallReq, ex_in.isLW, ex_in.writeReg.addr, reg1, reg2,
+			if_stallReq, mem_stallReq, ex_in.isLW, ex_in.writeReg.addr, reg1, reg2,
 			ctrls, step, mode);	
+	
+	ifc: entity work.IFCache port map (rst, clk, ifc_add, ifc_query, ifc_result);
 
 	if0: entity work.InstFetch port map (
-			if_in.pc, if_in.branch, 
-			if_out.pc, if_out.inst, 
-			ruc_if_addr, ruc_if_data, ruc_if_canread); out_for_if.pc <= if_out.pc;
+			if_in.pc, if_in.branch, if_in.isRefetch,
+			if_out.pc, if_out.inst, if_stallReq,
+			ruc_if_addr, ruc_if_data, ruc_if_canread,
+			ifc_add, ifc_query, ifc_result ); 
+			out_for_if.pc <= if_out.pc;
+			out_for_if.isRefetch <= if_stallReq;
 	id0: entity work.ID port map (id_in.inst, id_in.pc, 
 			reg1.enable, reg2.enable, reg1.addr, reg2.addr, reg1.data, reg2.data,
 			out_for_if.branch, ex_out.writeReg, mem_out, 
