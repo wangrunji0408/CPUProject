@@ -168,7 +168,7 @@ package Base is
 	function toStr16 (x: u16) return string;
 	function toHex8 (x: u8) return string;
 	function charToU8 (x: character) return u8;
-	function charToU4 (x: character) return u4;
+	function charToU4 (x: natural) return u4;
 	function toHex (x: u4) return character;
 	function toString (x: unsigned) return string;
 	function showInst (x: InstType) return string;
@@ -368,25 +368,25 @@ package body Base is
 		return to_unsigned(character'pos(x), 8);
 	end function;
 
-	function charToU4 (x: character) return u4 is
+	function charToU4 (x: natural) return u4 is
 	begin
 		case( x ) is
-			when '0' => return x"0";
-			when '1' => return x"1";
-			when '2' => return x"2";
-			when '3' => return x"3";
-			when '4' => return x"4";
-			when '5' => return x"5";
-			when '6' => return x"6";
-			when '7' => return x"7";
-			when '8' => return x"8";
-			when '9' => return x"9";
-			when 'a'|'A' => return x"A";
-			when 'b'|'B' => return x"B";
-			when 'c'|'C' => return x"C";
-			when 'd'|'D' => return x"D";
-			when 'e'|'E' => return x"E";
-			when 'f'|'F' => return x"F";		
+			when 48 => return x"0";
+			when 49 => return x"1";
+			when 50 => return x"2";
+			when 51 => return x"3";
+			when 52 => return x"4";
+			when 53 => return x"5";
+			when 54 => return x"6";
+			when 55 => return x"7";
+			when 56 => return x"8";
+			when 57 => return x"9";
+			when 65|97 => return x"A";
+			when 66|98 => return x"B";
+			when 67|99 => return x"C";
+			when 68|100 => return x"D";
+			when 69|101 => return x"E";
+			when 70|102 => return x"F";		
 			when others => return x"0";
 		end case ;
 	end function;

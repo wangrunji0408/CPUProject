@@ -17,19 +17,19 @@ end Renderer;
 
 architecture arch of Renderer is	
 	
-	signal r, g, b: u3;
+	signal font_color: TColor;
 	signal grid_x, grid_y: natural; -- 80 * 30
+	signal char_ascii: natural range 0 to 255;
 	signal char: character;
 	signal char_x, char_y: natural;
 	signal data: std_logic;
 
 begin
-	rom: entity work.FontReader port map (clk, char, char_x, char_y, data);
+	rom: entity work.FontReader port map (clk, char_ascii, char_x, char_y, data);
 	-- Read ROM
 	grid_x <= vga_x / 8;  grid_y <= vga_y / 16;
 	char_x <= vga_x mod 8;  char_y <= vga_y mod 16;
 	-- Output
-	color <= std_logic_vector(r) & std_logic_vector(g) & std_logic_vector(b);
 	process( vga_x, vga_y )
 		constant reg_zone_x: natural := 40;
 		constant reg_zone_y: natural := 1;
@@ -40,6 +40,7 @@ begin
 		variable entity_str: string(1 to 2);
 		variable step_str: string(1 to 4);
 		variable inst_name: string(1 to 8);
+		variable pos: natural;
 
 		function inZone (x: natural; x0: natural; x1: natural; y: natural; y0: natural; y1: natural) return boolean is
 		begin
@@ -50,6 +51,8 @@ begin
 		-- 支持clk单步调试
 		-- 每步显示序号和指令
 		
+		font_color <= o"777";
+		char_ascii <= character'pos(char);
 		char <= ' ';
 		if inZone(grid_x, 0, 2, grid_y, 0, 1) then
 			entity_str := "IF";
@@ -109,12 +112,43 @@ begin
 			-- Mode & BreakPointPC
 			char <= show_Mode(debug.mode, debug.breakPointPC)(grid_x - 3);
 		elsif inZone(grid_x, 0, 32, grid_y, 16, 18) then
-			char <= '0';
-			--char <= character'val(to_integer(buf.data((grid_y-16)*32+grid_x)));
+			pos := (grid_y-16)*32+grid_x;
+			char_ascii <= to_integer(buf.data(pos));
+			if buf.readPos < buf.writePos then
+				if pos < buf.readPos then
+					font_color <= o"700";
+				elsif pos < buf.writePos then
+					font_color <= o"070";
+				else
+					font_color <= o"444";
+				end if;
+			else
+				if pos < buf.writePos then
+					font_color <= o"070";
+				elsif pos < buf.readPos then
+					font_color <= o"444";
+				else
+					font_color <= o"700";
+				end if;
+			end if;
+		elsif inZone(grid_x, 0, 32, grid_y, 18, 22) then
+			pos := (grid_y-18)*16+grid_x;		
+			if grid_x mod 2 = 0 then
+				char <= toHex(buf.data(pos)(7 downto 4));
+			else
+				char <= toHex(buf.data(pos)(3 downto 0));
+			end if;
+			if to_u4(grid_x)(1) = '1' then
+				font_color <= o"666";
+			else
+				font_color <= o"555";
+			end if;
 		end if;
 
-		r <= data & data & data;
-		g <= data & data & data;
-		b <= data & data & data;
+		if data = '1' then		
+			color <= font_color;
+		else
+			color <= o"000";
+		end if;
 	end process ;
 end arch ; -- arch

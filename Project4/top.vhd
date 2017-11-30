@@ -69,6 +69,9 @@ architecture arch of Top is
 	signal debug: CPUDebug;
 	signal io: IODebug;
 	signal buf: DataBufInfo;
+
+	signal buf_write, buf_isBack, buf_read: std_logic;
+	signal buf_data_write, buf_data_read: u8;
 	
 begin
 
@@ -87,6 +90,11 @@ begin
 
 	ps2: entity work.ps2_keyboard_to_ascii 
 		port map (clk50, ps2_clk, ps2_data, ascii_new, ascii_code);
+	a2b: entity work.AsciiToBufferInput
+		port map (rst, clk50, ascii_new, ascii_code, switch(15), buf_write, buf_isBack, buf_data_write);
+	buf0: entity work.DataBuffer
+		port map (rst, buf_write, buf_read, buf_isBack, buf_data_write, buf_data_read, buf);
+	buf_read <= key(0);
 
 	make_clk25 : process( clk50 )
 	begin

@@ -5,10 +5,11 @@ use work.Base.all;
 
 entity AsciiToBufferInput is
 	port (
-		rst, asciiNew: in std_logic;
+		rst, clk: in std_logic;
+		asciiNew: in std_logic;
 		asciiCode: in std_logic_vector(6 downto 0);
 		byteMode: in std_logic;
-		write: out std_logic;
+		write, isBack: out std_logic;
 		data_write: buffer u8
 	) ;
 end AsciiToBufferInput;
@@ -16,36 +17,43 @@ end AsciiToBufferInput;
 architecture arch of AsciiToBufferInput is
 	signal buf: u4;
 	signal high: std_logic;
-	signal char: character;
+	signal char: natural range 0 to 255;
 begin
 
-	char <= character'val(to_integer(unsigned(asciiCode)));
+	char <= to_integer(unsigned(asciiCode));
+	isBack <= '1' when asciiCode = "0001000" else '0';
 
-	process( asciiNew )
+	process( rst, clk )
+		variable lastAsciiNew: std_logic;
 	begin
 		if rst = '0' then
 			buf <= x"0";
-			high <= '0';
+			high <= '1';
 			write <= '1';
-		elsif asciiNew = '0' then
+			lastAsciiNew := '0';
+		elsif rising_edge(clk) then
 			write <= '1';
-		elsif rising_edge(asciiNew) then
-			if byteMode = '1' then
-				if high = '1' then
-					data_write <= charToU4(char) & buf;
+			if lastAsciiNew = '0' and asciiNew = '1' then
+				if asciiCode = "0001000" then
 					write <= '0';
+					high <= '1';			
+				elsif byteMode = '1' then
+					if high = '1' then
+						buf <= charToU4(char);
+					else
+						data_write <= buf & charToU4(char);
+						write <= '0';
+					end if;
+					high <= not high;				
 				else
-					buf <= charToU4(char);
+					data_write <= unsigned('0' & asciiCode);
+					write <= '0';
 				end if;
-				high <= not high;				
-			else
-				data_write <= unsigned('0' & asciiCode);
-				write <= '0';
 			end if;
-		end if;
-
-		if byteMode = '0' then
-			high <= '0';
+			if byteMode = '0' then
+				high <= '1';
+			end if;
+			lastAsciiNew := asciiNew;
 		end if;
 	end process ; -- 
 
