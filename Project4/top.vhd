@@ -74,9 +74,9 @@ architecture arch of Top is
 	signal flash_write_ram2 : std_logic;
 
 	-- Boot 接管RamUart --
-	signal mem_type_ : MEMType;
-	signal mem_addr_  : u16;
-	signal mem_write_data_ : u16;
+	signal mem_type_boot : MEMType;
+	signal mem_addr_boot  : u16;
+	signal mem_write_data_boot : u16;
 
 	-- 调试信息与其他 --
 	signal digit0, digit1: u4;
@@ -136,7 +136,7 @@ begin
 	dcm40: entity work.DCM port map (clk50_in, rst, clk40, clk50);
 	-- clk50 <= clk50_in;
 	clk_vga <= clk25;
-	clk_cpu <= clk40;
+	clk_cpu <= clk25;
 
 	renderer0: entity work.Renderer 
 		port map (rst, clk_vga, vga_x, vga_y, color, debug, io, buf);	
@@ -163,18 +163,18 @@ begin
 	uart2_data_read(7 downto 0) <= unsigned(uart2_data_read_lv);
 	uart2_data_read(15 downto 8) <= x"00";
 
-	mem_type_ <= mem_type when finish_boot else
+	mem_type_boot <= mem_type when finish_boot else
 				 WriteRam2 when flash_write_ram2 = '1' else
 				 None;
-	mem_addr_ <= mem_addr when finish_boot else
+	mem_addr_boot <= mem_addr when finish_boot else
 				 flash_ram2_addr;
 
-	mem_write_data_ <= mem_write_data when finish_boot else
+	mem_write_data_boot <= mem_write_data when finish_boot else
 					   flash_ram2_data;
 
 	ruc: entity work.RamUartCtrl 
 		port map ( rst, clk_cpu, 
-			mem_type_, mem_addr_, mem_write_data_, mem_read_data, mem_busy, if_addr, if_data, if_canread,
+			mem_type_boot, mem_addr_boot, mem_write_data_boot, mem_read_data, mem_busy, if_addr, if_data, if_canread,
 			ram1addr, ram2addr, ram1data, ram2data, ram1read, ram1write, ram1enable, ram2read, ram2write, ram2enable,
 			uart_data_ready, uart_tbre, uart_tsre, uart_read, uart_write,
 			uart2_data_write, uart2_data_read, uart2_data_ready, uart2_tbre, uart2_tsre, uart2_read, uart2_write);
