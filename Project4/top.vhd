@@ -40,6 +40,7 @@ architecture arch of Top is
 	signal color, color_out: TColor;
 	signal vga_x, vga_y: integer;
 	signal clk_vga: std_logic;
+	signal rst_cpu, rst_boot: std_logic;
 
 	signal ascii_new: std_logic;
 	signal ascii_code: std_logic_vector(6 downto 0);
@@ -60,6 +61,24 @@ architecture arch of Top is
 	signal uart2_data_ready, uart2_tbre, uart2_tsre: std_logic;
 	signal uart2_read, uart2_write: std_logic;
 
+	-- 状态机 --
+	signal finish_boot: boolean := false;
+	
+	-- 对Boot接口 --
+	signal start_addr, end_addr : u16;
+	signal done : std_logic := '0';
+	signal flash_addr_16 : u16;
+	signal CE0, BYTE, OE, WE : std_logic;
+	signal flash_ram2_addr : u16;
+	signal flash_ram2_data : u16;
+	signal flash_write_ram2 : std_logic;
+
+	-- Boot 接管RamUart --
+	signal mem_type_ : MEMType;
+	signal mem_addr_  : u16;
+	signal mem_write_data_ : u16;
+
+	-- 调试信息与其他 --
 	signal digit0, digit1: u4;
 
 	signal clk_stable: std_logic;
@@ -71,6 +90,23 @@ architecture arch of Top is
 	signal buf: DataBufInfo;
 	
 begin
+
+	process(rst,clk_cpu)
+	begin
+		if rst = '0'
+		then
+			finish_boot <= false;
+			start_addr <= x"0000";
+			end_addr <= x"0220";
+		elsif rising_edge(clk11) and not finish_boot
+		then
+			if done = '1'
+			then
+				finish_boot <= true;
+			end if;
+		end if;
+	end process;
+
 
 	digit0raw <= DisplayNumber(digit0);
 	digit1raw <= DisplayNumber(digit1);
@@ -113,9 +149,12 @@ begin
 	vga_g <= unsigned(color_out(5 downto 3));
 	vga_b <= unsigned(color_out(2 downto 0));
 
-	flash_addr <= x"00000" & "000";
-	flash_data <= (others => 'Z');
-	flash_ctrl <= (others => '0');
+	flash_addr <= "000000" & flash_addr_16 & "0";
+--	flash_data <= (others => 'Z');
+	flash_ctrl <= (BYTE, CE0, '0', '0',OE, '1', '1', '1', WE); --what is STS??
+		
+	rst_cpu <= rst when finish_boot else '0';
+	rst_boot <= '0' when finish_boot else rst;
 
 	uart2: entity work.uart 
 		port map (rst, clk11, u_rxd, uart2_read, uart2_write, 
@@ -124,12 +163,29 @@ begin
 	uart2_data_read(7 downto 0) <= unsigned(uart2_data_read_lv);
 	uart2_data_read(15 downto 8) <= x"00";
 
+	mem_type_ <= mem_type when finish_boot else
+				 WriteRam2 when flash_write_ram2 = '1' else
+				 None;
+	mem_addr_ <= mem_addr when finish_boot else
+				 flash_ram2_addr;
+
+	mem_write_data_ <= mem_write_data when finish_boot else
+					   flash_ram2_data;
+
 	ruc: entity work.RamUartCtrl 
 		port map ( rst, clk_cpu, 
-			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, if_addr, if_data, if_canread,
+			mem_type_, mem_addr_, mem_write_data_, mem_read_data, mem_busy, if_addr, if_data, if_canread,
 			ram1addr, ram2addr, ram1data, ram2data, ram1read, ram1write, ram1enable, ram2read, ram2write, ram2enable,
 			uart_data_ready, uart_tbre, uart_tsre, uart_read, uart_write,
 			uart2_data_write, uart2_data_read, uart2_data_ready, uart2_tbre, uart2_tsre, uart2_read, uart2_write);
+
+	boot: entity work.Boot
+		port map(rst_boot, clk11, 
+			start_addr, end_addr, flash_addr_16, flash_data,
+			CE0, BYTE, OE, WE, flash_ram2_addr, flash_ram2_data, flash_write_ram2,
+			done);
+
+	
 	cpu0: entity work.CPU 
 		port map (rst, clk_cpu, clk_stable, key_stable(3),
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, if_addr, if_data, if_canread, 

@@ -10,10 +10,10 @@ entity Boot is
 		-- FLASH --
 		flash_addr: out u16; -- 22 downto 1, first 6 block
 		flash_data: inout u16;
-		flash_sr7: in std_logic;
+--		flash_sr7: in std_logic;
 		CE0, BYTE, OE, WE: out std_logic;
 		-- RAM2 --
-		ram2_addr: out u18;
+		ram2_addr: out u16;
 		ram2_data: out u16;
 		isWrite: out std_logic;
 		done: out std_logic
@@ -66,16 +66,13 @@ begin
 					status <= 3;
 				when 3 =>
 					ram2_data <= flash_data;
-					ram2_addr <= "00" & now_addr;
+					ram2_addr <= now_addr;
 					status <= 4;
 				when 4 =>
-					if flash_sr7 = '1'
-					then
-						isWrite <= '1';
-						OE <= '1';
-						now_addr <= now_addr + 1;
-						status <= 0;
-					end if;
+					isWrite <= '1';
+					OE <= '1';
+					now_addr <= now_addr + 1;
+					status <= 0;
 				when others => null;
 			end case;
 		end if;
