@@ -12,7 +12,7 @@ entity RamUartCtrl is
 		mem_addr: in u16;
 		mem_write_data: in u16;
 		mem_read_data: out u16;
-		mem_busy: out std_logic;	-- 串口操作可能很慢，busy=1表示尚未完成
+		mem_busy: out std_logic;	-- 废弃的信号，输出0
 		------ 对IF接口 ------
 		if_addr: in u16;
 		if_data: out u16;
@@ -24,7 +24,12 @@ entity RamUartCtrl is
 		ram2read, ram2write, ram2enable: out std_logic;
 		------ UART接口 ------
 		uart_data_ready, uart_tbre, uart_tsre: in std_logic;	-- UART flags 
-		uart_read, uart_write: out std_logic					-- UART lock
+		uart_read, uart_write: out std_logic;					-- UART lock
+		------ 串口2 ------
+		uart2_data_write: out u16;
+		uart2_data_read: in u16;
+		uart2_data_ready, uart2_tbre, uart2_tsre: in std_logic;
+		uart2_read, uart2_write: out std_logic
 	) ;
 end RamUartCtrl;
 
@@ -46,6 +51,10 @@ begin
 		ram1addr <= "00" & mem_addr; ram1data <= (others => 'Z');
 		ram2enable <= '0'; ram2read <= '0'; ram2write <= '1';
 		ram2addr <= "00" & if_addr; ram2data <= (others => 'Z');
+		-- UART 默认输出
+		uart_read <= '1'; uart_write <= '1';
+		uart2_read <= '1'; uart2_write <= '1';
+		uart2_data_write <= x"0000";
 
 		case( mem_type ) is
 		when None => null;
@@ -65,48 +74,22 @@ begin
 			ram2data <= mem_write_data;
 			if_canread <= '0'; if_data <= x"0000";
 		when ReadUart =>
-			mem_busy <= uart_busy;
-			mem_read_data <= uart_read_data;
+			uart_read <= '0';
+			mem_read_data <= ram1data;
 		when WriteUart =>
-			mem_busy <= uart_busy;
+			uart_write <= clk;
 			ram1data <= mem_write_data;
-			-- 其它工作交给下面时序逻辑
+		when TestUart =>
+			mem_read_data <= (0 => uart_tsre and uart_tbre, 1 => uart_data_ready, others => '0');
+		when ReadUart2 =>
+			uart2_read <= '0';
+			mem_read_data <= uart2_data_read;
+		when WriteUart2 =>
+			uart2_write <= clk;
+			uart2_data_write <= mem_write_data;
+		when TestUart2 =>
+			mem_read_data <= (0 => uart2_tsre and uart2_tbre, 1 => uart2_data_ready, others => '0');
 		end case ;
 	end process ; -- 
-
-	write_uart : process( rst, clk )
-		variable last_type: MEMType;
-	begin
-		if rst = '0' or (mem_type /= WriteUart and mem_type /= ReadUart) then
-			uart_read <= '1'; uart_write <= '1';
-			uart_busy <= '0';
-			count <= 0;
-		elsif falling_edge(clk) then
-			count <= count + 1;
-			if mem_type = ReadUart then
-				case count is 
-				when 0 => uart_busy <= '1'; 
-					-- wait until data_ready=1
-					if uart_data_ready = '1' then uart_read <= '0';
-					else count <= count; end if;
-				when 1 => 
-					uart_read_data <= ram1data; 
-					uart_read <= '1'; uart_busy <= '0'; count <= count; -- stop
-				when others => count <= 0;
-				end case;
-			elsif mem_type = WriteUart then
-				case count is 
-				when 0 => uart_busy <= '1'; 
-				when 1 => uart_write <= '0';
-				when 2 to 9 => null;
-				when 10 => uart_write <= '1';
-				when 11 => if uart_tbre /= '1' then count <= count; end if;
-				when 12 => if uart_tsre /= '1' then count <= count; end if;
-				when 13 => uart_busy <= '0'; count <= count; -- stop
-				when others => count <= 0;
-				end case;
-			end if;
-		end if;
-	end process ; -- write_uart
 
 end arch ; -- arch

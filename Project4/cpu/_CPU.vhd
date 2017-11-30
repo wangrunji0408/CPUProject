@@ -69,8 +69,6 @@ begin
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy,
 			mem_stallReq, mem_in.writeReg, mem_in.isLW, mem_in.isSW, mem_in.writeMemData, 
 			mem_in_aluOut, mem_out);
-
-	reg0: entity work.Reg port map (rst, clk, mem_out, reg1, reg2, reg1.data, reg2.data, debug.regs);
 	
 	id_if0: entity work.ID_IF port map (rst, clk, ctrls(4), out_for_if, if_in);
 	if_id0: entity work.IF_ID port map (rst, clk, ctrls(3), if_out, id_in);
@@ -80,5 +78,7 @@ begin
 	ex_mem0: entity work.EX_MEM port map (rst, clk, ctrls(1),
 			ex_out.writeReg, ex_out.isLW, ex_out.isSW, ex_out.writeMemData, ex_out_aluOut,
 			mem_in.writeReg, mem_in.isLW, mem_in.isSW, mem_in.writeMemData, mem_in_aluOut);
+	reg0: entity work.Reg port map (rst, clk, ctrls(0), 
+			mem_out, reg1, reg2, reg1.data, reg2.data, debug.regs);
 	
 end arch ; -- arch

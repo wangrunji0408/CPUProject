@@ -26,7 +26,7 @@ architecture arch of TestReg is
 
 begin
 
-	reg0: entity work.Reg port map (rst, clk, write, read1, read2, read1.data, read2.data);
+	reg0: entity work.Reg port map (rst, clk, PASS, write, read1, read2, read1.data, read2.data);
 
 	process
 	begin

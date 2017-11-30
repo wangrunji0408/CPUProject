@@ -4,6 +4,7 @@ use ieee.numeric_std.all;
 
 package Base is
 	subtype u32 is unsigned(31 downto 0);
+	subtype u23 is unsigned(22 downto 0);
 	subtype u16 is unsigned(15 downto 0);
 	subtype u18 is unsigned(17 downto 0);
     subtype u11 is unsigned(10 downto 0);
@@ -19,6 +20,11 @@ package Base is
 	subtype RegAddr is u4;
 	subtype TColor is std_logic_vector(8 downto 0); 	--颜色：[R2R1R0 G2G1G0 B2B1B0]
 	type RegData is array (0 to 15) of u16;
+	type DataBuf is array (0 to 63) of u8;
+	type DataBufInfo is record
+		data: DataBuf;
+		writePos, readPos: natural range 0 to 63;
+	end record;
 
 	-- 特殊寄存器。和通用寄存器一起，统一编码为4位地址。
 	constant REG_SP: RegAddr := x"8";
@@ -55,6 +61,10 @@ package Base is
 		data: u16; -- is ram1_data
 	end record;
 
+	type FlashCtrl is record
+		byte, ce, ce1, ce2, oe, rp, sts, vpen, we: std_logic;
+	end record;
+
 	type PCBranch is record
 		isOffset, isJump: std_logic;
 		offset, target: u16;
@@ -77,7 +87,12 @@ package Base is
 		data: u16;
 	end record;
 
-	type MEMType is (None, ReadRam1, WriteRam1, ReadRam2, WriteRam2, ReadUart, WriteUart);
+	type MEMType is (
+		None, 
+		ReadRam1, WriteRam1, ReadRam2, WriteRam2, 
+		ReadUart, WriteUart, TestUart,
+		ReadUart2, WriteUart2, TestUart2
+	);
 
 	type InstType is (
 		I_AND, I_OR, I_ADDU, I_SUBU, I_SLT, I_CMP,
@@ -110,6 +125,13 @@ package Base is
 		writeMemData: u16;
 	end record;
 
+	type IOEvent is record
+		pc: u16;
+		mode: MEMType;
+		addr, data: u16;
+	end record;
+	type IODebug is array (0 to 15) of IOEvent;
+
 	type CPUDebug is record
 		step: natural;
 		mode: CPUMode;
@@ -128,16 +150,20 @@ package Base is
 	constant NULL_RAMPORT : RamPort := ('1', '1', '1', "00" & x"0000", x"0000");
 	constant NULL_ALUINPUT : AluInput := (OP_NOP, x"0000", x"0000");
 	constant NULL_PCBRANCH : PCBranch := ('0', '0', x"0000", x"0000");
+	constant NULL_IOEVENT: IOEvent := (x"0000", None, x"0000", x"0000");	
 	
 	function toStr2 (x: u16) return string;
 	function toStr16 (x: u16) return string;
 	function toHex8 (x: u8) return string;
 	function charToU8 (x: character) return u8;
+	function charToU4 (x: character) return u4;
 	function toHex (x: u4) return character;
 	function toString (x: unsigned) return string;
 	function showInst (x: InstType) return string;
 	function to_u4 (x: integer) return u4;
 	function to_u16 (x: integer) return u16;
+	constant show_IOEvent_Title: string(1 to 17) := " PC     Addr Data";
+	function show_IOEvent (x: IOEvent) return string; -- len = 17
 	function show_Mode (mode: CPUMode; pc: u16) return string; --len=15
 	function show_AluOp(x: AluOp) return string; --len=3
 	function show_AluInput (x: AluInput) return string; --len=17
@@ -328,6 +354,29 @@ package body Base is
 		return to_unsigned(character'pos(x), 8);
 	end function;
 
+	function charToU4 (x: character) return u4 is
+	begin
+		case( x ) is
+			when '0' => return x"0";
+			when '1' => return x"1";
+			when '2' => return x"2";
+			when '3' => return x"3";
+			when '4' => return x"4";
+			when '5' => return x"5";
+			when '6' => return x"6";
+			when '7' => return x"7";
+			when '8' => return x"8";
+			when '9' => return x"9";
+			when 'a'|'A' => return x"A";
+			when 'b'|'B' => return x"B";
+			when 'c'|'C' => return x"C";
+			when 'd'|'D' => return x"D";
+			when 'e'|'E' => return x"E";
+			when 'f'|'F' => return x"F";		
+			when others => return x"0";
+		end case ;
+	end function;
+
 	function toHex (x: u4) return character is 
 	begin
 		case x is
@@ -399,6 +448,25 @@ package body Base is
 		when STEP => 		return "Step           ";
 		when BREAK_POINT => return "BreakPoint=" & toStr16(pc);
 		end case;
+	end function;
+
+	function show_IOEvent (x: IOEvent) return string is -- len = 17
+		variable mode_str: string(1 to 2) := "--";
+	begin
+		case( x.mode ) is
+			when ReadRam1 => mode_str := "R1";
+			when ReadRam2 => mode_str := "R2";
+			when ReadUart => mode_str := "RU";
+			when ReadUart2 => mode_str := "RS";
+			when WriteRam1 => mode_str := "W1";
+			when WriteRam2 => mode_str := "W2";
+			when WriteUart => mode_str := "WU";
+			when WriteUart2 => mode_str := "WS";
+			when TestUart => mode_str := "TU";
+			when TestUart2 => mode_str := "TS";
+			when others => null;
+		end case ;
+		return toStr16(x.pc) & " " & mode_str & " " & toStr16(x.addr) & " " & toStr16(x.data);
 	end function;
 
 	function show_AluInput (x: AluInput) return string is -- len = 17

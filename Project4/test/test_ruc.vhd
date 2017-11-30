@@ -15,6 +15,9 @@ architecture arch of TestRuc is
 
 	signal uart_data_ready, uart_tbre, uart_tsre: std_logic;	-- UART flags 
 	signal uart_read, uart_write: std_logic;					-- UART lock
+	signal uart2_data_write, uart2_data_read: u16;
+	signal uart2_data_ready, uart2_tbre, uart2_tsre: std_logic;
+	signal uart2_read, uart2_write: std_logic;
 
 	------ 对MEM接口 ------
 	signal mem_type: MEMType;
@@ -59,7 +62,8 @@ begin
 		port map ( rst, clk50, 
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, if_addr, if_data, if_canread,
 			ram1addr, ram2addr, ram1data, ram2data, ram1read, ram1write, ram1enable, ram2read, ram2write, ram2enable,
-			uart_data_ready, uart_tbre, uart_tsre, uart_read, uart_write);
+			uart_data_ready, uart_tbre, uart_tsre, uart_read, uart_write,
+			uart2_data_write, uart2_data_read, uart2_data_ready, uart2_tbre, uart2_tsre, uart2_read, uart2_write);
 
 	process(rst, clk50)
 		variable addr: u16 := x"0000";
@@ -70,34 +74,49 @@ begin
 			mem_write_data <= x"0000";
 			count <= 0;
 			addr := x"0000";
-		elsif rising_edge(clk50) and mem_busy = '0' then
+		elsif rising_edge(clk50) then
 			count <= count + 1;
 			case count  is
 			when 0 => 
-				mem_type <= ReadUart;
-			when 1 => 
+				mem_type <= TestUart;
+			when 1 =>
+				mem_type <= TestUart;			
+				if mem_read_data(1) = '0' then --can't read
+					count <= count;
+				else
+					mem_type <= ReadUart;				
+				end if;
+			when 2 => 
 				mem_type <= WriteRam1;
 				mem_addr <= addr;
 				mem_write_data <= mem_read_data + 1; 
-			when 2 => 
+			when 3 => 
 				mem_type <= ReadRam1;
 				mem_addr <= addr;
-			when 3 =>
+			when 4 =>
 				mem_type <= WriteRam2;
 				mem_addr <= addr;
 				mem_write_data <= mem_read_data + 1; 				
-			when 4 =>
+			when 5 =>
 				mem_type <= ReadRam2;
 				mem_addr <= addr;
 				if addr /= x"0010" then
-					count <= 1;
+					count <= 2;
 					addr := addr + 1;
 				end if;
-			when 5 =>
+			when 6 =>
+				data <= mem_read_data + 1; 
+				mem_type <= TestUart;				
+			when 7 => 
+				mem_type <= TestUart;
+				if mem_read_data(0) = '0' then --can't write
+					count <= count;
+				end if;
+			when 8 =>
 				mem_type <= WriteUart;
-				mem_write_data <= mem_read_data + 1;
-			when 6 => 
-				mem_type <= None;
+				mem_write_data <= data;
+			when 9 => 
+				mem_type <= None;			
 				addr := x"0000";
 				count <= 0;
 			when others => count <= 0;
