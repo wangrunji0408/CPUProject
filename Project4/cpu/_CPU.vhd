@@ -41,16 +41,16 @@ begin
 	debug.if_in <= if_in;
 	debug.id_in <= id_in;
 	debug.ex_in <= ex_in;
-	debug.mem_in <= mem_in;
+	debug.mem_in <= NULL_EX_MEM_Data;
 	debug.mem_out <= mem_out;
 	debug.step <= step;	
 	debug.mode <= mode;
 	debug.breakPointPC <= breakPointPC;
 
 	ctrl0: entity work.Ctrl port map (rst, clk, btn0, btn1, 
-		id_in.pc, breakPointPC,
-		ruc_if_canread, mem_stallReq, ex_in.isLW, ex_in.writeReg.addr, reg1, reg2,
-		ctrls, step, mode);	
+			id_in.pc, breakPointPC,
+			ruc_if_canread, mem_stallReq, ex_in.isLW, ex_in.writeReg.addr, reg1, reg2,
+			ctrls, step, mode);	
 
 	if0: entity work.InstFetch port map (
 			if_in.pc, if_in.branch, 
@@ -66,6 +66,7 @@ begin
 	mem_type <= mem_in.mem_type;
 	mem_addr <= mem_in.mem_addr;
 	mem_write_data <= mem_in.mem_write_data;
+	mem_stallReq <= mem_busy;
 	mem0: entity work.MEM port map (mem_read_data, mem_in.writeReg, mem_in.isLW, mem_in.isSW, mem_out);
 	
 	id_if0: entity work.ID_IF port map (rst, clk, ctrls(4), out_for_if, if_in);
