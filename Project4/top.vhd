@@ -65,7 +65,7 @@ architecture arch of Top is
 	signal finish_boot: boolean := false;
 	
 	-- 对Boot接口 --
-	signal start_addr, end_addr : u16;
+	signal start_addr, end_addr, ram2_start_addr : u16;
 	signal done : std_logic := '0';
 	signal flash_addr_16 : u16;
 	signal CE0, BYTE, OE, WE : std_logic;
@@ -91,19 +91,44 @@ architecture arch of Top is
 	
 begin
 
-	process(rst,clk_cpu)
+	process(rst, clk11)
+		variable count: integer;
 	begin
 		if rst = '0'
 		then
 			finish_boot <= false;
-			start_addr <= x"0000";
-			end_addr <= x"0220";
+			rst_boot <= '0';
+			count := 0;
 		elsif rising_edge(clk11) and not finish_boot
 		then
-			if done = '1'
-			then
-				finish_boot <= true;
-			end if;
+			case( count ) is
+				when 0 => 
+					start_addr <= x"0000";
+					end_addr <= x"0220";
+					ram2_start_addr <= x"0000";
+					count := 1;
+				when 1 => 
+					rst_boot <= '1';
+					if done = '1' then
+						rst_boot <= '0';
+						count := 2;
+					end if;
+				when 2 => 
+					start_addr <= x"4000";
+					end_addr <= x"5000";
+					ram2_start_addr <= x"4000";
+					count := 3;
+				when 3 => 
+					rst_boot <= '1';
+					if done = '1' then
+						rst_boot <= '0';
+						count := 4;
+					end if;
+				when 4 =>
+					finish_boot <= true;
+				when others =>
+					count := 0;
+			end case ;
 		end if;
 	end process;
 
@@ -154,7 +179,6 @@ begin
 	flash_ctrl <= (BYTE, CE0, '0', '0',OE, '1', '1', '1', WE); --what is STS??
 		
 	rst_cpu <= rst when finish_boot else '0';
-	rst_boot <= '0' when finish_boot else rst;
 
 	uart2: entity work.uart 
 		port map (rst, clk11, u_rxd, uart2_read, uart2_write, 
@@ -181,7 +205,7 @@ begin
 
 	boot: entity work.Boot
 		port map(rst_boot, clk11, 
-			start_addr, end_addr, flash_addr_16, flash_data,
+			start_addr, end_addr, ram2_start_addr, flash_addr_16, flash_data,
 			CE0, BYTE, OE, WE, flash_ram2_addr, flash_ram2_data, flash_write_ram2,
 			done);
 
