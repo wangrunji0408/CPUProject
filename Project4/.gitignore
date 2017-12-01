@@ -8,6 +8,7 @@
 !*.xco
 !*.xaw
 !*.ngd
+!*.bak
 !test/
 !mock/
 !cpu/

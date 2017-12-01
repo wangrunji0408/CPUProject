@@ -7,7 +7,7 @@ use ieee.numeric_std.all;
 entity FontReader is
 	port (
 		clk: in std_logic;
-		char: in character;				-- 字符
+		ascii: in natural range 0 to 255;-- 字符
 		x, y: in natural range 0 to 15;	-- 坐标
 		b: out std_logic				-- 输出字符在坐标下的bit
 	);
@@ -25,7 +25,7 @@ architecture arch of FontReader is
 	signal data: std_logic_vector(0 downto 0);
 begin
 	rom: FontROM port map (clk, addr, data);
-	addr <= std_logic_vector(to_unsigned(character'pos(char), 8)) 
+	addr <= std_logic_vector(to_unsigned(ascii, 8)) 
 				& std_logic_vector(to_unsigned(y, 4))
 				& std_logic_vector(to_unsigned(x, 3));
 	b <= data(0);

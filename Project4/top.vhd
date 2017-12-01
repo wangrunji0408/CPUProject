@@ -88,6 +88,9 @@ architecture arch of Top is
 	signal debug: CPUDebug;
 	signal io: IODebug;
 	signal buf: DataBufInfo;
+
+	signal buf_write, buf_isBack, buf_read: std_logic;
+	signal buf_data_write, buf_data_read: u8;
 	
 begin
 
@@ -136,7 +139,7 @@ begin
 	digit0raw <= DisplayNumber(digit0);
 	digit1raw <= DisplayNumber(digit1);
 
-	light <= x"00" & "000" & uart2_data_ready & uart2_tbre & uart2_tsre & uart2_read & uart2_write;
+	light <= x"00" & "0" & clk40 & locked & uart2_data_ready & uart2_tbre & uart2_tsre & uart2_read & uart2_write;
 	digit0 <= uart2_data_read(7 downto 4);
 	digit1 <= uart2_data_read(3 downto 0);
 
@@ -148,6 +151,11 @@ begin
 
 	ps2: entity work.ps2_keyboard_to_ascii 
 		port map (clk50, ps2_clk, ps2_data, ascii_new, ascii_code);
+	a2b: entity work.AsciiToBufferInput
+		port map (rst, clk50, ascii_new, ascii_code, switch(15), buf_write, buf_isBack, buf_data_write);
+	buf0: entity work.DataBuffer
+		port map (rst, buf_write, buf_read, buf_isBack, buf_data_write, buf_data_read, buf);
+	buf_read <= key_stable(0);
 
 	make_clk25 : process( clk50 )
 	begin
@@ -158,8 +166,8 @@ begin
 		end if;
 	end process ; -- make_clk25
 
-	dcm40: entity work.DCM port map (clk50_in, rst, clk40, clk50);
-	-- clk50 <= clk50_in;
+	--dcm40: entity work.DCM port map (clk50_in, rst, clk40, clk50, open);
+	clk50 <= clk50_in;
 	clk_vga <= clk25;
 	clk_cpu <= clk25;
 
