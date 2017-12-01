@@ -36,7 +36,7 @@ architecture arch of CPU is
 	signal mode: CPUMode;
 	signal ctrls: MidCtrls;
 
-	signal ifc_add, ifc_query, ifc_result: IFCachePort;
+	signal ifc_add, ifc_update, ifc_query, ifc_result: IFCachePort;
 	
 begin
 
@@ -54,7 +54,7 @@ begin
 			if_stallReq, mem_stallReq, ex_in.isLW, ex_in.writeReg.addr, reg1, reg2,
 			ctrls, step, mode);	
 	
-	ifc: entity work.IFCache port map (rst, clk, ifc_add, ifc_query, ifc_result);
+	ifc: entity work.IFCache port map (rst, clk, ifc_add, ifc_update, ifc_query, ifc_result);
 
 	if0: entity work.InstFetch port map (
 			if_in.pc, if_in.branch, if_in.isRefetch,
@@ -68,7 +68,7 @@ begin
 			out_for_if.branch, ex_out.writeReg, mem_out, 
 			id_out.writeReg, id_out.isLW, id_out.isSW, id_out.writeMemData, id_out.aluInput,
 			debug.instType);
-	ex0: entity work.EX port map (ex_in, ex_out);
+	ex0: entity work.EX port map (ex_in, ex_out, ifc_update);
 
 	mem_type <= mem_in.mem_type;
 	mem_addr <= mem_in.mem_addr;

@@ -10,7 +10,8 @@ entity EX is
 		ex_in: in ID_EX_Data;
 
 		------ 输出到MEM ------
-		ex_out: out EX_MEM_Data
+		ex_out: out EX_MEM_Data;
+		cache_update: out IFCachePort		
 	) ;
 end EX;
 
@@ -30,6 +31,10 @@ begin
 			ex_out.writeReg.data <= aluOut;
 		end if;
 	end process ;
+
+	-- 写RAM2时，更新取指缓存
+	cache_update <= ('1', aluOut, ex_in.writeMemData) when isSW = '1' and aluOut(15 downto 14) = "01"
+					else NULL_IFCACHEPORT;
 
 	ex_out.isLW <= isLW;
 	ex_out.isSW <= isSW;

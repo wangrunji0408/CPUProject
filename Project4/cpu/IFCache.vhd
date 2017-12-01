@@ -13,6 +13,7 @@ entity IFCache is
 	port (
 		rst, clk: in std_logic;
 		add: in IFCachePort;
+		update: in IFCachePort;
 		query: in IFCachePort;
 		result: out IFCachePort
 	) ;
@@ -42,17 +43,26 @@ begin
 		if rst = '0' then
 			cache <= (others => NULL_IFCACHEPORT);
 			count <= 0;
-		elsif rising_edge(clk) and add.enable = '1' then
-			exist := false;
-			qa: for i in cache'range loop
-				if cache(i).pc = add.pc then
-					cache(i) <= add;
-					exist := true;
+		elsif rising_edge(clk) then
+			if add.enable = '1' then
+				exist := false;
+				qa: for i in cache'range loop
+					if cache(i).pc = add.pc then
+						cache(i) <= add;
+						exist := true;
+					end if;
+				end loop ;
+				if not exist then
+					cache(count) <= add;
+					count <= count + 1;
 				end if;
-			end loop ;
-			if not exist then
-				cache(count) <= add;
-				count <= count + 1;
+			end if;
+			if update.enable = '1' then
+				qu: for i in cache'range loop
+					if cache(i).pc = update.pc then
+						cache(i) <= update;
+					end if;
+				end loop ;
 			end if;
 		end if;
 	end process ;
