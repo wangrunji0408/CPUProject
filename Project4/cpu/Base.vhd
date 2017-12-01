@@ -85,6 +85,7 @@ package Base is
 		enable: std_logic;
 		pc, inst: u16;
 	end record;
+	type CacheData is array (0 to 7) of IFCachePort;	
 
 	type RamPort is record
 		enable, read, write: std_logic;
@@ -159,6 +160,7 @@ package Base is
 		ex_in: ID_EX_Data;
 		mem_in: EX_MEM_Data;
 		mem_out: RegPort;
+		cache: CacheData;
 	end record;
 
 	constant NULL_IFCACHEPORT : IFCachePort := ('0', x"0000", x"0000");	

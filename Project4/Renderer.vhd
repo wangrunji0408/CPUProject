@@ -37,6 +37,8 @@ begin
 		variable reg_data_str: string(1 to 4);
 		constant io_zone_x: natural := 50;
 		constant io_zone_y: natural := 0;
+		constant cache_zone_x: natural := 70;
+		constant cache_zone_y: natural := 1;
 		variable entity_str: string(1 to 2);
 		variable step_str: string(1 to 4);
 		variable inst_name: string(1 to 8);
@@ -103,6 +105,13 @@ begin
 				char <= show_IOEvent_Title(grid_x - io_zone_x +1);
 			elsif grid_x >= reg_zone_x + 2 then
 				char <= show_IOEvent(io(grid_y-1))(grid_x - io_zone_x);				
+			end if;
+		elsif inZone(grid_x, cache_zone_x, cache_zone_x+9, grid_y, cache_zone_y, cache_zone_y+8) then
+			-- Cache
+			if grid_x < reg_zone_x + 4 then
+				char <= toStr16(debug.cache(grid_y - reg_zone_y).pc)(grid_x - cache_zone_x + 1);
+			elsif grid_x >= reg_zone_x + 5 then
+				char <= toStr16(debug.cache(grid_y - reg_zone_y).inst)(grid_x - cache_zone_x - 4);		
 			end if;
 		elsif inZone(grid_x, 0, 2, grid_y, 5, 6) then
 			-- 序号

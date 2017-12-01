@@ -22,6 +22,7 @@ entity Ctrl is
 		ex_isLW: in std_logic;
 		ex_writeReg: in RegAddr;
 		id_readReg1, id_readReg2: in RegPort;
+		mem_needCache: out std_logic; -- 下一周期通知MEM要缓存结果
 		-- 给挡板的信号 4/IF 3IF/ID 2ID/EX 1EX/MEM 0Reg(Write)
 		ctrls: out MidCtrls;
 		count: buffer natural;
@@ -31,8 +32,13 @@ end Ctrl;
 
 architecture arch of Ctrl is
 	signal gctrl: MidCtrl;
+	signal ex_id_conflict: std_logic;
 begin
-	process( gctrl, ex_isLW, ex_writeReg, id_readReg1, id_readReg2, mem_stallReq, if_stallReq, pc, breakPointPC, mode )
+	ex_id_conflict <= '1' when ex_isLW = '1' and ((id_readReg1.enable = '1' and ex_writeReg = id_readReg1.addr)
+						or (id_readReg2.enable = '1' and ex_writeReg = id_readReg2.addr)) else '0';
+	mem_needCache <= '0' when rst = '0' else ex_id_conflict when rising_edge(clk);
+
+	process( gctrl, ex_id_conflict, mem_stallReq, if_stallReq, pc, breakPointPC, mode )
 	begin
 		-- 注意
 		-- IF IF/ID 的控制必须同步
@@ -43,8 +49,7 @@ begin
 			ctrls <= (others => STALL);
 		elsif mem_stallReq = '1' then
 			ctrls <= (STALL, STALL, STALL, STALL, PASS);
-		elsif ex_isLW = '1' and ((id_readReg1.enable = '1' and ex_writeReg = id_readReg1.addr)
-			 or (id_readReg2.enable = '1' and ex_writeReg = id_readReg2.addr)) then
+		elsif ex_id_conflict = '1' then
 			ctrls <= (STALL, STALL, CLEAR, PASS, PASS);
 		elsif if_stallReq = '1' then
 			ctrls <= (STALL, STALL, CLEAR, PASS, PASS);

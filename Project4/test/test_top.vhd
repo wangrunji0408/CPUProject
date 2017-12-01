@@ -71,7 +71,7 @@ begin
 		generic map (ID => 1, SIZE => 32768, OFFSET => 32768)
 		port map (rst, ram1addr, ram1data, ram1read, ram1write, ram1enable);
 	ram2: entity work.MockRam
-		generic map (ID => 2, SIZE => 32768, KERNEL_PATH => "../exe/kernel.bin", PROG_PATH => "../exe/Term_test/5.bin")
+		generic map (ID => 2, SIZE => 32768, KERNEL_PATH => "../exe/kernel.bin", PROG_PATH => "../exe/Term_test/4.bin")
 		port map (rst, ram2addr, ram2data, ram2read, ram2write, ram2enable);
 	uart: entity work.MockUart
 		port map (ram1enable, ram1data, uart_read, uart_write, uart_data_ready, uart_tbre, uart_tsre);
