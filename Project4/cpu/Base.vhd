@@ -21,6 +21,11 @@ package Base is
 	subtype TColor is std_logic_vector(8 downto 0); 	--颜色：[R2R1R0 G2G1G0 B2B1B0]
 	type RegData is array (0 to 15) of u16;
 	type DataBuf is array (0 to 63) of u8;
+	type DataBufPort is record
+		write, read, isBack: std_logic;
+		canwrite, canread: std_logic;
+		data_write, data_read: u8;
+	end record;
 	type DataBufInfo is record
 		data: DataBuf;
 		writePos, readPos: natural;
@@ -52,13 +57,10 @@ package Base is
 		clk, data: std_logic;
 	end record;
 
-	type UartFlags is record
+	type UartPort is record
 		data_ready, tbre, tsre: std_logic;
-	end record;
-
-	type UartCtrl is record
-		read, write: std_logic;
-		data: u16; -- is ram1_data
+		write, read: std_logic;
+		data_write, data_read: u16; -- is ram1_data
 	end record;
 
 	type FlashCtrl is record
@@ -96,7 +98,8 @@ package Base is
 		None, 
 		ReadRam1, WriteRam1, ReadRam2, WriteRam2, 
 		ReadUart, WriteUart, TestUart,
-		ReadUart2, WriteUart2, TestUart2
+		ReadUart2, WriteUart2, TestUart2,
+		ReadBuf, WriteBuf, TestBuf
 	);
 
 	type InstType is (

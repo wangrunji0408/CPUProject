@@ -33,7 +33,12 @@ entity RamUartCtrl is
 		uart2_data_write: out u16;
 		uart2_data_read: in u16;
 		uart2_data_ready, uart2_tbre, uart2_tsre: in std_logic;
-		uart2_read, uart2_write: out std_logic
+		uart2_read, uart2_write: out std_logic;
+		------ DataBuffer接口 ------
+		buf_write, buf_read, buf_isBack: out std_logic; -- enable=0
+		buf_canwrite, buf_canread: in std_logic;
+		buf_data_write: out u8;
+		buf_data_read: in u8
 	) ;
 end RamUartCtrl;
 
@@ -41,7 +46,8 @@ architecture arch of RamUartCtrl is
 	signal uart_busy: std_logic;
 begin
 
-	process( mem_type, clk, ram1data, ram2data, mem_addr, mem_write_data, if_addr, uart_busy, boot_write_ram2, boot_ram2_addr, boot_ram2_data )
+	process( mem_type, clk, ram1data, ram2data, mem_addr, mem_write_data, if_addr, uart_busy, boot_write_ram2, boot_ram2_addr, boot_ram2_data,
+			buf_data_read, buf_canwrite, buf_canread )
 	begin
 		mem_read_data <= x"0000";
 		if_canread <= '1'; if_data <= ram2data;
@@ -55,6 +61,9 @@ begin
 		uart_read <= '1'; uart_write <= '1';
 		uart2_read <= '1'; uart2_write <= '1';
 		uart2_data_write <= x"0000";
+		-- Buf 默认输出
+		buf_read <= '1'; buf_write <= '1'; buf_isBack <= '0';
+		buf_data_write <= x"00";
 
 		case( mem_type ) is
 		when None => null;
@@ -91,6 +100,14 @@ begin
 			uart2_data_write <= mem_write_data;
 		when TestUart2 =>
 			mem_read_data <= (0 => uart2_tsre and uart2_tbre, 1 => uart2_data_ready, others => '0');
+		when ReadBuf =>
+			buf_read <= '0';
+			mem_read_data <= x"00" & buf_data_read;
+		when WriteBuf =>
+			buf_write <= clk;
+			buf_data_write <= mem_write_data(7 downto 0);
+		when TestBuf =>
+			mem_read_data <= (0 => buf_canwrite, 1 => buf_canread, others => '0');
 		end case ;
 
 		if boot_write_ram2 = '1' then

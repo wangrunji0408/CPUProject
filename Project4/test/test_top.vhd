@@ -18,9 +18,10 @@ architecture arch of TestTop is
 
 	signal uart_data_ready, uart_tbre, uart_tsre: std_logic;	-- UART flags 
 	signal uart_read, uart_write: std_logic;					-- UART lock
-	signal uart2_data, uart2_data_write, uart2_data_read: u16;
-	signal uart2_data_ready, uart2_tbre, uart2_tsre: std_logic;
-	signal uart2_read, uart2_write: std_logic;
+	signal uart2: UartPort;
+	signal uart2_data: u16;
+
+	signal buf0: DataBufPort;	
 
 	------ 对MEM接口 ------
 	signal mem_type: MEMType;
@@ -60,7 +61,8 @@ begin
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, if_addr, if_data, if_canread,
 			ram1addr, ram2addr, ram1data, ram2data, ram1read, ram1write, ram1enable, ram2read, ram2write, ram2enable,
 			uart_data_ready, uart_tbre, uart_tsre, uart_read, uart_write,
-			uart2_data_write, uart2_data_read, uart2_data_ready, uart2_tbre, uart2_tsre, uart2_read, uart2_write);
+			uart2.data_write, uart2.data_read, uart2.data_ready, uart2.tbre, uart2.tsre, uart2.read, uart2.write,
+			buf0.write, buf0.read, buf0.isBack, buf0.canwrite, buf0.canread, buf0.data_write, buf0.data_read);
 	cpu0: entity work.CPU 
 		port map (rst, clk50, clk, btn3,
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, if_addr, if_data, if_canread, 
@@ -68,6 +70,8 @@ begin
 	logger: entity work.IOLogger port map (rst, clk50, debug.id_in.pc,
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, io);
 
+	buf: entity work.DataBuffer
+		port map (rst, buf0.write, buf0.read, buf0.isBack, buf0.canwrite, buf0.canread, buf0.data_write, buf0.data_read, open);
 	ram1: entity work.MockRam
 		generic map (ID => 1, SIZE => 32768, OFFSET => 32768)
 		port map (rst, ram1addr, ram1data, ram1read, ram1write, ram1enable);
@@ -76,9 +80,9 @@ begin
 		port map (rst, ram2addr, ram2data, ram2read, ram2write, ram2enable);
 	uart: entity work.MockUart
 		port map (ram1enable, ram1data, uart_read, uart_write, uart_data_ready, uart_tbre, uart_tsre);
-	uart2: entity work.MockUart
-		port map (rst, uart2_data, uart2_read, uart2_write, uart2_data_ready, uart2_tbre, uart2_tsre);
-	uart2_data_read <= uart2_data;
-	uart2_data <= uart2_data_write when uart2_read = '1' else (others => 'Z');
+	uart2_e: entity work.MockUart
+		port map (rst, uart2_data, uart2.read, uart2.write, uart2.data_ready, uart2.tbre, uart2.tsre);
+	uart2.data_read <= uart2_data;
+	uart2_data <= uart2.data_write when uart2.read = '1' else (others => 'Z');
 	
 end arch ; -- arch
