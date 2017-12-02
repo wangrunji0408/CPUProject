@@ -7,6 +7,10 @@ use work.Base.all;
 entity RamUartCtrl is
 	port (
 		rst, clk: in std_logic;
+		------ 对Boot接口 ------		
+		boot_write_ram2: in std_logic;
+		boot_ram2_addr: in u16;
+		boot_ram2_data: in u16;
 		------ 对MEM接口 ------
 		mem_type: in MEMType;
 		mem_addr: in u16;
@@ -37,7 +41,7 @@ architecture arch of RamUartCtrl is
 	signal uart_busy: std_logic;
 begin
 
-	process( mem_type, clk, ram1data, ram2data, mem_addr, mem_write_data, if_addr, uart_busy )
+	process( mem_type, clk, ram1data, ram2data, mem_addr, mem_write_data, if_addr, uart_busy, boot_write_ram2, boot_ram2_addr, boot_ram2_data )
 	begin
 		mem_read_data <= x"0000";
 		if_canread <= '1'; if_data <= ram2data;
@@ -88,22 +92,30 @@ begin
 		when TestUart2 =>
 			mem_read_data <= (0 => uart2_tsre and uart2_tbre, 1 => uart2_data_ready, others => '0');
 		end case ;
+
+		if boot_write_ram2 = '1' then
+			-- WriteRam2
+			ram2read <= '1'; ram2write <= clk; 
+			ram2addr <= "00" & boot_ram2_addr;
+			ram2data <= boot_ram2_data;
+			if_canread <= '0'; if_data <= x"0000";
+		end if;
 	end process ; -- 
 
 	-- 两个周期读串口
 	read_uart_busy : process( rst, clk )
-		-- variable last_type: MEMType;
+		variable count : natural;
 	begin
-		if rst = '0' then
+		if rst = '0' or (mem_type /= ReadUart and mem_type /= ReadUart2) then
 			uart_busy <= '1';
-			-- last_type := None;
+			count := 0;
 		elsif rising_edge(clk) then
-			if (mem_type = ReadUart or mem_type = ReadUart2) then
+			if count = 20 then
 				uart_busy <= '0';
 			else
 				uart_busy <= '1';
+				count := count + 1;
 			end if;
-			-- last_type := mem_type;
 		end if;
 	end process ; -- read_uart_busy
 

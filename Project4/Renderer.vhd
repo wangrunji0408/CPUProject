@@ -120,19 +120,19 @@ begin
 				elsif pos < buf.writePos then
 					font_color <= o"070";
 				else
-					font_color <= o"444";
+					font_color <= o"700";
 				end if;
 			else
 				if pos < buf.writePos then
 					font_color <= o"070";
 				elsif pos < buf.readPos then
-					font_color <= o"444";
-				else
 					font_color <= o"700";
+				else
+					font_color <= o"070";
 				end if;
 			end if;
 		elsif inZone(grid_x, 0, 32, grid_y, 18, 22) then
-			pos := (grid_y-18)*16+grid_x;		
+			pos := (grid_y-18)*16+grid_x/2;		
 			if grid_x mod 2 = 0 then
 				char <= toHex(buf.data(pos)(7 downto 4));
 			else

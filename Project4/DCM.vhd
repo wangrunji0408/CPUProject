@@ -7,7 +7,7 @@
 -- \   \   \/     Version : 14.7
 --  \   \         Application : xaw2vhdl
 --  /   /         Filename : DCM.vhd
--- /___/   /\     Timestamp : 12/01/2017 20:01:27
+-- /___/   /\     Timestamp : 12/02/2017 00:02:32
 -- \   \  /  \ 
 --  \___\/\___\ 
 --
@@ -32,7 +32,8 @@ entity DCM is
           RST_IN          : in    std_logic; 
           CLKFX_OUT       : out   std_logic; 
           CLKIN_IBUFG_OUT : out   std_logic; 
-          CLK0_OUT        : out   std_logic);
+          CLK0_OUT        : out   std_logic; 
+          LOCKED_OUT      : out   std_logic);
 end DCM;
 
 architecture BEHAVIORAL of DCM is
@@ -88,7 +89,7 @@ begin
                 CLK90=>open,
                 CLK180=>open,
                 CLK270=>open,
-                LOCKED=>open,
+                LOCKED=>LOCKED_OUT,
                 PSDONE=>open,
                 STATUS=>open);
    

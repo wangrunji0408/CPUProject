@@ -83,7 +83,7 @@ architecture arch of Top is
 
 	signal clk_stable: std_logic;
 	signal key_stable: std_logic_vector(3 downto 0);
-	signal clk50, clk40, clk25, clk_cpu: std_logic;
+	signal rstnot, clk50, clk40, clk25, clk_cpu: std_logic;
 
 	signal debug: CPUDebug;
 	signal io: IODebug;
@@ -94,7 +94,7 @@ architecture arch of Top is
 	
 begin
 
-	process(rst, clk11)
+	process(rst, clk_cpu)
 		variable count: integer;
 	begin
 		if rst = '0'
@@ -102,7 +102,7 @@ begin
 			finish_boot <= false;
 			rst_boot <= '0';
 			count := 0;
-		elsif rising_edge(clk11) and not finish_boot
+		elsif rising_edge(clk_cpu) and not finish_boot
 		then
 			case( count ) is
 				when 0 => 
@@ -139,7 +139,7 @@ begin
 	digit0raw <= DisplayNumber(digit0);
 	digit1raw <= DisplayNumber(digit1);
 
-	light <= x"00" & "0" & clk40 & locked & uart2_data_ready & uart2_tbre & uart2_tsre & uart2_read & uart2_write;
+	light <= x"00" & "00" & clk40 & uart2_data_ready & uart2_tbre & uart2_tsre & uart2_read & uart2_write;
 	digit0 <= uart2_data_read(7 downto 4);
 	digit1 <= uart2_data_read(3 downto 0);
 
@@ -157,19 +157,12 @@ begin
 		port map (rst, buf_write, buf_read, buf_isBack, buf_data_write, buf_data_read, buf);
 	buf_read <= key_stable(0);
 
-	make_clk25 : process( clk50 )
-	begin
-		if rst = '0' then
-			clk25 <= '1';
-		elsif rising_edge(clk50) then
-			clk25 <= not clk25;
-		end if;
-	end process ; -- make_clk25
-
-	--dcm40: entity work.DCM port map (clk50_in, rst, clk40, clk50, open);
+	rstnot <= not rst;
+	make_clk25 : entity work.ClkDiv port map (rst, clk50, clk25);	
+	-- dcm40: entity work.DCM port map (clk50_in, rstnot, clk40, clk50, open);
 	clk50 <= clk50_in;
 	clk_vga <= clk25;
-	clk_cpu <= clk25;
+	clk_cpu <= clk50;
 
 	renderer0: entity work.Renderer 
 		port map (rst, clk_vga, vga_x, vga_y, color, debug, io, buf);	
@@ -195,24 +188,16 @@ begin
 	uart2_data_read(7 downto 0) <= unsigned(uart2_data_read_lv);
 	uart2_data_read(15 downto 8) <= x"00";
 
-	mem_type_boot <= mem_type when finish_boot else
-				 WriteRam2 when flash_write_ram2 = '1' else
-				 None;
-	mem_addr_boot <= mem_addr when finish_boot else
-				 flash_ram2_addr;
-
-	mem_write_data_boot <= mem_write_data when finish_boot else
-					   flash_ram2_data;
-
 	ruc: entity work.RamUartCtrl 
 		port map ( rst, clk_cpu, 
-			mem_type_boot, mem_addr_boot, mem_write_data_boot, mem_read_data, mem_busy, if_addr, if_data, if_canread,
+			flash_write_ram2, flash_ram2_addr, flash_ram2_data,
+			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, if_addr, if_data, if_canread,
 			ram1addr, ram2addr, ram1data, ram2data, ram1read, ram1write, ram1enable, ram2read, ram2write, ram2enable,
 			uart_data_ready, uart_tbre, uart_tsre, uart_read, uart_write,
 			uart2_data_write, uart2_data_read, uart2_data_ready, uart2_tbre, uart2_tsre, uart2_read, uart2_write);
 
 	boot: entity work.Boot
-		port map(rst_boot, clk11, 
+		port map(rst_boot, clk_cpu, 
 			start_addr, end_addr, ram2_start_addr, flash_addr_16, flash_data,
 			CE0, BYTE, OE, WE, flash_ram2_addr, flash_ram2_data, flash_write_ram2,
 			done);

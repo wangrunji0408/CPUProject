@@ -23,7 +23,7 @@ package Base is
 	type DataBuf is array (0 to 63) of u8;
 	type DataBufInfo is record
 		data: DataBuf;
-		writePos, readPos: natural range 0 to 63;
+		writePos, readPos: natural;
 	end record;
 
 	-- 特殊寄存器。和通用寄存器一起，统一编码为4位地址。

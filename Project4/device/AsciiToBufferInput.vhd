@@ -23,9 +23,14 @@ begin
 	char <= to_integer(unsigned(asciiCode));
 	isBack <= '1' when asciiCode = "0001000" else '0';
 
-	process( rst, clk )
+	process( rst, clk, buf, char )
 		variable lastAsciiNew: std_logic;
 	begin
+		if byteMode = '1' then
+			data_write <= buf & charToU4(char);			
+		else
+			data_write <= unsigned('0' & asciiCode);
+		end if;
 		if rst = '0' then
 			buf <= x"0";
 			high <= '1';
@@ -41,12 +46,10 @@ begin
 					if high = '1' then
 						buf <= charToU4(char);
 					else
-						data_write <= buf & charToU4(char);
 						write <= '0';
 					end if;
 					high <= not high;				
 				else
-					data_write <= unsigned('0' & asciiCode);
 					write <= '0';
 				end if;
 			end if;

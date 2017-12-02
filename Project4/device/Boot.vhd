@@ -57,21 +57,21 @@ begin
 						flash_data <= x"00ff";
 						status <= 1;
 					end if;
-				when 1=>
+				when 1 =>
 					WE <= '1';
 					status <= 2;
-				when 2=>
+				when 2 =>
 					OE <= '0';
 					flash_addr <= now_addr;
 					flash_data <= (others =>'Z');
 					status <= 3;					
-				when 3 to 10 => 
+				when 3 to 100 => 
 					status <= status + 1;
-				when 11 =>
+				when 101 =>
 					ram2_data <= flash_data;
 					ram2_addr <= ram2_addr;
-					status <= 12;
-				when 12 =>
+					status <= 102;
+				when 102 =>
 					isWrite <= '1';
 					OE <= '1';
 					now_addr <= now_addr + 1;

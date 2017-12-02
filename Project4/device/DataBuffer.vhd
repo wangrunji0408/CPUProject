@@ -16,22 +16,24 @@ architecture arch of DataBuffer is
 begin
 
 	process( rst, write, read )
+		variable wp, rp: natural;
 	begin
+		buf.writePos <= wp; buf.readPos <= rp;
 		if rst = '0' then
 			buf.data <= (others => x"00");
-			buf.writePos <= 0; buf.readPos <= 0;
+			wp := 0; rp := 0;
 		else
 			if falling_edge(write) then
 				if isBack = '1' then
-					buf.writePos <= buf.writePos - 1;
+					if wp = 0 then wp := 63; else wp := wp - 1; end if;
 				else
 					buf.data(buf.writePos) <= data_write;
-					buf.writePos <= buf.writePos + 1;
+					if wp = 63 then wp := 0; else wp := wp + 1; end if;
 				end if;
 			end if;
 			if falling_edge(read) then
-				data_read <= buf.data(buf.readPos);	
-				buf.readPos <= buf.readPos + 1;
+				data_read <= buf.data(rp);
+				if rp = 63 then rp := 0; else rp := rp + 1; end if;
 			end if;
 		end if;
 	end process ; -- 

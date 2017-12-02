@@ -66,6 +66,7 @@ begin
 
 	ruc: entity work.RamUartCtrl 
 		port map ( rst, clk50, 
+			'0', x"0000", x"0000",
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, if_addr, if_data, if_canread,
 			ram1addr, ram2addr, ram1data, ram2data, ram1read, ram1write, ram1enable, ram2read, ram2write, ram2enable,
 			uart_data_ready, uart_tbre, uart_tsre, uart_read, uart_write,
