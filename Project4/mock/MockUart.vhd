@@ -2,10 +2,11 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use work.Base.all;
+use work.Show.all;
 
 entity MockUart is
 	port (
-		ram1enable: in std_logic;
+		rst, ram1enable: in std_logic;
 		ram1data: inout u16;
 		read, write: in std_logic;				-- UART lock		
 		data_ready, tbre, tsre: out std_logic	-- UART flags 
@@ -15,7 +16,7 @@ end MockUart;
 architecture arch of MockUart is	
 begin
 
-	process(ram1enable, read, write, ram1data)
+	process(rst, read, write, ram1data)
 		constant zzzz: u16 := (others => 'Z');
 		variable data: u8;
 		variable dataToRead: u8;
@@ -35,12 +36,12 @@ begin
 			others => x"00"
 		);
 	begin
-		if ram1enable = '0' then --disable
+		if rst = '0' then --disable
 			ram1data <= zzzz;
 			data_ready <= '0'; tbre <= '0'; tsre <= '0';
 		elsif read = '0' and write = '0' then
 			report "UART read = write = 0. Mess!" severity warning;
-		elsif rising_edge(ram1enable) then
+		elsif rising_edge(rst) then
 			data_ready <= '1'; tbre <= '1'; tsre <= '1';
 		else
 			if falling_edge(write) then

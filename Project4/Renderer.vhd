@@ -2,6 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use work.Base.all;
+use work.Show.all;
 
 -- 渲染模块
 entity Renderer is
@@ -9,6 +10,11 @@ entity Renderer is
 		rst, clk: in std_logic;
 		vga_x, vga_y: in natural;
 		color: out TColor;
+		pixel_mode: in std_logic;	-- 是否全屏显示显存内容
+		-- 对PixelReader接口
+		pixel_x, pixel_y: out natural;
+		pixel_data: in u16;
+		-- Debug信息输入
 		debug: in CPUDebug;
 		io: in IODebug;
 		buf0, buf1: in DataBufInfo
@@ -22,15 +28,16 @@ architecture arch of Renderer is
 	signal char_ascii: natural range 0 to 255;
 	signal char: character;
 	signal char_x, char_y: natural;
-	signal data: std_logic;
+	signal font_data: std_logic;
 
 begin
-	rom: entity work.FontReader port map (clk, char_ascii, char_x, char_y, data);
+	rom: entity work.FontReader port map (clk, char_ascii, char_x, char_y, font_data);
 	-- Read ROM
 	grid_x <= vga_x / 8;  grid_y <= vga_y / 16;
-	char_x <= vga_x mod 8;  char_y <= vga_y mod 16;
+	pixel_x <= vga_x / 8;  pixel_y <= vga_y / 8;
+
 	-- Output
-	process( vga_x, vga_y )
+	process( vga_x, vga_y, pixel_data, font_data )
 		constant reg_zone_x: natural := 40;
 		constant reg_zone_y: natural := 1;
 		variable reg_id: natural;
@@ -90,13 +97,12 @@ begin
 			end if;
 		end procedure;
 	begin
-		-- TODO
-		-- 支持clk单步调试
-		-- 每步显示序号和指令
-		
+		-- 默认设置
 		font_color <= o"777";
 		char_ascii <= character'pos(char);
 		char <= ' ';
+		char_x <= vga_x mod 8;  char_y <= vga_y mod 16;
+
 		if inZone(grid_x, 0, 2, grid_y, 0, 1) then
 			entity_str := "IF";
 			char <= entity_str(grid_x + 1);
@@ -158,10 +164,33 @@ begin
 		renderBuffer(grid_x, grid_y, 0, 16, buf0, char, char_ascii, font_color);
 		renderBuffer(grid_x, grid_y, 34, 16, buf1, char, char_ascii, font_color);
 
-		if data = '1' then		
+		if font_data = '1' then		
 			color <= font_color;
 		else
 			color <= o"000";
 		end if;
+
+		if pixel_mode = '1' then
+			if pixel_data(15) = '1' then
+				-- 字符
+				char_ascii <= to_integer(pixel_data(7 downto 0));
+				if pixel_data(14) = '0' then	
+					char_y <= vga_y mod 8;		-- 上半部分字符
+				else
+					char_y <= 8 + vga_y mod 8;	-- 下半部分字符
+				end if;
+				if font_data = '1' then 
+					color <= std_logic_vector(pixel_data(13 downto 12)) & "0" 
+							& std_logic_vector(pixel_data(11 downto 10)) & "0"
+							& std_logic_vector(pixel_data(9 downto 8)) & "0";
+				else
+					color <= o"000";
+				end if;
+			else
+				-- 颜色
+				color <= TColor(pixel_data(8 downto 0));
+			end if;
+		end if;
+
 	end process ;
 end arch ; -- arch

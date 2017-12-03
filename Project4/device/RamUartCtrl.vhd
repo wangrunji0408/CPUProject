@@ -7,20 +7,28 @@ use work.Base.all;
 entity RamUartCtrl is
 	port (
 		rst, clk: in std_logic;
-		------ 对Boot接口 ------		
+
+		------ 使用者 (优先级按顺序递减) ------
+		------ 对Boot接口: RAM2------		
 		boot_write_ram2: in std_logic;
 		boot_ram2_addr: in u16;
 		boot_ram2_data: in u16;
-		------ 对MEM接口 ------
+		------ 对MEM接口: RAM1 RAM2 UART Buffer ------
 		mem_type: in MEMType;
 		mem_addr: in u16;
 		mem_write_data: in u16;
 		mem_read_data: out u16;
 		mem_busy: out std_logic;
-		------ 对IF接口 ------
+		------ 对IF接口: RAM2 ------
 		if_addr: in u16;
 		if_data: out u16;
 		if_canread: out std_logic; -- 当MEM操作RAM2时不可读
+		------ 对PixelReader接口: RAM1 ------
+		pixel_ram1_addr: in u16;
+		pixel_ram1_data: out u16;
+		pixel_canread: out std_logic; -- 当MEM操作RAM1时不可读
+
+		------ 控制设备 ------
 		------ RAM接口 ------
 		ram1addr, ram2addr: out u18;
 		ram1data, ram2data: inout u16;
@@ -46,17 +54,17 @@ architecture arch of RamUartCtrl is
 	signal uart_busy: std_logic;
 begin
 
-	process( mem_type, clk, ram1data, ram2data, mem_addr, mem_write_data, if_addr, uart_busy, boot_write_ram2, boot_ram2_addr, boot_ram2_data,
-			buf_data_read, buf_canwrite, buf_canread )
+	process( mem_type, clk, ram1data, ram2data, mem_addr, mem_write_data, if_addr, uart_busy, pixel_ram1_addr,
+			boot_write_ram2, boot_ram2_addr, boot_ram2_data,
+			buf_data_read, buf_canwrite, buf_canread)
 	begin
 		mem_read_data <= x"0000";
-		if_canread <= '1'; if_data <= ram2data;
 		mem_busy <= '0';
 		-- RAM默认输出
 		ram1enable <= '1'; ram1read <= '1'; ram1write <= '1';
-		ram1addr <= "00" & mem_addr; ram1data <= (others => 'Z');
-		ram2enable <= '0'; ram2read <= '0'; ram2write <= '1';
-		ram2addr <= "00" & if_addr; ram2data <= (others => 'Z');
+		ram1addr <= "00" & x"0000"; ram1data <= (others => 'Z');
+		ram2enable <= '1'; ram2read <= '1'; ram2write <= '1';
+		ram2addr <= "00" & x"0000"; ram2data <= (others => 'Z');
 		-- UART 默认输出
 		uart_read <= '1'; uart_write <= '1';
 		uart2_read <= '1'; uart2_write <= '1';
@@ -65,30 +73,52 @@ begin
 		buf_read <= '1'; buf_write <= '1'; buf_isBack <= '0';
 		buf_data_write <= x"00";
 
+		-- Pixel
+		ram1enable <= '0'; ram1read <= '0';
+		ram1addr <= "00" & pixel_ram1_addr;
+		pixel_ram1_data <= ram1data;
+		pixel_canread <= '1';
+
+		-- IF
+		ram2enable <= '0'; ram2read <= '0';
+		ram2addr <= "00" & if_addr;
+		if_data <= ram2data;
+		if_canread <= '1';
+
+		-- MEM
 		case( mem_type ) is
 		when None => null;
 		when ReadRam1 =>
-			ram1enable <= '0'; ram1read <= '0';
+			ram1enable <= '0'; ram1read <= '0'; ram1write <= '1';
+			ram1addr <= "00" & mem_addr;
 			mem_read_data <= ram1data;
+			pixel_canread <= '0';
 		when WriteRam1 =>
-			ram1enable <= '0'; ram1write <= clk; 
+			ram1enable <= '0'; ram1read <= '1'; ram1write <= clk;
+			ram1addr <= "00" & mem_addr;			
 			ram1data <= mem_write_data;
+			pixel_canread <= '0';
 		when ReadRam2 =>
+			ram2enable <= '0'; ram2read <= '0'; ram2write <= '1'; 		
 			ram2addr <= "00" & mem_addr;
 			mem_read_data <= ram2data;
-			if_canread <= '0'; if_data <= x"0000";
+			if_canread <= '0';
 		when WriteRam2 =>
-			ram2read <= '1'; ram2write <= clk; 
+			ram2enable <= '0'; ram2read <= '1'; ram2write <= clk; 
 			ram2addr <= "00" & mem_addr;
 			ram2data <= mem_write_data;
-			if_canread <= '0'; if_data <= x"0000";
+			if_canread <= '0';
 		when ReadUart =>
+			ram1enable <= '1'; ram1read <= '1'; ram1write <= '1';
 			uart_read <= '0';
 			mem_read_data <= ram1data;
 			mem_busy <= uart_busy;
+			pixel_canread <= '0';
 		when WriteUart =>
+			ram1enable <= '1'; ram1read <= '1'; ram1write <= '1';
 			uart_write <= clk;
 			ram1data <= mem_write_data;
+			pixel_canread <= '0';
 		when TestUart =>
 			mem_read_data <= (0 => uart_tsre and uart_tbre, 1 => uart_data_ready, others => '0');
 		when ReadUart2 =>
@@ -110,8 +140,8 @@ begin
 			mem_read_data <= (0 => buf_canwrite, 1 => buf_canread, others => '0');
 		end case ;
 
+		-- Boot
 		if boot_write_ram2 = '1' then
-			-- WriteRam2
 			ram2read <= '1'; ram2write <= clk; 
 			ram2addr <= "00" & boot_ram2_addr;
 			ram2data <= boot_ram2_data;

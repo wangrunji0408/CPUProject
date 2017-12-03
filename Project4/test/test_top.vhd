@@ -33,6 +33,12 @@ architecture arch of TestTop is
 	signal if_addr: u16;
 	signal if_data: u16;
 	signal if_canread: std_logic; -- 当MEM操作RAM2时不可读
+	------ 对PixelReader接口 ------
+	signal pixel_ram1_addr: u16;
+	signal pixel_ram1_data: u16;
+	signal pixel_canread: std_logic; -- 当MEM操作RAM1时不可读
+	signal pixel_x, pixel_y: natural;
+	signal pixel_data: u16;
 
 	signal debug: CPUDebug;
 	signal io: IODebug;
@@ -55,10 +61,25 @@ begin
 		wait;
 	end process ; -- 
 
+	process
+	begin
+		py : for i in 0 to 60 loop
+			pixel_y <= i;
+			px : for j in 0 to 80 loop
+				pixel_x <= j;
+				wait for 320 ns;
+			end loop ; -- px
+		end loop ; -- identifier
+	end process;
+
+	pr: entity work.PixelReader
+		port map (rst, clk50, pixel_x, pixel_y, pixel_data, pixel_ram1_addr, pixel_ram1_data, pixel_canread);
+
 	ruc: entity work.RamUartCtrl 
 		port map ( rst, clk50, 
 			'0', x"0000", x"0000",
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, if_addr, if_data, if_canread,
+			pixel_ram1_addr, pixel_ram1_data, pixel_canread,
 			ram1addr, ram2addr, ram1data, ram2data, ram1read, ram1write, ram1enable, ram2read, ram2write, ram2enable,
 			uart_data_ready, uart_tbre, uart_tsre, uart_read, uart_write,
 			uart2.data_write, uart2.data_read, uart2.data_ready, uart2.tbre, uart2.tsre, uart2.read, uart2.write,
@@ -79,9 +100,9 @@ begin
 		generic map (ID => 2, SIZE => 32768, KERNEL_PATH => "../exe/kernel.bin", PROG_PATH => "../exe/Term_test/fib.bin")
 		port map (rst, ram2addr, ram2data, ram2read, ram2write, ram2enable);
 	uart: entity work.MockUart
-		port map (ram1enable, ram1data, uart_read, uart_write, uart_data_ready, uart_tbre, uart_tsre);
+		port map (rst, ram1enable, ram1data, uart_read, uart_write, uart_data_ready, uart_tbre, uart_tsre);
 	uart2_e: entity work.MockUart
-		port map (rst, uart2_data, uart2.read, uart2.write, uart2.data_ready, uart2.tbre, uart2.tsre);
+		port map (rst, '1', uart2_data, uart2.read, uart2.write, uart2.data_ready, uart2.tbre, uart2.tsre);
 	uart2.data_read <= uart2_data;
 	uart2_data <= uart2.data_write when uart2.read = '1' else (others => 'Z');
 	

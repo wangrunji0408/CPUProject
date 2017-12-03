@@ -45,6 +45,7 @@ architecture arch of Top is
 	signal ascii_new: std_logic;
 	signal ascii_code: std_logic_vector(6 downto 0);
 
+	------ IOCtrl使用者 ------
 	------ 对MEM接口 ------
 	signal mem_type: MEMType;
 	signal mem_addr: u16;
@@ -55,6 +56,14 @@ architecture arch of Top is
 	signal if_addr: u16;
 	signal if_data: u16;
 	signal if_canread: std_logic; -- 当MEM操作RAM2时不可读
+	------ 对PixelReader接口 ------
+	signal pixel_ram1_addr: u16;
+	signal pixel_ram1_data: u16;
+	signal pixel_canread: std_logic; -- 当MEM操作RAM1时不可读
+
+	signal pixel_mode: std_logic;
+	signal pixel_x, pixel_y: natural;
+	signal pixel_data: u16;
 
 	signal uart2_data_write, uart2_data_read: u16;
 	signal uart2_data_read_lv: std_logic_vector(7 downto 0);
@@ -164,8 +173,13 @@ begin
 	clk_vga <= clk25;
 	clk_cpu <= clk50;
 
+	pr: entity work.PixelReader
+		port map (rst, clk_cpu, pixel_x, pixel_y, pixel_data, pixel_ram1_addr, pixel_ram1_data, pixel_canread);
 	renderer0: entity work.Renderer 
-		port map (rst, clk_vga, vga_x, vga_y, color, debug, io, buf0_info, buf1_info);	
+		port map (rst, clk_vga, vga_x, vga_y, color, 
+					pixel_mode, pixel_x, pixel_y, pixel_data, 
+					debug, io, buf0_info, buf1_info);
+	pixel_mode <= switch(14);
 	vga1: entity work.vga_controller 
 		--generic map (1440,80,152,232,'0',900,1,3,28,'1') -- 60Hz clk=106Mhz
 		-- generic map (1024,24,136,160,'0',768,3,6,29,'0') -- 60Hz clk=65Mhz
@@ -192,6 +206,7 @@ begin
 		port map ( rst, clk_cpu, 
 			flash_write_ram2, flash_ram2_addr, flash_ram2_data,
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, if_addr, if_data, if_canread,
+			pixel_ram1_addr, pixel_ram1_data, pixel_canread,			
 			ram1addr, ram2addr, ram1data, ram2data, ram1read, ram1write, ram1enable, ram2read, ram2write, ram2enable,
 			uart_data_ready, uart_tbre, uart_tsre, uart_read, uart_write,
 			uart2_data_write, uart2_data_read, uart2_data_ready, uart2_tbre, uart2_tsre, uart2_read, uart2_write,
