@@ -42,8 +42,11 @@ architecture arch of TestTop is
 
 	signal debug: CPUDebug;
 	signal io: IODebug;
+	signal cfg: Config;
 	
 begin
+
+	cfg <= (others => '0');
 
 	process
 	begin
@@ -85,7 +88,7 @@ begin
 			uart2.data_write, uart2.data_read, uart2.data_ready, uart2.tbre, uart2.tsre, uart2.read, uart2.write,
 			buf0.write, buf0.read, buf0.isBack, buf0.canwrite, buf0.canread, buf0.data_write, buf0.data_read);
 	cpu0: entity work.CPU 
-		port map (rst, clk50, clk, btn3,
+		port map (rst, clk50, clk, btn3, cfg,
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, if_addr, if_data, if_canread, 
 			x"FFFF", debug); 
 	logger: entity work.IOLogger port map (rst, clk50, debug.id_in.pc,

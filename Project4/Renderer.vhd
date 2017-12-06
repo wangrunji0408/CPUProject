@@ -18,7 +18,8 @@ entity Renderer is
 		debug: in CPUDebug;
 		io: in IODebug;
 		buf0, buf1: in DataBufInfo;
-		shell: in ShellBufInfo
+		shell: in ShellBufInfo;
+		cfg: in Config
 	) ;
 end Renderer;
 

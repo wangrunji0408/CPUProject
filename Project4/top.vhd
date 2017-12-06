@@ -186,7 +186,7 @@ begin
 	renderer0: entity work.Renderer 
 		port map (rst, clk_vga, vga_x, vga_y, color, 
 					cfg.pixel_mode, pixel_x, pixel_y, pixel_data, 
-					debug, io, buf0_info, buf1_info, shellBuf);
+					debug, io, buf0_info, buf1_info, shellBuf, cfg);
 	vga1: entity work.vga_controller 
 		--generic map (1440,80,152,232,'0',900,1,3,28,'1') -- 60Hz clk=106Mhz
 		-- generic map (1024,24,136,160,'0',768,3,6,29,'0') -- 60Hz clk=65Mhz
@@ -227,7 +227,7 @@ begin
 
 	
 	cpu0: entity work.CPU 
-		port map (rst, clk_cpu, clk_stable, key_stable(3),
+		port map (rst, clk_cpu, clk_stable, key_stable(3), cfg,
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, if_addr, if_data, if_canread, 
 			x"FFFF", debug); 
 
