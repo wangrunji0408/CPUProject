@@ -98,6 +98,8 @@ architecture arch of Top is
 	signal io: IODebug;
 	signal buf0_info, buf1_info: DataBufInfo;
 	signal buf0, buf1: DataBufPort;
+
+	signal byte_mode: std_logic;
 	
 begin
 
@@ -159,19 +161,20 @@ begin
 	ps2: entity work.ps2_keyboard_to_ascii 
 		port map (clk50, ps2_clk, ps2_data, ascii_new, ascii_code);
 	a2b: entity work.AsciiToBufferInput
-		port map (rst, clk50, ascii_new, ascii_code, switch(15), buf0.write, buf0.isBack, buf0.data_write);
+		port map (rst, clk50, ascii_new, ascii_code, byte_mode, buf0.write, buf0.isBack, buf0.data_write);
+	byte_mode <= switch(15);
 	kb_com3_buf: entity work.DataBuffer
 		port map (rst, buf0.write, buf0.read, buf0.isBack, buf0.canwrite, buf0.canread, buf0.data_write, buf0.data_read, buf0_info);
 	com3_out_buf: entity work.DataBuffer
 		port map (rst, buf1.write, buf1.read, buf1.isBack, buf1.canwrite, buf1.canread, buf1.data_write, buf1.data_read, buf1_info);
-	buf1.read <= '1';
+	buf1.read <= key_stable(0);
 
 	rstnot <= not rst;
 	make_clk25 : entity work.ClkDiv port map (rst, clk50, clk25);	
 	dcm40: entity work.DCM port map (clk50_in, rstnot, clk40, clk50, open);
 	-- clk50 <= clk50_in;
 	clk_vga <= clk25;
-	clk_cpu <= clk50;
+	clk_cpu <= clk25;
 
 	pr: entity work.PixelReader
 		port map (rst, clk_cpu, pixel_x, pixel_y, pixel_data, pixel_ram1_addr, pixel_ram1_data, pixel_canread);
@@ -222,7 +225,7 @@ begin
 	cpu0: entity work.CPU 
 		port map (rst, clk_cpu, clk_stable, key_stable(3),
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, if_addr, if_data, if_canread, 
-			switch, debug); 
+			x"FFFF", debug); 
 
 	logger: entity work.IOLogger port map (rst, clk_cpu, debug.id_in.pc,
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, io);

@@ -47,55 +47,14 @@ begin
 		variable entity_str: string(1 to 2);
 		variable step_str: string(1 to 4);
 		variable inst_name: string(1 to 8);
+		variable x0, y0, pos: natural;
+		variable buf: DataBufInfo;
 
 		function inZone (x: natural; x0: natural; x1: natural; y: natural; y0: natural; y1: natural) return boolean is
 		begin
 			return x >= x0 and x < x1 and y >= y0 and y < y1;
 		end function;
 
-		procedure renderBuffer (
-			grid_x: natural; grid_y: natural; x0: natural; y0: natural; 
-			buf: DataBufInfo;
-			signal char: out character;
-			signal char_ascii: out natural;
-			signal font_color: out TColor
-		) is
-			variable pos: natural;
-		begin
-			if inZone(grid_x, x0, x0+32, grid_y, y0, y0+2) then
-				pos := (grid_y-y0)*32 + grid_x-x0;
-				char_ascii <= to_integer(buf.data(pos));
-				if buf.readPos < buf.writePos then
-					if pos < buf.readPos then
-						font_color <= o"700";
-					elsif pos < buf.writePos then
-						font_color <= o"070";
-					else
-						font_color <= o"700";
-					end if;
-				else
-					if pos < buf.writePos then
-						font_color <= o"070";
-					elsif pos < buf.readPos then
-						font_color <= o"700";
-					else
-						font_color <= o"070";
-					end if;
-				end if;
-			elsif inZone(grid_x, x0, x0+32, grid_y, y0+2, y0+6) then
-				pos := (grid_y-y0-2)*16 + (grid_x-x0)/2;		
-				if grid_x mod 2 = 0 then
-					char <= toHex(buf.data(pos)(7 downto 4));
-				else
-					char <= toHex(buf.data(pos)(3 downto 0));
-				end if;
-				if to_u4(grid_x)(1) = '1' then
-					font_color <= o"666";
-				else
-					font_color <= o"555";
-				end if;
-			end if;
-		end procedure;
 	begin
 		-- 默认设置
 		font_color <= o"777";
@@ -161,8 +120,76 @@ begin
 			-- Mode & BreakPointPC
 			char <= show_Mode(debug.mode, debug.breakPointPC)(grid_x - 3);
 		end if;
-		renderBuffer(grid_x, grid_y, 0, 16, buf0, char, char_ascii, font_color);
-		renderBuffer(grid_x, grid_y, 34, 16, buf1, char, char_ascii, font_color);
+
+		x0 := 0; y0 := 16; buf := buf0;
+		if inZone(grid_x, x0, x0+32, grid_y, y0, y0+2) then
+			pos := (grid_y-y0)*32 + grid_x-x0;
+			char_ascii <= to_integer(buf.data(pos));
+			if buf.readPos <= buf.writePos then
+				if pos < buf.readPos then
+					font_color <= o"700";
+				elsif pos < buf.writePos then
+					font_color <= o"070";
+				else
+					font_color <= o"700";
+				end if;
+			else
+				if pos < buf.writePos then
+					font_color <= o"070";
+				elsif pos < buf.readPos then
+					font_color <= o"700";
+				else
+					font_color <= o"070";
+				end if;
+			end if;
+		elsif inZone(grid_x, x0, x0+32, grid_y, y0+2, y0+6) then
+			pos := (grid_y-y0-2)*16 + (grid_x-x0)/2;		
+			if grid_x mod 2 = 0 then
+				char <= toHex(buf.data(pos)(7 downto 4));
+			else
+				char <= toHex(buf.data(pos)(3 downto 0));
+			end if;
+			if to_u4(grid_x)(1) = '1' then
+				font_color <= o"666";
+			else
+				font_color <= o"555";
+			end if;
+		end if;
+
+		x0 := 36; y0 := 16; buf := buf1;
+		if inZone(grid_x, x0, x0+32, grid_y, y0, y0+2) then
+			pos := (grid_y-y0)*32 + grid_x-x0;
+			char_ascii <= to_integer(buf.data(pos));
+			if buf.readPos <= buf.writePos then
+				if pos < buf.readPos then
+					font_color <= o"700";
+				elsif pos < buf.writePos then
+					font_color <= o"070";
+				else
+					font_color <= o"700";
+				end if;
+			else
+				if pos < buf.writePos then
+					font_color <= o"070";
+				elsif pos < buf.readPos then
+					font_color <= o"700";
+				else
+					font_color <= o"070";
+				end if;
+			end if;
+		elsif inZone(grid_x, x0, x0+32, grid_y, y0+2, y0+6) then
+			pos := (grid_y-y0-2)*16 + (grid_x-x0)/2;		
+			if grid_x mod 2 = 0 then
+				char <= toHex(buf.data(pos)(7 downto 4));
+			else
+				char <= toHex(buf.data(pos)(3 downto 0));
+			end if;
+			if to_u4(grid_x)(1) = '1' then
+				font_color <= o"666";
+			else
+				font_color <= o"555";
+			end if;
+		end if;
 
 		if font_data = '1' then		
 			color <= font_color;
