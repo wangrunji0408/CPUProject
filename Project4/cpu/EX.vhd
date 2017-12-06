@@ -46,6 +46,9 @@ begin
 						ReadUart2 when isLW = '1' and aluOut = x"bf02" else
 						WriteUart2 when isSW = '1' and aluOut = x"bf02" else
 						TestUart2 when isLW = '1' and aluOut = x"bf03" else
+						ReadBuf when isLW = '1' and aluOut = x"bf04" else
+						WriteBuf when isSW = '1' and aluOut = x"bf04" else
+						TestBuf when isLW = '1' and aluOut = x"bf05" else
 						None when isCom else
 						ReadRam2 when isLW = '1' and aluOut(15) = '0' else
 						ReadRam1 when isLW = '1' else
@@ -55,7 +58,7 @@ begin
 						None;
 	ex_out.mem_addr <= aluOut when (isLW = '1' or isSW = '1') and not isCom else 
 						x"0000";
-	ex_out.mem_write_data <= ex_in.writeMemData when isSW = '1' and (not isCom or aluOut = x"bf00" or aluOut = x"bf02") else 
+	ex_out.mem_write_data <= ex_in.writeMemData when isSW = '1' and (not isCom or aluOut = x"bf00" or aluOut = x"bf02" or aluOut = x"bf04") else 
 								x"0000";
 
 end arch ; -- arch

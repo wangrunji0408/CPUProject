@@ -45,6 +45,7 @@ architecture arch of Top is
 	signal ascii_new: std_logic;
 	signal ascii_code: std_logic_vector(6 downto 0);
 
+	------ IOCtrl使用者 ------
 	------ 对MEM接口 ------
 	signal mem_type: MEMType;
 	signal mem_addr: u16;
@@ -55,6 +56,14 @@ architecture arch of Top is
 	signal if_addr: u16;
 	signal if_data: u16;
 	signal if_canread: std_logic; -- 当MEM操作RAM2时不可读
+	------ 对PixelReader接口 ------
+	signal pixel_ram1_addr: u16;
+	signal pixel_ram1_data: u16;
+	signal pixel_canread: std_logic; -- 当MEM操作RAM1时不可读
+
+	signal pixel_mode: std_logic;
+	signal pixel_x, pixel_y: natural;
+	signal pixel_data: u16;
 
 	signal uart2_data_write, uart2_data_read: u16;
 	signal uart2_data_read_lv: std_logic_vector(7 downto 0);
@@ -87,10 +96,8 @@ architecture arch of Top is
 
 	signal debug: CPUDebug;
 	signal io: IODebug;
-	signal buf: DataBufInfo;
-
-	signal buf_write, buf_isBack, buf_read: std_logic;
-	signal buf_data_write, buf_data_read: u8;
+	signal buf0_info, buf1_info: DataBufInfo;
+	signal buf0, buf1: DataBufPort;
 	
 begin
 
@@ -152,20 +159,27 @@ begin
 	ps2: entity work.ps2_keyboard_to_ascii 
 		port map (clk50, ps2_clk, ps2_data, ascii_new, ascii_code);
 	a2b: entity work.AsciiToBufferInput
-		port map (rst, clk50, ascii_new, ascii_code, switch(15), buf_write, buf_isBack, buf_data_write);
-	buf0: entity work.DataBuffer
-		port map (rst, buf_write, buf_read, buf_isBack, buf_data_write, buf_data_read, buf);
-	buf_read <= key_stable(0);
+		port map (rst, clk50, ascii_new, ascii_code, switch(15), buf0.write, buf0.isBack, buf0.data_write);
+	kb_com3_buf: entity work.DataBuffer
+		port map (rst, buf0.write, buf0.read, buf0.isBack, buf0.canwrite, buf0.canread, buf0.data_write, buf0.data_read, buf0_info);
+	com3_out_buf: entity work.DataBuffer
+		port map (rst, buf1.write, buf1.read, buf1.isBack, buf1.canwrite, buf1.canread, buf1.data_write, buf1.data_read, buf1_info);
+	buf1.read <= '1';
 
 	rstnot <= not rst;
 	make_clk25 : entity work.ClkDiv port map (rst, clk50, clk25);	
-	-- dcm40: entity work.DCM port map (clk50_in, rstnot, clk40, clk50, open);
-	clk50 <= clk50_in;
+	dcm40: entity work.DCM port map (clk50_in, rstnot, clk40, clk50, open);
+	-- clk50 <= clk50_in;
 	clk_vga <= clk25;
 	clk_cpu <= clk50;
 
+	pr: entity work.PixelReader
+		port map (rst, clk_cpu, pixel_x, pixel_y, pixel_data, pixel_ram1_addr, pixel_ram1_data, pixel_canread);
 	renderer0: entity work.Renderer 
-		port map (rst, clk_vga, vga_x, vga_y, color, debug, io, buf);	
+		port map (rst, clk_vga, vga_x, vga_y, color, 
+					pixel_mode, pixel_x, pixel_y, pixel_data, 
+					debug, io, buf0_info, buf1_info);
+	pixel_mode <= switch(14);
 	vga1: entity work.vga_controller 
 		--generic map (1440,80,152,232,'0',900,1,3,28,'1') -- 60Hz clk=106Mhz
 		-- generic map (1024,24,136,160,'0',768,3,6,29,'0') -- 60Hz clk=65Mhz
@@ -192,9 +206,11 @@ begin
 		port map ( rst, clk_cpu, 
 			flash_write_ram2, flash_ram2_addr, flash_ram2_data,
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, if_addr, if_data, if_canread,
+			pixel_ram1_addr, pixel_ram1_data, pixel_canread,			
 			ram1addr, ram2addr, ram1data, ram2data, ram1read, ram1write, ram1enable, ram2read, ram2write, ram2enable,
 			uart_data_ready, uart_tbre, uart_tsre, uart_read, uart_write,
-			uart2_data_write, uart2_data_read, uart2_data_ready, uart2_tbre, uart2_tsre, uart2_read, uart2_write);
+			uart2_data_write, uart2_data_read, uart2_data_ready, uart2_tbre, uart2_tsre, uart2_read, uart2_write,
+			buf1.write, buf0.read, buf1.isBack, buf1.canwrite, buf0.canread, buf1.data_write, buf0.data_read);
 
 	boot: entity work.Boot
 		port map(rst_boot, clk_cpu, 
