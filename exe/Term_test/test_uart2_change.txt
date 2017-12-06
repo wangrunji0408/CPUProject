@@ -1,0 +1,38 @@
+BEGIN:	MFPC R5			; R5 返回地址 R0 地址 R1 临时数据 R2 读串口数据
+	ADDIU R5 0x0002
+	B TESTR
+	NOP
+	LI R0 0x00BF 		; 读串口1 => R2
+	SLL R0 R0 0x0000 
+	LW R0 R2 0x0000		; R2 <= mem[BF00]
+	LI R0 0x00FF
+	AND R2 R0			; R2 <= R2 & 0x00FF
+	MFPC R5				; 测试写串口
+	ADDIU R5 0x0002
+	B TESTW	
+	NOP
+	LI R0 0x00BF 		; 写串口2 <= R2
+	SLL R0 R0 0x0000 
+	SW R0 R2 0x0000		; mem[BF00] <= R2
+	JR R7				; 返回
+	NOP
+TESTW:	NOP	 			;测试串口2是否能写 使用R0 R1
+	LI R0 0x00BF 
+	SLL R0 R0 0x0000 
+	LW R0 R1 0x0001		; R1 <= mem[BF01]
+	LI R0 0x0001 
+	AND R0 R1
+	BEQZ R0 TESTW		;BF01&1=0 则等待	
+	NOP		
+	JR R5
+	NOP 
+TESTR:	NOP				;测试串口2是否能读 使用R0 R1
+	LI R0 0x00BF 
+	SLL R0 R0 0x0000 
+	LW R0 R1 0x0001		; R0 <= mem[BF01]
+	LI R0 0x0002
+	AND R0 R1
+	BEQZ R0 TESTR		;BF01&2=0  则等待	
+	NOP	
+	JR R5
+	NOP 

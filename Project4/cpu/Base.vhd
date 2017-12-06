@@ -38,7 +38,7 @@ package Base is
 		OP_NOT, OP_SLL, OP_SRL, OP_SRA, OP_ROL,
 		OP_LTU, OP_LTS, OP_EQ -- 分别对应 SLTUI SLT CMP 指令，输出0/1
 	);
-
+    
 	type AluFlag is record
 		cf, zf, sf, vf: std_logic;
 	end record;
@@ -109,6 +109,10 @@ package Base is
 		I_ERR
 	);
 
+    type TermCmd is (
+        T_REG, T_ASM, T_UASM, T_GO, T_DATA, T_NULL
+    );
+    
 	type CPUMode is (STEP, BREAK_POINT);
 	type MidCtrl is (PASS, STALL, CLEAR, STORE, RESTORE);
 	type MidCtrls is array (4 downto 0) of MidCtrl;
@@ -172,6 +176,9 @@ package Base is
 	constant NULL_ID_EX_DATA: ID_EX_Data := (NULL_REGPORT, '0', '0', x"0000", NULL_ALUINPUT);	
 	constant NULL_EX_MEM_DATA: EX_MEM_Data := (NULL_REGPORT, '0', '0', None, x"0000", x"0000");
 	
+    
+    function toBit (x: character) return u4;
+    function strToHex16 (x: string) return u16;
 	function toStr2 (x: u16) return string;
 	function toStr16 (x: u16) return string;
 	function toHex8 (x: u8) return string;
@@ -365,7 +372,16 @@ package body Base is
 		end loop;
 		return hex;
 	end function;
-
+    
+    function strToHex16 (x: string) return u16 is
+        variable hex : u16;
+    begin
+        for i in 3 downto 0 loop
+            hex((i*4+3) downto (i*4)):=toBit(x(i));
+        end loop;
+        return hex;
+    end function;
+    
 	function toHex8 (x: u8) return string is
 	begin
 		return toHex(x(7 downto 4)) & toHex(x(3 downto 0));
@@ -422,6 +438,32 @@ package body Base is
 			when "UUUU" => return 'u';
 			when "XXXX" => return 'x';
 			when others => return '?';
+		end case;
+	end function;
+    
+    function toBit (x: character) return u4 is 
+	begin
+		case x is
+			when '0' => return "0000";
+			when '1' => return "0001";
+			when '2' => return "0010";
+			when '3' => return "0011";
+			when '4' => return "0100";
+			when '5' => return "0101";
+			when '6' => return "0110";
+			when '7' => return "0111";
+			when '8' => return "1000";
+			when '9' => return "1001";
+			when 'A'|'a' => return "1010";
+			when 'B'|'b' => return "1011";
+			when 'C'|'c' => return "1100";
+			when 'D'|'d' => return "1101";
+			when 'E'|'e' => return "1110";
+			when 'F'|'f' => return "1111";
+			when 'Z'|'z' => return "zzzz";
+			when 'U'|'u' => return "uuuu";
+			when 'X'|'x' => return "xxxx";
+			when others => return "0000";
 		end case;
 	end function;
 
