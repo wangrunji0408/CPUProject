@@ -31,6 +31,19 @@ package Base is
 		writePos, readPos: natural;
 	end record;
 
+	type LineBuf is array (0 to 15) of u8;
+	type ShellBuf is array (0 to 15) of LineBuf;
+	type ShellBufInfo is record
+		data: ShellBuf;
+		x, y: natural;
+	end record;
+
+	type Config is record
+		byte_mode: std_logic;
+		com1_keyboard: std_logic;
+		pixel_mode: std_logic;
+	end record;
+
 	-- 特殊寄存器。和通用寄存器一起，统一编码为4位地址。
 	constant REG_SP: RegAddr := x"8";
 	constant REG_IH: RegAddr := x"9";

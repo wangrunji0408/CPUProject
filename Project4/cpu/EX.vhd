@@ -61,4 +61,42 @@ begin
 	ex_out.mem_write_data <= ex_in.writeMemData when isSW = '1' and (not isCom or aluOut = x"bf00" or aluOut = x"bf02" or aluOut = x"bf04") else 
 								x"0000";
 
+	-- process( isLW, isSW, aluOut )
+	-- 	variable mem_type: MEMType;
+	-- begin
+	-- 	ex_out.mem_type <= mem_type;
+	-- 	mem_type := None;
+	-- 	if isLW = '1' then
+	-- 		if aluOut(15) = '0' then
+	-- 			mem_type := ReadRam2;
+	-- 		else
+	-- 			mem_type := ReadRam1;
+	-- 		end if;
+	-- 		case( aluOut ) is
+	-- 			when x"bf00" => mem_type := ReadUart;
+	-- 			when x"bf01" => mem_type := TestUart;
+	-- 			when x"bf02" => mem_type := ReadUart2;
+	-- 			when x"bf03" => mem_type := TestUart2;				
+	-- 			when x"bf04" => mem_type := ReadBuf;
+	-- 			when x"bf05" => mem_type := TestBuf;
+	-- 			when others => null;
+	-- 		end case ;
+	-- 	elsif isSW = '1' then
+	-- 		if aluOut(15) = '0' then
+	-- 			mem_type := WriteRam2;
+	-- 		else
+	-- 			mem_type := WriteRam1;
+	-- 		end if;
+	-- 		case( aluOut ) is
+	-- 			when x"bf00" => mem_type := WriteUart;
+	-- 			when x"bf02" => mem_type := WriteUart2;
+	-- 			when x"bf04" => mem_type := WriteBuf;
+	-- 			when others => null;
+	-- 		end case ;
+	-- 		if aluOut(15 downto 14) = "00" then
+	-- 			mem_type := None; -- Can not write < 0x4000
+	-- 		end if;
+	-- 	end if;
+	-- end process ; -- identifier
+
 end arch ; -- arch

@@ -17,13 +17,14 @@ entity Renderer is
 		-- Debug信息输入
 		debug: in CPUDebug;
 		io: in IODebug;
-		buf0, buf1: in DataBufInfo
+		buf0, buf1: in DataBufInfo;
+		shell: in ShellBufInfo
 	) ;
 end Renderer;
 
 architecture arch of Renderer is	
 	
-	signal font_color: TColor;
+	signal font_color, back_color: TColor;
 	signal grid_x, grid_y: natural; -- 80 * 30
 	signal char_ascii: natural range 0 to 255;
 	signal char: character;
@@ -58,6 +59,7 @@ begin
 	begin
 		-- 默认设置
 		font_color <= o"777";
+		back_color <= o"000";
 		char_ascii <= character'pos(char);
 		char <= ' ';
 		char_x <= vga_x mod 8;  char_y <= vga_y mod 16;
@@ -121,7 +123,7 @@ begin
 			char <= show_Mode(debug.mode, debug.breakPointPC)(grid_x - 3);
 		end if;
 
-		x0 := 0; y0 := 16; buf := buf0;
+		x0 := 0; y0 := 24; buf := buf0;
 		if inZone(grid_x, x0, x0+32, grid_y, y0, y0+2) then
 			pos := (grid_y-y0)*32 + grid_x-x0;
 			char_ascii <= to_integer(buf.data(pos));
@@ -156,7 +158,7 @@ begin
 			end if;
 		end if;
 
-		x0 := 36; y0 := 16; buf := buf1;
+		x0 := 36; y0 := 24; buf := buf1;
 		if inZone(grid_x, x0, x0+32, grid_y, y0, y0+2) then
 			pos := (grid_y-y0)*32 + grid_x-x0;
 			char_ascii <= to_integer(buf.data(pos));
@@ -188,13 +190,23 @@ begin
 				font_color <= o"666";
 			else
 				font_color <= o"555";
+			end if;
+		end if;
+
+		x0 := 0; y0 := 8;
+		if inZone(grid_x, x0, x0+16, grid_y, y0, y0+16) then
+			-- Shell
+			char_ascii <= to_integer(shell.data(grid_y - y0)(grid_x - x0));
+			if grid_y - y0 = shell.y and grid_x - x0 = shell.x then
+				back_color <= o"777";
+				font_color <= o"000";
 			end if;
 		end if;
 
 		if font_data = '1' then		
 			color <= font_color;
 		else
-			color <= o"000";
+			color <= back_color;
 		end if;
 
 		if pixel_mode = '1' then

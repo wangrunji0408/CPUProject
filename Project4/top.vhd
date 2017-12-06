@@ -61,7 +61,6 @@ architecture arch of Top is
 	signal pixel_ram1_data: u16;
 	signal pixel_canread: std_logic; -- 当MEM操作RAM1时不可读
 
-	signal pixel_mode: std_logic;
 	signal pixel_x, pixel_y: natural;
 	signal pixel_data: u16;
 
@@ -98,8 +97,9 @@ architecture arch of Top is
 	signal io: IODebug;
 	signal buf0_info, buf1_info: DataBufInfo;
 	signal buf0, buf1: DataBufPort;
+	signal shellBuf: ShellBufInfo;
 
-	signal byte_mode: std_logic;
+	signal cfg: Config;
 	
 begin
 
@@ -144,6 +144,9 @@ begin
 		end if;
 	end process;
 
+	cfg.byte_mode <= switch(15);
+	cfg.pixel_mode <= switch(14);
+	cfg.com1_keyboard <= switch(13);
 
 	digit0raw <= DisplayNumber(digit0);
 	digit1raw <= DisplayNumber(digit1);
@@ -158,11 +161,13 @@ begin
 		deb_key: entity work.debounce port map(clk50, key(i), key_stable(i));
 	end generate ;
 
+	shell0: entity work.Shell
+		port map (rst, clk50, buf0.write, buf0.isBack, buf0.data_write, buf1.write, buf1.data_write, shellBuf);
+
 	ps2: entity work.ps2_keyboard_to_ascii 
 		port map (clk50, ps2_clk, ps2_data, ascii_new, ascii_code);
 	a2b: entity work.AsciiToBufferInput
-		port map (rst, clk50, ascii_new, ascii_code, byte_mode, buf0.write, buf0.isBack, buf0.data_write);
-	byte_mode <= switch(15);
+		port map (rst, clk50, ascii_new, ascii_code, cfg.byte_mode, buf0.write, buf0.isBack, buf0.data_write);
 	kb_com3_buf: entity work.DataBuffer
 		port map (rst, buf0.write, buf0.read, buf0.isBack, buf0.canwrite, buf0.canread, buf0.data_write, buf0.data_read, buf0_info);
 	com3_out_buf: entity work.DataBuffer
@@ -180,9 +185,8 @@ begin
 		port map (rst, clk_cpu, pixel_x, pixel_y, pixel_data, pixel_ram1_addr, pixel_ram1_data, pixel_canread);
 	renderer0: entity work.Renderer 
 		port map (rst, clk_vga, vga_x, vga_y, color, 
-					pixel_mode, pixel_x, pixel_y, pixel_data, 
-					debug, io, buf0_info, buf1_info);
-	pixel_mode <= switch(14);
+					cfg.pixel_mode, pixel_x, pixel_y, pixel_data, 
+					debug, io, buf0_info, buf1_info, shellBuf);
 	vga1: entity work.vga_controller 
 		--generic map (1440,80,152,232,'0',900,1,3,28,'1') -- 60Hz clk=106Mhz
 		-- generic map (1024,24,136,160,'0',768,3,6,29,'0') -- 60Hz clk=65Mhz
