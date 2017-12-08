@@ -158,9 +158,38 @@ def debug(s):
 	if not sim_mode:
 		return ''
 	res = ''
-	for c in s + '\n':
+	for c in s:
 		res += set_reg(reg='R3', data='%04x' % ord(c))
 		res += write_mem(addr='BF00', reg='R3')
+	return res
+
+def debug_reg(reg):
+	if not sim_mode:
+		return ''
+	res = ''
+	res += debug(reg + '=')
+	res += set_reg(reg='R5', data='F000')
+	res += '\tAND R5 %s\n' % reg
+	res += '\tSRA R5 R5 0x0\n'
+	res += '\tSRA R5 R5 0x4\n'
+	res += '\tADDIU R5 0x30\n'
+	res += write_mem(addr='BF00', reg='R5')
+	res += set_reg(reg='R5', data='0F00')
+	res += '\tAND R5 %s\n' % reg
+	res += '\tSRA R5 R5 0x0\n'
+	res += '\tADDIU R5 0x30\n'
+	res += write_mem(addr='BF00', reg='R5')
+	res += set_reg(reg='R5', data='00F0')
+	res += '\tAND R5 %s\n' % reg
+	res += '\tSRA R5 R5 0x4\n'
+	res += '\tADDIU R5 0x30\n'
+	res += write_mem(addr='BF00', reg='R5')
+	res += set_reg(reg='R5', data='000F')
+	res += '\tAND R5 %s\n' % reg
+	res += '\tADDIU R5 0x30\n'
+	res += write_mem(addr='BF00', reg='R5')
+	res += set_reg(reg='R5', data='0020')
+	res += write_mem(addr='BF00', reg='R5')
 	return res
 
 def process_line(line, line_num):
@@ -174,9 +203,12 @@ def process_line(line, line_num):
 		s = tokens[1]
 		pos = [int(i) for i in tokens[2].strip('()').split(',')]
 		fout.write(print_str(s, pos))
+	elif tokens[0].startswith('DebugReg'):
+		# DebugReg R1
+		fout.write(debug_reg(tokens[1]))
 	elif tokens[0].startswith('Debug'):
 		# Debug Hello,World
-		fout.write(debug(tokens[1]))
+		fout.write(debug(tokens[1] + '\n'))
 	elif tokens[0].startswith('Draw'):
 		# Draw 700 (20,19)
 		# Draw 700 R2
