@@ -161,8 +161,8 @@ begin
 		deb_key: entity work.debounce port map(clk50, key(i), key_stable(i));
 	end generate ;
 
-	shell0: entity work.Shell
-		port map (rst, clk50, buf0.write, buf0.isBack, buf0.data_write, buf1.write, buf1.data_write, shellBuf);
+	--shell0: entity work.Shell
+	--	port map (rst, clk50, buf0.write, buf0.isBack, buf0.data_write, buf1.write, buf1.data_write, shellBuf);
 
 	ps2: entity work.ps2_keyboard_to_ascii 
 		port map (clk50, ps2_clk, ps2_data, ascii_new, ascii_code);
@@ -179,7 +179,7 @@ begin
 	dcm40: entity work.DCM port map (clk50_in, rstnot, clk40, clk50, open);
 	-- clk50 <= clk50_in;
 	clk_vga <= clk25;
-	clk_cpu <= clk25;
+	clk_cpu <= clk40 when switch(12) = '0' else clk25;
 
 	pr: entity work.PixelReader
 		port map (rst, clk_cpu, pixel_x, pixel_y, pixel_data, pixel_ram1_addr, pixel_ram1_data, pixel_canread);
@@ -202,12 +202,13 @@ begin
 		
 	rst_cpu <= rst when finish_boot else '0';
 
-	uart2: entity work.uart 
-		port map (rst, clk11, u_rxd, uart2_read, uart2_write, 
-			std_logic_vector(uart2_data_write(7 downto 0)), uart2_data_read_lv, 
-			uart2_data_ready, open, open, uart2_tbre, uart2_tsre, u_txd);
-	uart2_data_read(7 downto 0) <= unsigned(uart2_data_read_lv);
-	uart2_data_read(15 downto 8) <= x"00";
+	u_txd <= '1';
+	-- uart2: entity work.uart 
+	-- 	port map (rst, clk11, u_rxd, uart2_read, uart2_write, 
+	-- 		std_logic_vector(uart2_data_write(7 downto 0)), uart2_data_read_lv, 
+	-- 		uart2_data_ready, open, open, uart2_tbre, uart2_tsre, u_txd);
+	-- uart2_data_read(7 downto 0) <= unsigned(uart2_data_read_lv);
+	-- uart2_data_read(15 downto 8) <= x"00";
 
 	ruc: entity work.RamUartCtrl 
 		port map ( rst, clk_cpu, 
