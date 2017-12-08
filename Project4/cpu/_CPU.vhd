@@ -21,7 +21,7 @@ entity CPU is
 		breakPointPC: in u16;
 		debug: out CPUDebug;
 
-		out_intt: std_logic
+		out_intt: in std_logic
 	) ;
 end CPU;
 
@@ -41,6 +41,8 @@ architecture arch of CPU is
 	signal ctrls: MidCtrls;
 
 	signal ifc_add, ifc_update, ifc_query, ifc_result: IFCachePort;
+
+	signal reg_ihh, intt: std_logic;
 	
 begin
 
@@ -86,8 +88,9 @@ begin
 	ex_mem0: entity work.EX_MEM port map (rst, clk, ctrls(1), ex_out, mem_in);
 	reg0: entity work.Reg port map (rst, clk, ctrls(0), 
 			mem_out, reg1, reg2, reg1.data, reg2.data, debug.regs,
-			sir6);
+			sir6, reg_ihh);
 
+	intt <= out_intt and reg_ihh;
 	if_in.pc        <= ori_if_in.pc;
 	if_in.isRefetch <= ori_if_in.isRefetch when out_intt='0' else '0';
 	if_in.branch    <= ori_if_in.branch when out_intt='0' else 

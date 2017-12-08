@@ -13,7 +13,8 @@ entity Reg is
 		read1_dataout, read2_dataout: out u16;
 		d_regs: out RegData;		-- for debug
 
-		sir6: in SaveInR6:= ('0', x"0000")
+		sir6: in SaveInR6:= ('0', x"0000");
+		ihh : out std_logic
 	) ;
 end Reg;
 
@@ -23,6 +24,7 @@ architecture arch of Reg is
 
 begin
 	d_regs <= Regs;
+	ihh <= Regs(9)(15);
 
 	read1_dataout <= Regs(to_integer(read1.addr)) when read1.enable = '1' 
 					 else x"0000";
@@ -39,6 +41,7 @@ begin
 			end if;
 			if sir6.enable = '1' then
 				Regs(6) <= sir6.pc;
+				Regs(9)(15) <= '0';
 			end if;
 		end if;
 	end process;

@@ -44,11 +44,6 @@ DELINT: NOP 			;中断处理程序
 	SLL R6 R6 0x0000 	;R6=0xBF00 
 	SW R6 R3 0x0000
 	NOP
-	;MFIH R3				;用r3=IH（高位变成1）
-	;LI R0 0x0080
-	;SLL R0 R0 0x000
-	;OR R3 R0
-	;MTIH R3
 	LW_SP R0 0x0
 	LW_SP R1 0x1
 	LW_SP R2 0x2
@@ -56,8 +51,12 @@ DELINT: NOP 			;中断处理程序
 	LW_SP R6 0x6
 	LW_SP R7 0x7		;r7=用户程序返回地址
 	NOP
+	MFIH R3				;用r3=IH（高位变成1）
+	LI R0 0x0080
+	SLL R0 R0 0x000
+	OR R3 R0
 	JR R6
-	NOP	
+	MTIH R3
 START:	LI R0 0x07	;init  0x8251 ;初始化IH寄存器，最高位为1时，允许中断，为0时不允许。初始化为0，kernel不允许中断
 	MTIH R0
 	LI R0 0x00BF 		;初始化栈地址
