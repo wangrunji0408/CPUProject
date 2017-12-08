@@ -2,10 +2,12 @@
 import os
 import sys
 
-filename = sys.argv[1]
-outname = filename.replace('mp', 'mips')
-fin = open(filename, 'r')
-fout = open(outname, 'w')
+if __name__ == '__main__':
+	filename = sys.argv[1]
+	outname = filename.replace('mp', 's')
+	fin = open(filename, 'r')
+	fout = open(outname, 'w')
+	sim_mode = False
 
 # R0-R2 用户可用
 # R3 用于读写内存的内容
@@ -68,20 +70,23 @@ def set_reg(reg, data):
 	if data[0:2] == '00':
 		return '\tLI %s 0x%s\t\t\t; %s <= %s\n' % (reg, data[2:4],  reg, data)
 	else:
-		return """
-	LI %s 0x%s
-	SLL %s %s 0x0000 
-	ADDIU %s 0x%s		; %s <= %s
-""" % (reg, data[0:2], reg, reg, reg, data[2:4],  reg, data)
+		res = '\tLI %s 0x%s\n\tSLL %s %s 0x0000\n' % (reg, data[0:2], reg, reg)
+		if data[2:4] == '00':
+			pass
+		elif int(data[2], 16) < 8:
+			res += '\tADDIU %s 0x%s\t\t; %s <= %s\n' % (reg, data[2:4],  reg, data)
+		else:
+			res += '\tLI R5 0x%s\n\tADDU R5 %s %s\t\t; %s <= %s\n' % (data[2:4], reg, reg,  reg, data)
+		return res
 
 def read_mem(addr, reg):
-	return (TESTR if addr == 'BF00' else '') \
+	return (TESTR if addr == 'BF00' and not sim_mode else '') \
 		+ set_reg('R4', addr) \
 		+ '\tLW %s %s 0x0\t\t' % ('R4', reg) \
 		+ '; %s <= *%s\n' % (reg, addr)
 
 def write_mem(addr, reg):
-	return (TESTW if addr == 'BF00' else '') \
+	return (TESTW if addr == 'BF00' and not sim_mode else '') \
 		+ set_reg('R4', addr) \
 		+ '\tSW %s %s 0x0\t\t' % ('R4', reg) \
 		+ '; %s => *%s\n' % (reg, addr)
@@ -149,6 +154,15 @@ def print_color(color, pos):
 		res += write_mem(addr=pixel_addr(x, y), reg='R3')
 	return res
 
+def debug(s):
+	if not sim_mode:
+		return ''
+	res = ''
+	for c in s + '\n':
+		res += set_reg(reg='R3', data='%04x' % ord(c))
+		res += write_mem(addr='BF00', reg='R3')
+	return res
+
 def process_line(line, line_num):
 	if not line.strip().startswith('#'):
 		fout.write(line)
@@ -160,6 +174,9 @@ def process_line(line, line_num):
 		s = tokens[1]
 		pos = [int(i) for i in tokens[2].strip('()').split(',')]
 		fout.write(print_str(s, pos))
+	elif tokens[0].startswith('Debug'):
+		# Debug Hello,World
+		fout.write(debug(tokens[1]))
 	elif tokens[0].startswith('Draw'):
 		# Draw 700 (20,19)
 		# Draw 700 R2
@@ -202,10 +219,10 @@ def process_line(line, line_num):
 	else:
 		print('Syntax Error! Line %d' % line_num)
 
-
-i = 1
-for line in fin.readlines():
-	process_line(line, i)
-	i += 1
-fout.write(RETURN)	
-fout.write(TEST_RW_INSTS)
+if __name__ == '__main__':
+	i = 1
+	for line in fin.readlines():
+		process_line(line, i)
+		i += 1
+	fout.write(RETURN)	
+	fout.write(TEST_RW_INSTS)

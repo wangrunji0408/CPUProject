@@ -63,10 +63,9 @@ begin
 	ex_out.mem_write_data <= ex_in.writeMemData when isSW = '1' and (not isCom or aluOut = x"bf00" or aluOut = x"bf02" or aluOut = x"bf04") else 
 								x"0000";
 
-	process( isLW, isSW, aluOut )
+	process( isLW, isSW, aluOut, com1_keyboard )
 		variable mem_type: MEMType;
 	begin
-		ex_out.mem_type <= mem_type;
 		mem_type := None;
 		if isLW = '1' then
 			if aluOut(15) = '0' then
@@ -118,6 +117,7 @@ begin
 				mem_type := None; -- Can not write < 0x4000
 			end if;
 		end if;
+		ex_out.mem_type <= mem_type;		
 	end process ; -- identifier
 
 end arch ; -- arch

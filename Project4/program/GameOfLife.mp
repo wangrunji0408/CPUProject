@@ -1,6 +1,8 @@
 BEGIN:
+	NOP
 	# R0 <= E000
 	# R1 <= FFFF
+	# Debug Clear
 CLEAR_LOOP:
 	# Draw 000 R0
 	ADDIU R0 0x1
@@ -14,6 +16,7 @@ INIT:
 	# Draw 777 (10,12)
 ROUND_START: NOP
 MOVE_MEM:
+	# Debug MoveMem
 	; Move E000-FFFF to C000-DFFF
 	# R0 <= E000
 	# R1 <= C000
@@ -27,6 +30,7 @@ MOVE_MEM_LOOP:
 	BNEZ R2 MOVE_MEM_LOOP
 	NOP
 CALC:
+	# Debug Calc
 	# R0 <= C000 ;addr
 CALC_LOOP: NOP
 TEST_RANGE: NOP
