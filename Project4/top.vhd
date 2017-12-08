@@ -105,7 +105,6 @@ begin
 			finish_boot <= false;
 			rst_boot <= '0';
 			count := 0;
-			intt <= '0';
 		elsif rising_edge(clk_cpu) and not finish_boot
 		then
 			case( count ) is
@@ -136,14 +135,10 @@ begin
 				when others =>
 					count := 0;
 			end case ;
-		elsif rising_edge(clk_cpu) and buf_write='0' and ascii_code="0000011"
-		then
-			intt <= '1';
-		else
-			intt <= '0';
 		end if;
 	end process;
 
+	intt <= '1' when buf_write='0' and ascii_code="0000011" else '0';
 
 	digit0raw <= DisplayNumber(digit0);
 	digit1raw <= DisplayNumber(digit1);
