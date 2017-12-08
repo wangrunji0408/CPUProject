@@ -34,7 +34,7 @@ DELINT: NOP 			;中断处理程序
 	SLL R6 R6 0x0000 	;R6=0xBF00 
 	SW R6 R3 0x0000		;(R3='N'
 	NOP
-	LI R3 0x000F		;提示终端，中断处理结束
+	LI R3 0x54		;提示终端，中断处理结束
 	MFPC R7 
 	ADDIU R7 0x0003  
 	NOP
