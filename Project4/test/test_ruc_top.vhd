@@ -40,6 +40,10 @@ architecture arch of TestRucTop is
 	signal if_addr: u16;
 	signal if_data: u16;
 	signal if_canread: std_logic; -- 当MEM操作RAM2时不可读
+	------ 对PixelReader接口 ------
+	signal pixel_ram1_addr: u16;
+	signal pixel_ram1_data: u16;
+	signal pixel_canread: std_logic; -- 当MEM操作RAM1时不可读
 
 	signal digit0, digit1: u4;
 
@@ -49,6 +53,8 @@ architecture arch of TestRucTop is
 	signal uart2_data_write, uart2_data_read: u16;
 	signal uart2_data_ready, uart2_tbre, uart2_tsre: std_logic;
 	signal uart2_read, uart2_write: std_logic;
+
+	signal buf0: DataBufPort;
 	
 begin
 
@@ -68,9 +74,11 @@ begin
 		port map ( rst, clk50, 
 			'0', x"0000", x"0000",
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, if_addr, if_data, if_canread,
+			pixel_ram1_addr, pixel_ram1_data, pixel_canread,			
 			ram1addr, ram2addr, ram1data, ram2data, ram1read, ram1write, ram1enable, ram2read, ram2write, ram2enable,
 			uart_data_ready, uart_tbre, uart_tsre, uart_read, uart_write,
-			uart2_data_write, uart2_data_read, uart2_data_ready, uart2_tbre, uart2_tsre, uart2_read, uart2_write);
+			uart2_data_write, uart2_data_read, uart2_data_ready, uart2_tbre, uart2_tsre, uart2_read, uart2_write,
+			buf0.write, buf0.read, buf0.isBack, buf0.canwrite, buf0.canread, buf0.data_write, buf0.data_read);
 
 	process(rst, clk50)
 		variable addr: u16 := x"0000";

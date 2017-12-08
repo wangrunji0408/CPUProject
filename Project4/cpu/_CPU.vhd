@@ -6,6 +6,7 @@ use work.Base.all;
 entity CPU is
 	port (
 		rst, clk, btn0, btn1: in std_logic;
+		cfg: in Config;
 		
 		------ MEM访问RAM/串口的接口 ------
 		mem_type: out MEMType;
@@ -72,7 +73,7 @@ begin
 			out_for_if.branch, ex_out.writeReg, mem_out, 
 			id_out.writeReg, id_out.isLW, id_out.isSW, id_out.writeMemData, id_out.aluInput,
 			debug.instType);
-	ex0: entity work.EX port map (ex_in, ex_out, ifc_update);
+	ex0: entity work.EX port map (ex_in, ex_out, ifc_update, cfg.com1_keyboard);
 
 	mem_type <= mem_in.mem_type;
 	mem_addr <= mem_in.mem_addr;
