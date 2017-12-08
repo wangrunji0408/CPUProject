@@ -11,7 +11,9 @@ entity Reg is
 		write: in RegPort;
 		read1, read2: in RegPort;	-- read.data is null, unable to read.
 		read1_dataout, read2_dataout: out u16;
-		d_regs: out RegData		-- for debug
+		d_regs: out RegData;		-- for debug
+
+		sir6: in SaveInR6:= ('0', x"0000")
 	) ;
 end Reg;
 
@@ -32,8 +34,11 @@ begin
 		if rst = '0' then
 			Regs <= (others => x"0000");
 		elsif rising_edge(clk) then
-			if write.enable = '1'then
+			if write.enable = '1' then
 				Regs(to_integer(write.addr)) <= write.data;
+			end if;
+			if sir6.enable = '1' then
+				Regs(6) <= sir6.pc;
 			end if;
 		end if;
 	end process;

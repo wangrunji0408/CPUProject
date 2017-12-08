@@ -78,6 +78,9 @@ architecture arch of Top is
 	signal mem_addr_boot  : u16;
 	signal mem_write_data_boot : u16;
 
+	-- 中断 --
+	signal intt : std_logic;
+
 	-- 调试信息与其他 --
 	signal digit0, digit1: u4;
 
@@ -102,6 +105,7 @@ begin
 			finish_boot <= false;
 			rst_boot <= '0';
 			count := 0;
+			intt <= '0';
 		elsif rising_edge(clk_cpu) and not finish_boot
 		then
 			case( count ) is
@@ -132,6 +136,11 @@ begin
 				when others =>
 					count := 0;
 			end case ;
+		elsif rising_edge(clk_cpu) and buf_write='0' and ascii_code="0000011"
+		then
+			intt <= '1';
+		else
+			intt <= '0';
 		end if;
 	end process;
 
@@ -176,7 +185,6 @@ begin
 	vga_b <= unsigned(color_out(2 downto 0));
 
 	flash_addr <= "000000" & flash_addr_16 & "0";
---	flash_data <= (others => 'Z');
 	flash_ctrl <= (BYTE, CE0, '0', '0',OE, '1', '1', '1', WE); --what is STS??
 		
 	rst_cpu <= rst when finish_boot else '0';
@@ -206,7 +214,8 @@ begin
 	cpu0: entity work.CPU 
 		port map (rst, clk_cpu, clk_stable, key_stable(3),
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, if_addr, if_data, if_canread, 
-			switch, debug); 
+			switch, debug,
+			intt); 
 
 	logger: entity work.IOLogger port map (rst, clk_cpu, debug.id_in.pc,
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, io);

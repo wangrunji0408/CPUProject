@@ -64,7 +64,7 @@ begin
 	cpu0: entity work.CPU 
 		port map (rst, clk50, clk, btn3,
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, if_addr, if_data, if_canread, 
-			x"FFFF", debug); 
+			x"FFFF", debug, '0'); 
 	logger: entity work.IOLogger port map (rst, clk50, debug.id_in.pc,
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, io);
 
