@@ -159,6 +159,11 @@ begin
 				reg2_enable <= '1'; reg2_addr <= REG_SP;
 				writeMemData <= reg1_data;
 				aluInput <= (OP_ADD, reg2_data, signExtend(getIm8(inst)));
+			when INST_SLTUI =>
+				instType <= I_SLTUI;
+				reg1_enable <= '1'; reg1_addr <= getRx(inst);
+				aluInput <= (OP_LTU, reg1_data, zeroExtend(getIm8(inst)));
+				writeReg <= ('1', REG_T, x"0000");
 			when INST_SET0 =>
 				oprx := getRx(inst);
 				case oprx is

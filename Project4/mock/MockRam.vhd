@@ -3,6 +3,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use work.Base.all;
 use work.Data.all;
+use work.Show.all;
 use std.textio.all;
 
 entity MockRam is

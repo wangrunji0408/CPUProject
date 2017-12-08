@@ -40,7 +40,8 @@ begin
 		elsif rising_edge(clk) then
 			newEvent := mem_type /= None and (mem_type /= last_type or mem_addr /= last_addr);
 			testAgain := (mem_type = TestUart and info_v(0).mode = TestUart) 
-						or (mem_type = TestUart2 and info_v(0).mode = TestUart2);
+						or (mem_type = TestUart2 and info_v(0).mode = TestUart2)
+						or (mem_type = TestBuf and info_v(0).mode = TestBuf);
 
 			if newEvent and testAgain then
 				info_v(0).data := mem_read_data;

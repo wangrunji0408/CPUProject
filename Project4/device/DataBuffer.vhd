@@ -6,14 +6,25 @@ use work.Base.all;
 entity DataBuffer is
 	port (
 		rst, write, read, isBack: in std_logic; -- enable=0
+		canwrite, canread: out std_logic;
 		data_write: in u8;
 		data_read: out u8;
 		buf: buffer DataBufInfo
 	) ;
 end DataBuffer;
 
-architecture arch of DataBuffer is		
+architecture arch of DataBuffer is	
+	function add(x: natural) return natural is
+	begin if x = 63 then return 0; else return x + 1; end if;
+	end function;
+
+	function sub(x: natural) return natural is
+	begin if x = 0 then return 63; else return x - 1; end if;
+	end function;
 begin
+
+	canread <= '1' when buf.readPos /= buf.writePos else '0';
+	canwrite <= '1' when add(buf.writePos) /= buf.readPos else '0';
 
 	process( rst, write, read )
 		variable wp, rp: natural;
@@ -25,15 +36,15 @@ begin
 		else
 			if falling_edge(write) then
 				if isBack = '1' then
-					if wp = 0 then wp := 63; else wp := wp - 1; end if;
+					wp := sub(wp);
 				else
 					buf.data(buf.writePos) <= data_write;
-					if wp = 63 then wp := 0; else wp := wp + 1; end if;
+					wp := add(wp);
 				end if;
 			end if;
 			if falling_edge(read) then
 				data_read <= buf.data(rp);
-				if rp = 63 then rp := 0; else rp := rp + 1; end if;
+				rp := add(rp);
 			end if;
 		end if;
 	end process ; -- 
