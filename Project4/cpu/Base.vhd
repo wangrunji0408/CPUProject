@@ -20,7 +20,7 @@ package Base is
 	subtype RegAddr is u4;
 	subtype TColor is std_logic_vector(8 downto 0); 	--颜色：[R2R1R0 G2G1G0 B2B1B0]
 	type RegData is array (0 to 15) of u16;
-	type DataBuf is array (0 to 63) of u8;
+	type DataBuf is array (0 to 31) of u8;
 	type DataBufPort is record
 		write, read, isBack: std_logic;
 		canwrite, canread: std_logic;
