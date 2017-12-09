@@ -7,7 +7,7 @@ if __name__ == '__main__':
 	outname = filename.replace('mp', 's')
 	fin = open(filename, 'r')
 	fout = open(outname, 'w')
-	sim_mode = False
+	sim_mode = True
 
 # R0-R2 用户可用
 # R3 用于读写内存的内容
@@ -76,16 +76,19 @@ def set_reg(reg, data):
 		elif int(data[2], 16) < 8:
 			res += '\tADDIU %s 0x%s\t\t; %s <= %s\n' % (reg, data[2:4],  reg, data)
 		else:
+			assert(reg != 'R5')
 			res += '\tLI R5 0x%s\n\tADDU R5 %s %s\t\t; %s <= %s\n' % (data[2:4], reg, reg,  reg, data)
 		return res
 
 def read_mem(addr, reg):
+	assert(reg != 'R4')
 	return (TESTR if addr == 'BF00' and not sim_mode else '') \
 		+ set_reg('R4', addr) \
 		+ '\tLW %s %s 0x0\t\t' % ('R4', reg) \
 		+ '; %s <= *%s\n' % (reg, addr)
 
 def write_mem(addr, reg):
+	assert(reg != 'R4')
 	return (TESTW if addr == 'BF00' and not sim_mode else '') \
 		+ set_reg('R4', addr) \
 		+ '\tSW %s %s 0x0\t\t' % ('R4', reg) \
@@ -167,7 +170,6 @@ def debug_reg(reg):
 	if not sim_mode:
 		return ''
 	res = ''
-	res += debug(reg + '=')
 	res += set_reg(reg='R5', data='F000')
 	res += '\tAND R5 %s\n' % reg
 	res += '\tSRA R5 R5 0x0\n'
