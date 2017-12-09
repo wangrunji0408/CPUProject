@@ -7,27 +7,27 @@ entity Hard_term is
     port(
         clk, rst : in std_logic;
         
-        -- ´Óshellµ½hard_term
+        -- ä»Žshellåˆ°hard_term
         ci_read: out std_logic;
         ci_canread: in std_logic;
         ci_data: in u8;
         
-        --´Óhard_termµ½shell
+        --ä»Žhard_termåˆ°shell
         co_write: out std_logic;
         co_canwrite: in std_logic;
         co_data: out u8;
         
-        --´Óbufferµ½hard_term
+        --ä»Žbufferåˆ°hard_term
         bi_read: out std_logic;
         bi_canread: in std_logic;
         bi_data: in u8;
         
-        --´Óhard_termµ½buffer
+        --ä»Žhard_termåˆ°buffer
         bo_write: out std_logic;
         bo_canwrite: in std_logic;
         bo_data: out u8;
         
-        --µ÷ÊÔÓÃ
+        --è°ƒè¯•ç”¨
         cmd: out TermCmd
     );
 end Hard_term;
@@ -66,18 +66,37 @@ begin
             lenData := 0;
             cnt1 := 0;
             cnt2 := 0;
+            status <= ReadShell;
         elsif rising_edge(clk) then
             count <= count + 1;
             case status is
             when ReadShell =>
                 case count is
                 when 0 =>
+                    if (co_canwrite = '1') then
+                        co_data <= x"3E";
+                        co_write <= '0';
+                    else
+                        count <= count;
+                    end if;
+                when 1 =>
+                    co_write <= '1';
+                when 2 =>
+                    if (co_canwrite = '1') then
+                        co_data <= x"3E";
+                        co_write <= '0';
+                    else
+                        count <= count;
+                    end if;
+                when 3 =>
+                    co_write <= '1';
+                when 4 =>
                     if (ci_canread = '1') then
                         ci_read <= '0';
                     else
                         count <= count;
                     end if;
-                when 1 =>
+                when 5 =>
                     if (ci_data = x"0D") then
                         count <= 0;
                         case cmdIn(1) is
@@ -641,7 +660,7 @@ begin
                         count <= count;
                     end if;
                 when 3 =>
-                    dataOut(1 to 3) := (x"52", (x"30" + to_unsigned(cnt1, 8)), x"3D");
+                    dataOut(1 to 3) := (x"52", (x"2F" + to_unsigned(cnt1, 8)), x"3D");
                     dataOut(6) := toAscii(bi_data(7 downto 4));
                     dataOut(7) := toAscii(bi_data(3 downto 0));
                     bi_read <= '1';
