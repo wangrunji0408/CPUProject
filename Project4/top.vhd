@@ -100,6 +100,7 @@ architecture arch of Top is
 	signal shellBuf: ShellBufInfo;
 
 	signal cfg: Config;
+	signal term_count: integer;
 	
 begin
 
@@ -152,8 +153,8 @@ begin
 	digit1raw <= DisplayNumber(digit1);
 
 	light <= x"00" & "00" & clk40 & uart2_data_ready & uart2_tbre & uart2_tsre & uart2_read & uart2_write;
-	digit0 <= uart2_data_read(7 downto 4);
-	digit1 <= uart2_data_read(3 downto 0);
+	digit0 <= to_unsigned(term_count, 8)(7 downto 4);
+	digit1 <= to_unsigned(term_count, 8)(3 downto 0);
 
 	-- 稳定按钮信号
 	deb: entity work.debounce port map(clk50, clk, clk_stable);
@@ -181,10 +182,11 @@ begin
 		port map (rst, bo_buf.write, bo_buf.read, bo_buf.isBack, bo_buf.canwrite, bo_buf.canread, bo_buf.data_write, bo_buf.data_read, bo_buf_info);
 	co_buf.read <= key_stable(0);
 
-	ht: entity work.Hard_term 
+	ht: entity work.HardTerm 
 		port map (rst, clk50,
 			ci_buf.read, ci_buf.canread, ci_buf.data_read, co_buf.write, co_buf.canwrite, co_buf.data_write,
-			bi_buf.read, bi_buf.canread, bi_buf.data_read, bo_buf.write, bo_buf.canwrite, bo_buf.data_write);
+			bo_buf.read, bo_buf.canread, bo_buf.data_read, bi_buf.write, bi_buf.canwrite, bi_buf.data_write,
+			term_count, open);
 
 	rstnot <= not rst;
 	make_clk25 : entity work.ClkDiv port map (rst, clk50, clk25);	
@@ -230,7 +232,7 @@ begin
 			ram1addr, ram2addr, ram1data, ram2data, ram1read, ram1write, ram1enable, ram2read, ram2write, ram2enable,
 			uart_data_ready, uart_tbre, uart_tsre, uart_read, uart_write,
 			uart2_data_write, uart2_data_read, uart2_data_ready, uart2_tbre, uart2_tsre, uart2_read, uart2_write,
-			co_buf.write, ci_buf.read, co_buf.isBack, co_buf.canwrite, ci_buf.canread, co_buf.data_write, ci_buf.data_read);
+			bo_buf.write, bi_buf.read, bo_buf.isBack, bo_buf.canwrite, bi_buf.canread, bo_buf.data_write, bi_buf.data_read);
 
 	boot: entity work.Boot
 		port map(rst_boot, clk_cpu, 

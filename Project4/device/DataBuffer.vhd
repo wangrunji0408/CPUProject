@@ -34,7 +34,7 @@ begin
 			buf.data <= (others => x"00");
 			wp := 0; rp := 0;
 		else
-			if falling_edge(write) then
+			if rising_edge(write) then
 				if isBack = '1' then
 					wp := sub(wp);
 				else

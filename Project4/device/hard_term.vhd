@@ -3,40 +3,40 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use work.Base.all;
 
-entity Hard_term is
+entity HardTerm is
     port(
-        clk, rst : in std_logic;
+        rst, clk : in std_logic;
         
-        -- ´Óshellµ½hard_term
+        -- ä»Žshellåˆ°hard_term
         ci_read: out std_logic;
         ci_canread: in std_logic;
         ci_data: in u8;
         
-        --´Óhard_termµ½shell
+        --ä»Žhard_termåˆ°shell
         co_write: out std_logic;
         co_canwrite: in std_logic;
         co_data: out u8;
         
-        --´Óbufferµ½hard_term
+        --ä»Žbufferåˆ°hard_term
         bi_read: out std_logic;
         bi_canread: in std_logic;
         bi_data: in u8;
         
-        --´Óhard_termµ½buffer
+        --ä»Žhard_termåˆ°buffer
         bo_write: out std_logic;
         bo_canwrite: in std_logic;
         bo_data: out u8;
         
-        --µ÷ÊÔÓÃ
+        --è°ƒè¯•ç”¨
+        count: buffer integer;
         cmd: out TermCmd
     );
-end Hard_term;
+end HardTerm;
 
 
-architecture arch of Hard_term is
+architecture arch of HardTerm is
     type TStatus is (ReadShell, CmdA, CmdD, CmdG, CmdU, CmdR);
     signal status: TStatus;
-    signal count: integer := 0;
     signal inst: u16;
 begin
 

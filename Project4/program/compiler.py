@@ -21,6 +21,7 @@ TESTW:	NOP	 			;测试串口1是否能写 使用R4 R3
 	LW R4 R3 0x0001		; R3 <= mem[BF01]
 	LI R4 0x0001 
 	AND R4 R3
+	NOP
 	BEQZ R4 TESTW		;BF01&1=0 则等待	
 	NOP		
 	JR R5
@@ -31,11 +32,22 @@ TESTR:	NOP				;测试串口1是否能读 使用R4 R3
 	LW R4 R3 0x0001		; R3 <= mem[BF01]
 	LI R4 0x0002
 	AND R4 R3
+	NOP
 	BEQZ R4 TESTR		;BF01&2=0  则等待	
 	NOP	
 	JR R5
 	NOP
 WAIT:  NOP				;等待 每回合R4-- 直到R4=0
+	LI R3 0x0
+	ADDIU R3 0xFF
+WAIT1:
+	NOP
+	NOP
+	NOP
+	NOP
+	BNEZ R3 WAIT1
+	ADDIU R3 0xFF
+
 	BNEZ R4 WAIT
 	ADDIU R4 0xFF
 	JR R5
