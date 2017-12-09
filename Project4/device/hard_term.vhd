@@ -3,9 +3,9 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use work.Base.all;
 
-entity Hard_term is
+entity HardTerm is
     port(
-        clk, rst : in std_logic;
+        rst, clk : in std_logic;
         
         -- 从shell到hard_term
         ci_read: out std_logic;
@@ -28,15 +28,15 @@ entity Hard_term is
         bo_data: out u8;
         
         --调试用
+        count: buffer integer;
         cmd: out TermCmd
     );
-end Hard_term;
+end HardTerm;
 
 
-architecture arch of Hard_term is
+architecture arch of HardTerm is
     type TStatus is (ReadShell, CmdA, CmdD, CmdG, CmdU, CmdR);
     signal status: TStatus;
-    signal count: integer := 0;
     signal inst: u16;
 begin
 
