@@ -179,8 +179,8 @@ package Base is
 	constant NULL_ID_EX_DATA: ID_EX_Data := (NULL_REGPORT, '0', '0', x"0000", NULL_ALUINPUT);	
 	constant NULL_EX_MEM_DATA: EX_MEM_Data := (NULL_REGPORT, '0', '0', None, x"0000", x"0000");
 	
-    function toBit (x: character) return u4;
-    function strToHex16 (x: string) return u16;
+    function toAscii (x: u4) return u8;
+    function toData (x: u8) return u4;
 	function charToU8 (x: character) return u8;
 	function charToU4 (x: natural) return u4;
 	function to_u4 (x: integer) return u4;
@@ -359,29 +359,49 @@ package body Base is
 		end case ;
 	end function;
 
-    function toBit (x: character) return u4 is 
+    function toAscii (x: u4) return u8 is 
 	begin
 		case x is
-			when '0' => return "0000";
-			when '1' => return "0001";
-			when '2' => return "0010";
-			when '3' => return "0011";
-			when '4' => return "0100";
-			when '5' => return "0101";
-			when '6' => return "0110";
-			when '7' => return "0111";
-			when '8' => return "1000";
-			when '9' => return "1001";
-			when 'A'|'a' => return "1010";
-			when 'B'|'b' => return "1011";
-			when 'C'|'c' => return "1100";
-			when 'D'|'d' => return "1101";
-			when 'E'|'e' => return "1110";
-			when 'F'|'f' => return "1111";
-			when 'Z'|'z' => return "zzzz";
-			when 'U'|'u' => return "uuuu";
-			when 'X'|'x' => return "xxxx";
-			when others => return "0000";
+			when x"0" => return x"30";
+			when x"1" => return x"31";
+			when x"2" => return x"32";
+			when x"3" => return x"33";
+			when x"4" => return x"34";
+			when x"5" => return x"35";
+			when x"6" => return x"36";
+			when x"7" => return x"37";
+			when x"8" => return x"38";
+			when x"9" => return x"39";
+			when x"A" => return x"41";
+			when x"B" => return x"42";
+			when x"C" => return x"43";
+			when x"D" => return x"44";
+			when x"E" => return x"45";
+			when x"F" => return x"46";
+			when others => return x"00";
+		end case;
+	end function;
+    
+    function toData (x: u8) return u4 is 
+	begin
+		case x is
+			when x"30" => return x"0";
+			when x"31" => return x"1";
+			when x"32" => return x"2";
+			when x"33" => return x"3";
+			when x"34" => return x"4";
+			when x"35" => return x"5";
+			when x"36" => return x"6";
+			when x"37" => return x"7";
+			when x"38" => return x"8";
+			when x"39" => return x"9";
+			when x"41" => return x"A";
+			when x"42" => return x"B";
+			when x"43" => return x"C";
+			when x"44" => return x"D";
+			when x"45" => return x"E";
+			when x"46" => return x"F";
+			when others => return x"0";
 		end case;
 	end function;
 
