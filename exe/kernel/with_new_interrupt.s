@@ -6,7 +6,6 @@ NOP
 DELINT: NOP 			;中断处理程序
 	NOP
 	NOP
-	ADDSP 0xE0
 	SW_SP R0 0x0 ;保存R0,R1,R2
 	SW_SP R1 0x1
 	SW_SP R2 0x2
@@ -14,7 +13,6 @@ DELINT: NOP 			;中断处理程序
 	SW_SP R6 0x6
 	SW_SP R7 0x7
 
-	SW_SP R7 0x00
 	LI R3 0x49		
 	MFPC R7 
 	ADDIU R7 0x0003  
@@ -51,7 +49,6 @@ DELINT: NOP 			;中断处理程序
 	LW_SP R3 0x3
 	LW_SP R6 0x6
 	LW_SP R7 0x7		;r7=用户程序返回地址
-	ADDSP 0x10
 	
 	NOP
 
@@ -66,20 +63,21 @@ DELINT: NOP 			;中断处理程序
 	B TESTR	
 	NOP
 
-	LI R3 0x00BF 
-	SLL R3 R3 0x0000 
-	LW R3 R0 0x0000
+	LI R6 0x00BF 
+	SLL R6 R6 0x0000 
+	LW R6 R0 0x0000
 	
-	LW_SP R7 0x9
+	LW_SP R6 0x6
+	LW_SP R7 0x7
 
 	MFIH R3				;用r3=IH（高位变成1）
 	LI R0 0x0080
 	SLL R0 R0 0x000
 	OR R3 R0
-	LW_SP R0 0x10
+	LW_SP R0 0x0
 	MTIH R3
 	JR R6
-	LW_SP R3 0xD
+	LW_SP R3 0x3
 ENDUSERPRO:
 	NOP
 	JR R7

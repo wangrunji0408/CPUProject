@@ -45,6 +45,7 @@ architecture arch of TestTop is
 	signal cfg: Config;
 	
 	signal intt: std_logic;
+	signal intt_code: u4;
 	
 begin
 
@@ -65,6 +66,7 @@ begin
 		btn3 <= '0'; wait for 50 ns;
 		btn3 <= '1'; wait for 50 ns;
 		wait for 6900 ns;
+		intt_code <= "0010";
 		intt <= '1'; wait for 20 ns;
 		intt <= '0';
 		wait;
@@ -96,7 +98,7 @@ begin
 	cpu0: entity work.CPU 
 		port map (rst, clk50, clk, btn3, cfg,
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, if_addr, if_data, if_canread, 
-			x"FFFF", debug, intt); 
+			x"FFFF", debug, intt, intt_code); 
 	logger: entity work.IOLogger port map (rst, clk50, debug.id_in.pc,
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, io);
 
