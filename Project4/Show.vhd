@@ -101,12 +101,15 @@ package body Show is
 			when ReadRam2 => return "R2";
 			when ReadUart => return "RU";
 			when ReadUart2 => return "RS";
+			when ReadBuf => return "RB";
 			when WriteRam1 => return "W1";
 			when WriteRam2 => return "W2";
 			when WriteUart => return "WU";
 			when WriteUart2 => return "WS";
+			when WriteBuf => return "WB";
 			when TestUart => return "TU";
 			when TestUart2 => return "TS";
+			when TestBuf => return "TB";
 			when others => return "--";
 		end case ;
 	end function;

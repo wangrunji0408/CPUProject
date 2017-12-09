@@ -20,7 +20,7 @@ package Base is
 	subtype RegAddr is u4;
 	subtype TColor is std_logic_vector(8 downto 0); 	--颜色：[R2R1R0 G2G1G0 B2B1B0]
 	type RegData is array (0 to 15) of u16;
-	type DataBuf is array (0 to 63) of u8;
+	type DataBuf is array (0 to 31) of u8;
 	type DataBufPort is record
 		write, read, isBack: std_logic;
 		canwrite, canread: std_logic;
@@ -29,6 +29,19 @@ package Base is
 	type DataBufInfo is record
 		data: DataBuf;
 		writePos, readPos: natural;
+	end record;
+
+	type LineBuf is array (0 to 15) of u8;
+	type ShellBuf is array (0 to 15) of LineBuf;
+	type ShellBufInfo is record
+		data: ShellBuf;
+		x, y: natural;
+	end record;
+
+	type Config is record
+		byte_mode: std_logic;
+		com1_keyboard: std_logic;
+		pixel_mode: std_logic;
 	end record;
 
 	-- 特殊寄存器。和通用寄存器一起，统一编码为4位地址。

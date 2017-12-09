@@ -42,8 +42,11 @@ architecture arch of TestTop is
 
 	signal debug: CPUDebug;
 	signal io: IODebug;
+	signal cfg: Config;
 	
 begin
+
+	cfg <= (others => '0');
 
 	process
 	begin
@@ -85,7 +88,7 @@ begin
 			uart2.data_write, uart2.data_read, uart2.data_ready, uart2.tbre, uart2.tsre, uart2.read, uart2.write,
 			buf0.write, buf0.read, buf0.isBack, buf0.canwrite, buf0.canread, buf0.data_write, buf0.data_read);
 	cpu0: entity work.CPU 
-		port map (rst, clk50, clk, btn3,
+		port map (rst, clk50, clk, btn3, cfg,
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, if_addr, if_data, if_canread, 
 			x"FFFF", debug); 
 	logger: entity work.IOLogger port map (rst, clk50, debug.id_in.pc,
@@ -97,7 +100,7 @@ begin
 		generic map (ID => 1, SIZE => 32768, OFFSET => 32768)
 		port map (rst, ram1addr, ram1data, ram1read, ram1write, ram1enable);
 	ram2: entity work.MockRam
-		generic map (ID => 2, SIZE => 32768, KERNEL_PATH => "../exe/kernel.bin", PROG_PATH => "../exe/Term_test/fib.bin")
+		generic map (ID => 2, SIZE => 32768, KERNEL_PATH => "../exe/kernel.bin", PROG_PATH => "../exe/Term_test/extra.bin")
 		port map (rst, ram2addr, ram2data, ram2read, ram2write, ram2enable);
 	uart: entity work.MockUart
 		port map (rst, ram1enable, ram1data, uart_read, uart_write, uart_data_ready, uart_tbre, uart_tsre);

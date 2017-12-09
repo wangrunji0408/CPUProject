@@ -99,7 +99,7 @@ begin
 			ram1data <= mem_write_data;
 			pixel_canread <= '0';
 		when ReadRam2 =>
-			ram2enable <= '0'; ram2read <= '0'; ram2write <= '1'; 		
+			ram2enable <= '0'; ram2read <= '0'; ram2write <= '1'; 
 			ram2addr <= "00" & mem_addr;
 			mem_read_data <= ram2data;
 			if_canread <= '0';
@@ -121,15 +121,15 @@ begin
 			pixel_canread <= '0';
 		when TestUart =>
 			mem_read_data <= (0 => uart_tsre and uart_tbre, 1 => uart_data_ready, others => '0');
-		when ReadUart2 =>
-			uart2_read <= '0';
-			mem_read_data <= uart2_data_read;
-			mem_busy <= uart_busy;
-		when WriteUart2 =>
-			uart2_write <= clk;
-			uart2_data_write <= mem_write_data;
-		when TestUart2 =>
-			mem_read_data <= (0 => uart2_tsre and uart2_tbre, 1 => uart2_data_ready, others => '0');
+		-- when ReadUart2 =>
+		-- 	uart2_read <= '0';
+		-- 	mem_read_data <= uart2_data_read;
+		-- 	mem_busy <= uart_busy;
+		-- when WriteUart2 =>
+		-- 	uart2_write <= clk;
+		-- 	uart2_data_write <= mem_write_data;
+		-- when TestUart2 =>
+		-- 	mem_read_data <= (0 => uart2_tsre and uart2_tbre, 1 => uart2_data_ready, others => '0');
 		when ReadBuf =>
 			buf_read <= '0';
 			mem_read_data <= x"00" & buf_data_read;
@@ -138,11 +138,12 @@ begin
 			buf_data_write <= mem_write_data(7 downto 0);
 		when TestBuf =>
 			mem_read_data <= (0 => buf_canwrite, 1 => buf_canread, others => '0');
+		when others => null;
 		end case ;
 
 		-- Boot
 		if boot_write_ram2 = '1' then
-			ram2read <= '1'; ram2write <= clk; 
+			ram2read <= '1'; ram2write <= clk;
 			ram2addr <= "00" & boot_ram2_addr;
 			ram2data <= boot_ram2_data;
 			if_canread <= '0'; if_data <= x"0000";

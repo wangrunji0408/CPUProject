@@ -8,7 +8,10 @@
 !*.xco
 !*.xaw
 !*.ngd
+!*.ncd
 !*.bak
+!*.mp
+!program/
 !test/
 !mock/
 !cpu/
