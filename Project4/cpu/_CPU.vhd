@@ -22,7 +22,8 @@ entity CPU is
 		breakPointPC: in u16;
 		debug: out CPUDebug;
 
-		out_intt: in std_logic
+		out_intt: in std_logic;
+		out_intt_code : in u4 := "0000"
 	) ;
 end CPU;
 
@@ -91,7 +92,8 @@ begin
 			mem_out, reg1, reg2, reg1.data, reg2.data, debug.regs,
 			sir6, reg_ihh);
 
-	intt <= out_intt and reg_ihh;
+	intt <= '1'  when out_intt='1' and out_intt_code /= "0000" and reg_ihh='1' else
+			'0';
 	if_in.pc        <= ori_if_in.pc;
 	if_in.isRefetch <= ori_if_in.isRefetch when out_intt='0' else '0';
 	if_in.branch    <= ori_if_in.branch when out_intt='0' else 
@@ -100,6 +102,7 @@ begin
 	sir6.enable <= out_intt;
 	sir6.pc <=  ori_if_in.branch.target when ori_if_in.branch.enable='1' else
 				ori_if_in.pc;
+	sir6.intt_code <= out_intt_code;
 
 	
 end arch ; -- arch

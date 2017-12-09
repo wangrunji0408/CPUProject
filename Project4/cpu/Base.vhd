@@ -88,6 +88,7 @@ package Base is
 	type SaveInR6 is record
 		enable: std_logic;
 		pc: u16;
+		intt_code:u4;
 	end record;
 
 	type RegPort is record

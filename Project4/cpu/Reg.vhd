@@ -13,7 +13,7 @@ entity Reg is
 		read1_dataout, read2_dataout: out u16;
 		d_regs: out RegData;		-- for debug
 
-		sir6: in SaveInR6:= ('0', x"0000");
+		sir6: in SaveInR6:= ('0', x"0000", "0000");
 		ihh : out std_logic
 	) ;
 end Reg;
@@ -42,6 +42,7 @@ begin
 			if sir6.enable = '1' then
 				Regs(6) <= sir6.pc;
 				Regs(9)(15) <= '0';
+				Regs(9)(3 downto 0) <= sir6.intt_code;
 			end if;
 		end if;
 	end process;

@@ -6,6 +6,7 @@ NOP
 DELINT: NOP 			;中断处理程序
 	NOP
 	NOP
+	ADDSP 0xE0
 	SW_SP R0 0x0 ;保存R0,R1,R2
 	SW_SP R1 0x1
 	SW_SP R2 0x2
@@ -14,7 +15,7 @@ DELINT: NOP 			;中断处理程序
 	SW_SP R7 0x7
 
 	SW_SP R7 0x00
-	LI R3 0x49		;提示终端，进入中断处理
+	LI R3 0x49		
 	MFPC R7 
 	ADDIU R7 0x0003  
 	NOP
@@ -24,7 +25,7 @@ DELINT: NOP 			;中断处理程序
 	SLL R6 R6 0x0000 	;R6=0xBF00
 	SW R6 R3 0x0000		;(R3='I'
 	NOP
-	MFPC R7 			;输出中断号
+	MFPC R7 			
 	ADDIU R7 0x0003  
 	NOP
 	B TESTW 	
@@ -34,7 +35,7 @@ DELINT: NOP 			;中断处理程序
 	SLL R6 R6 0x0000 	;R6=0xBF00 
 	SW R6 R3 0x0000		;(R3='N'
 	NOP
-	LI R3 0x54		;提示终端，中断处理结束
+	LI R3 0x54		
 	MFPC R7 
 	ADDIU R7 0x0003  
 	NOP
@@ -42,7 +43,7 @@ DELINT: NOP 			;中断处理程序
 	NOP
 	LI R6 0x00BF 
 	SLL R6 R6 0x0000 	;R6=0xBF00 
-	SW R6 R3 0x0000
+	SW R6 R3 0x0000		;(R3='T'
 	NOP
 	LW_SP R0 0x0
 	LW_SP R1 0x1
@@ -50,13 +51,40 @@ DELINT: NOP 			;中断处理程序
 	LW_SP R3 0x3
 	LW_SP R6 0x6
 	LW_SP R7 0x7		;r7=用户程序返回地址
+	ADDSP 0x10
+	
 	NOP
+
+	MFIH R3   ; JR R7 when Ctrl-C
+	ADDIU R3 0xFF
+	BEQZ R3 ENDUSERPRO
+	LW_SP R3 0x3
+
+	MFPC R7		; Press any key to continue when Ctrl-D
+	ADDIU R7 0x0003	
+	NOP	
+	B TESTR	
+	NOP
+
+	LI R3 0x00BF 
+	SLL R3 R3 0x0000 
+	LW R3 R0 0x0000
+	
+	LW_SP R7 0x9
+
 	MFIH R3				;用r3=IH（高位变成1）
 	LI R0 0x0080
 	SLL R0 R0 0x000
 	OR R3 R0
-	JR R6
+	LW_SP R0 0x10
 	MTIH R3
+	JR R6
+	LW_SP R3 0xD
+ENDUSERPRO:
+	NOP
+	JR R7
+	NOP
+
 START:	LI R0 0x07	;init  0x8251 ;初始化IH寄存器，最高位为1时，允许中断，为0时不允许。初始化为0，kernel不允许中断
 	MTIH R0
 	LI R0 0x00BF 		;初始化栈地址

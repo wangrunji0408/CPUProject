@@ -88,6 +88,7 @@ architecture arch of Top is
 
 	-- 中断 --
 	signal intt : std_logic;
+	signal intt_code : u4;
 
 	-- 调试信息与其他 --
 	signal digit0, digit1: u4;
@@ -147,7 +148,11 @@ begin
 		end if;
 	end process;
 
-	intt <= '1' when buf0.write='0' and ascii_code="0000011" else '0';
+	intt <= '1' when buf0.write='0' else '0';
+	intt_code <= "0001" when ascii_code="0000011" else
+				 "0010" when ascii_code="0000100" else
+				 "0000";
+
 	cfg.byte_mode <= switch(15);
 	cfg.pixel_mode <= switch(14);
 	cfg.com1_keyboard <= switch(13);
@@ -233,7 +238,8 @@ begin
 	cpu0: entity work.CPU 
 		port map (rst, clk_cpu, clk_stable, key_stable(3), cfg,
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, if_addr, if_data, if_canread, 
-			x"FFFF", debug, intt); 
+			x"FFFF", debug,
+			intt, intt_code); 
 
 	logger: entity work.IOLogger port map (rst, clk_cpu, debug.id_in.pc,
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, io);
