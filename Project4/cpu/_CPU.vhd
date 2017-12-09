@@ -95,11 +95,11 @@ begin
 	intt <= '1'  when out_intt='1' and out_intt_code /= "0000" and reg_ihh='1' else
 			'0';
 	if_in.pc        <= ori_if_in.pc;
-	if_in.isRefetch <= ori_if_in.isRefetch when out_intt='0' else '0';
-	if_in.branch    <= ori_if_in.branch when out_intt='0' else 
+	if_in.isRefetch <= ori_if_in.isRefetch when intt='0' else '0';
+	if_in.branch    <= ori_if_in.branch when intt='0' else 
 					   ('1', x"0006");
 
-	sir6.enable <= out_intt;
+	sir6.enable <= intt;
 	sir6.pc <=  ori_if_in.branch.target when ori_if_in.branch.enable='1' else
 				ori_if_in.pc;
 	sir6.intt_code <= out_intt_code;

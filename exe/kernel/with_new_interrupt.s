@@ -60,12 +60,32 @@ DELINT: NOP 			;中断处理程序
 	MFPC R7		; Press any key to continue when Ctrl-D
 	ADDIU R7 0x0003	
 	NOP	
-	B TESTR	
+	B TESTW
 	NOP
-
+	LI R3 0x0F
 	LI R6 0x00BF 
 	SLL R6 R6 0x0000 
-	LW R6 R0 0x0000
+	SW R6 R3 0x0000
+
+	MFPC R7		; Send interupt num
+	ADDIU R7 0x0003	
+	NOP	
+	B TESTW
+	NOP
+	LI R3 0x01
+	LI R6 0x00BF 
+	SLL R6 R6 0x0000 
+	SW R6 R3 0x0000
+
+	MFPC R7		; Send 0x0F again
+	ADDIU R7 0x0003	
+	NOP	
+	B TESTW
+	NOP
+	LI R3 0x0F
+	LI R6 0x00BF 
+	SLL R6 R6 0x0000 
+	SW R6 R3 0x0000
 	
 	LW_SP R6 0x6
 	LW_SP R7 0x7
