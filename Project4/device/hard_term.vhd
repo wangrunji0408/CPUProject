@@ -111,46 +111,46 @@ begin
                 case count is 
                 when 0 =>
                     if (bo_canwrite = '1') then
+                        bo_data <= x"41";
                         bo_write <= '0';
                     else
                         count <= count;
                     end if;
                 when 1 =>
-                    bo_data <= x"41";
                     bo_write <= '1';
                 when 2 =>
                     if (bo_canwrite = '1') then
+                        if (lenCmd >= 6) then
+                            bo_data(7 downto 4) <= toData(cmdIn(5));
+                            bo_data(3 downto 0) <= toData(cmdIn(6));
+                            addr(7 downto 4) := toData(cmdIn(5));
+                            addr(3 downto 0) := toData(cmdIn(6));
+                        else
+                            bo_data <= x"00";
+                            addr(7 downto 0) := x"00";
+                        end if;
                         bo_write <= '0';
                     else
                         count <= count;
                     end if;
-                when 3 =>
-                    if (lenCmd >= 6) then
-                        bo_data(7 downto 4) <= toData(cmdIn(5));
-                        bo_data(3 downto 0) <= toData(cmdIn(6));
-                        addr(7 downto 4) := toData(cmdIn(5));
-                        addr(3 downto 0) := toData(cmdIn(6));
-                    else
-                        bo_data <= x"00";
-                        addr(7 downto 0) := x"00";
-                    end if;
+                when 3 =>   --addr low
                     bo_write <= '1';
                 when 4 =>
                     if (bo_canwrite = '1') then
+                        if (lenCmd >= 6) then
+                            bo_data(7 downto 4) <= toData(cmdIn(3));
+                            bo_data(3 downto 0) <= toData(cmdIn(4));
+                            addr(15 downto 12) := toData(cmdIn(3));
+                            addr(11 downto 8) := toData(cmdIn(4));
+                        else
+                            bo_data <= x"40";
+                            addr(15 downto 8) := x"40";
+                        end if;                    
                         bo_write <= '0';
                     else
                         count <= count;
                     end if;
-                when 5 =>
-                    if (lenCmd >= 6) then
-                        bo_data(7 downto 4) <= toData(cmdIn(3));
-                        bo_data(3 downto 0) <= toData(cmdIn(4));
-                        addr(15 downto 12) := toData(cmdIn(3));
-                        addr(11 downto 8) := toData(cmdIn(4));
-                    else
-                        bo_data <= x"40";
-                        addr(15 downto 8) := x"40";
-                    end if;
+                when 5 =>   --addr high
                     bo_write <= '1';
                     dataOut(1) := x"5B";
                     dataOut(2) := toAscii(addr(15 downto 12));
@@ -356,10 +356,10 @@ begin
                             mips(4) := '0';
                         end if;
                     else
-                        mips := x"0000";
+                        mips := x"FFFF";
                     end if;
                 when 11 =>          
-                    if (mips = x"0000") then
+                    if (mips = x"FFFF") then
                         dataOut(1 to 6) := (x"45", x"52", x"52", x"4F", x"52", x"0D");
                     else
                         count <= 14;
@@ -626,12 +626,12 @@ begin
                 case count is 
                 when 0 =>
                     if (bo_canwrite = '1') then
+                        bo_data <= x"52";
                         bo_write <= '0';
                     else
                         count <= count;
                     end if;
                 when 1 =>
-                    bo_data <= x"52";
                     bo_write <= '1';
                 when 2 =>       --read low
                     if (bi_canread = '1') then
@@ -657,14 +657,14 @@ begin
                     dataOut(8) := x"0D";
                     bi_read <= '1';
                 when 6 =>
-                    if (co_canwrite = '1') then
+                    if (co_canwrite = '1') then                        
+                        cnt2 := cnt2 + 1;
+                        co_data <= dataOut(cnt2);
                         co_write <= '0';
                     else
                         count <= count;
                     end if;
                 when 7 =>
-                    cnt2 := cnt2 + 1;
-                    co_data <= dataOut(cnt2);
                     co_write <= '1';
                     if (dataOut(cnt2) = x"0D") then
                         cnt2 := 0;
@@ -687,63 +687,63 @@ begin
                 case count is 
                 when 0 =>
                     if (bo_canwrite = '1') then
+                        bo_data <= x"55";
                         bo_write <= '0';
                     else
                         count <= count;
                     end if;
                 when 1 =>
-                    bo_data <= x"55";
                     bo_write <= '1';
-                when 2 =>
+                when 2 =>   --addr low
                     if (bo_canwrite = '1') then
                         bo_write <= '0';
+                        if (lenCmd >= 6) then
+                            bo_data(7 downto 4) <= toData(cmdIn(5));
+                            bo_data(3 downto 0) <= toData(cmdIn(6));
+                            addr(7 downto 4) := toData(cmdIn(5));
+                            addr(3 downto 0) := toData(cmdIn(6));
+                        else
+                            bo_data <= x"00";
+                            addr(7 downto 0) := x"00";
+                        end if;
                     else
                         count <= count;
                     end if;
                 when 3 =>
-                    if (lenCmd >= 6) then
-                        bo_data(7 downto 4) <= toData(cmdIn(5));
-                        bo_data(3 downto 0) <= toData(cmdIn(6));
-                        addr(7 downto 4) := toData(cmdIn(5));
-                        addr(3 downto 0) := toData(cmdIn(6));
-                    else
-                        bo_data <= x"00";
-                        addr(7 downto 0) := x"00";
-                    end if;
                     bo_write <= '1';
-                when 4 =>
+                when 4 =>   --addr high
                     if (bo_canwrite = '1') then
                         bo_write <= '0';
+                        if (lenCmd >= 6) then
+                            bo_data(7 downto 4) <= toData(cmdIn(3));
+                            bo_data(3 downto 0) <= toData(cmdIn(4));
+                            addr(15 downto 12) := toData(cmdIn(3));
+                            addr(11 downto 8) := toData(cmdIn(4));
+                        else
+                            bo_data <= x"40";
+                            addr(15 downto 8) := x"40";
+                        end if;                        
                     else
                         count <= count;
                     end if;
                 when 5 =>
-                    if (lenCmd >= 6) then
-                        bo_data(7 downto 4) <= toData(cmdIn(3));
-                        bo_data(3 downto 0) <= toData(cmdIn(4));
-                        addr(15 downto 12) := toData(cmdIn(3));
-                        addr(11 downto 8) := toData(cmdIn(4));
-                    else
-                        bo_data <= x"40";
-                        addr(15 downto 8) := x"40";
-                    end if;
                     bo_write <= '1';
-                when 6 =>
+                when 6 =>   --length
                     if (bo_canwrite = '1') then
                         bo_write <= '0';
+                        if (lenCmd >= 9) then
+                            bo_data(7 downto 4) <= toData(cmdIn(8));
+                            bo_data(3 downto 0) <= toData(cmdIn(9));
+                            len(7 downto 4) := toData(cmdIn(8));
+                            len(3 downto 0) := toData(cmdIn(9));
+                        else
+                            bo_data <= x"0A";
+                            len := x"0A";
+                        end if;
                     else
                         count <= count;
                     end if;
                 when 7 =>
-                    if (lenCmd >= 9) then
-                        bo_data(7 downto 4) <= toData(cmdIn(8));
-                        bo_data(3 downto 0) <= toData(cmdIn(9));
-                        len(7 downto 4) := toData(cmdIn(8));
-                        len(3 downto 0) := toData(cmdIn(9));
-                    else
-                        bo_data <= x"0A";
-                        len := x"0A";
-                    end if;
                     bo_write <= '1';
                 when 8 =>       --read low
                     if (bi_canread = '1') then
@@ -993,14 +993,14 @@ begin
                     
                     
                 when 12 =>
-                    if (co_canwrite = '1') then
+                    if (co_canwrite = '1') then                            
+                        cnt2 := cnt2 + 1;
+                        co_data <= dataOut(cnt2);
                         co_write <= '0';
                     else
                         count <= count;
                     end if;
                 when 13 =>
-                    cnt2 := cnt2 + 1;
-                    co_data <= dataOut(cnt2);
                     co_write <= '1';
                     if (dataOut(cnt2) = x"0D") then
                         cnt2 := 0;
