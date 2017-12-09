@@ -19,7 +19,7 @@ entity Top is
 		uart_read, uart_write: out std_logic;					-- UART lock
 
 		u_rxd: in std_logic;
-		u_txd: out std_logic;	-- ä¸²å£2
+		u_txd: out std_logic;	-- ´®¿Ú2
 
 		flash_addr: out u23;
 		flash_data: inout u16;
@@ -45,21 +45,21 @@ architecture arch of Top is
 	signal ascii_new: std_logic;
 	signal ascii_code: std_logic_vector(6 downto 0);
 
-	------ IOCtrlä½¿ç”¨è€… ------
-	------ å¯¹MEMæ¥å£ ------
+	------ IOCtrlÊ¹ÓÃÕß ------
+	------ ¶ÔMEM½Ó¿Ú ------
 	signal mem_type: MEMType;
 	signal mem_addr: u16;
 	signal mem_write_data: u16;
 	signal mem_read_data: u16;
-	signal mem_busy: std_logic;	-- ä¸²å£æ“ä½œå¯èƒ½å¾ˆæ…¢ï¼Œbusy=1è¡¨ç¤ºå°šæœªå®Œæˆ
-	------ å¯¹IFæ¥å£ ------
+	signal mem_busy: std_logic;	-- ´®¿Ú²Ù×÷¿ÉÄÜºÜÂı£¬busy=1±íÊ¾ÉĞÎ´Íê³É
+	------ ¶ÔIF½Ó¿Ú ------
 	signal if_addr: u16;
 	signal if_data: u16;
-	signal if_canread: std_logic; -- å½“MEMæ“ä½œRAM2æ—¶ä¸å¯è¯»
-	------ å¯¹PixelReaderæ¥å£ ------
+	signal if_canread: std_logic; -- µ±MEM²Ù×÷RAM2Ê±²»¿É¶Á
+	------ ¶ÔPixelReader½Ó¿Ú ------
 	signal pixel_ram1_addr: u16;
 	signal pixel_ram1_data: u16;
-	signal pixel_canread: std_logic; -- å½“MEMæ“ä½œRAM1æ—¶ä¸å¯è¯»
+	signal pixel_canread: std_logic; -- µ±MEM²Ù×÷RAM1Ê±²»¿É¶Á
 
 	signal pixel_x, pixel_y: natural;
 	signal pixel_data: u16;
@@ -69,10 +69,10 @@ architecture arch of Top is
 	signal uart2_data_ready, uart2_tbre, uart2_tsre: std_logic;
 	signal uart2_read, uart2_write: std_logic;
 
-	-- çŠ¶æ€æœº --
+	-- ×´Ì¬»ú --
 	signal finish_boot: boolean := false;
 	
-	-- å¯¹Bootæ¥å£ --
+	-- ¶ÔBoot½Ó¿Ú --
 	signal start_addr, end_addr, ram2_start_addr : u16;
 	signal done : std_logic := '0';
 	signal flash_addr_16 : u16;
@@ -81,12 +81,12 @@ architecture arch of Top is
 	signal flash_ram2_data : u16;
 	signal flash_write_ram2 : std_logic;
 
-	-- Boot æ¥ç®¡RamUart --
+	-- Boot ½Ó¹ÜRamUart --
 	signal mem_type_boot : MEMType;
 	signal mem_addr_boot  : u16;
 	signal mem_write_data_boot : u16;
 
-	-- è°ƒè¯•ä¿¡æ¯ä¸å…¶ä»– --
+	-- µ÷ÊÔĞÅÏ¢ÓëÆäËû --
 	signal digit0, digit1: u4;
 
 	signal clk_stable: std_logic;
@@ -152,11 +152,11 @@ begin
 	digit0raw <= DisplayNumber(digit0);
 	digit1raw <= DisplayNumber(digit1);
 
-	light <= x"00" & "00" & clk40 & uart2_data_ready & uart2_tbre & uart2_tsre & uart2_read & uart2_write;
+	light <= x"000" & "00" & co_buf.canread & co_buf.canwrite;
 	digit0 <= to_unsigned(term_count, 8)(7 downto 4);
 	digit1 <= to_unsigned(term_count, 8)(3 downto 0);
 
-	-- ç¨³å®šæŒ‰é’®ä¿¡å·
+	-- ÎÈ¶¨°´Å¥ĞÅºÅ
 	deb: entity work.debounce port map(clk50, clk, clk_stable);
 	deb_keys: for i in 0 to 3 generate
 		deb_key: entity work.debounce port map(clk50, key(i), key_stable(i));
@@ -184,7 +184,7 @@ begin
 
 	ht: entity work.HardTerm 
 		port map (rst, clk50,
-			ci_buf.read, ci_buf.canread, ci_buf.data_read, co_buf.write, co_buf.canwrite, co_buf.data_write,
+			ci_buf.read, ci_buf.canread, ci_buf.data_read, co_buf.write, '1', co_buf.data_write,
 			bo_buf.read, bo_buf.canread, bo_buf.data_read, bi_buf.write, bi_buf.canwrite, bi_buf.data_write,
 			term_count, open);
 
