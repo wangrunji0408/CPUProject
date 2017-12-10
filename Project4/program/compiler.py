@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 import os
 import sys
+import re
 
 if __name__ == '__main__':
 	filename = sys.argv[1]
@@ -8,6 +9,7 @@ if __name__ == '__main__':
 	fin = open(filename, 'r')
 	fout = open(outname, 'w')
 	sim_mode = False
+	term_mode = False	# 可直接复制到Term粘贴，不带注释
 
 # R0-R2 用户可用
 # R3 用于读写内存的内容
@@ -212,8 +214,7 @@ def debug_reg(reg):
 
 def process_line(line, line_num):
 	if not line.strip().startswith('#'):
-		fout.write(line)
-		return
+		return line
 	tokens = line.strip()[1:].strip().split(' ')
 
 	if tokens[0].startswith('Print'):
@@ -221,23 +222,23 @@ def process_line(line, line_num):
 		s = tokens[1]
 		pos = [int(i) for i in tokens[2].strip('()').split(',')]
 		color = tokens[3] if len(tokens) >= 4 else '777'
-		fout.write(print_str(s, pos, color))
+		return print_str(s, pos, color)
 	elif tokens[0].startswith('DebugReg'):
 		# DebugReg R1
-		fout.write(debug_reg(tokens[1]))
+		return debug_reg(tokens[1])
 	elif tokens[0].startswith('Debug'):
 		# Debug Hello,World
-		fout.write(debug(tokens[1] + '\n'))
+		return debug(tokens[1] + '\n')
 	elif tokens[0].startswith('Draw'):
 		# Draw 700 (20,19)
 		# Draw 700 R2
-		fout.write(print_color(color=tokens[1], pos=tokens[2]))	
+		return print_color(color=tokens[1], pos=tokens[2])
 	elif tokens[0].startswith('Wait'):
 		# Wait 0A00
-		fout.write(wait(count=tokens[1]))	
+		return wait(count=tokens[1])
 	elif tokens[0].startswith('Return'):
 		# Return
-		fout.write(RETURN)
+		return RETURN
 	elif tokens[0].startswith('R'):
 		# R4 <= BF00
 		# R4 <= *BF00
@@ -248,36 +249,47 @@ def process_line(line, line_num):
 		if rw == '<=':
 			if data.startswith('R'):
 				print('Not supported: MOVE')
-				fout.write('\tMOVE %s %s\n' % (reg, data))
+				return '\tMOVE %s %s\n' % (reg, data)
 			elif data.startswith('*R'):
-				fout.write('\tLW %s %s 0x0\n' % (data[1:], reg))
+				return '\tLW %s %s 0x0\n' % (data[1:], reg)
 			elif data.startswith('*'):
-				fout.write(read_mem(addr=data[1:], reg=reg))
+				return read_mem(addr=data[1:], reg=reg)
 			else:
-				fout.write(set_reg(reg=reg, data=data))
+				return set_reg(reg=reg, data=data)
 		elif rw == '=>':
 			if data.startswith('R'):
 				print('Not supported: MOVE')
-				fout.write('\tMOVE %s %s\n' % (data, reg))
+				return '\tMOVE %s %s\n' % (data, reg)
 			elif data.startswith('*R'):
-				fout.write('\tSW %s %s 0x0\n' % (data[1:], reg))
+				return '\tSW %s %s 0x0\n' % (data[1:], reg)
 			elif data.startswith('*'):
-				fout.write(write_mem(addr=data[1:], reg=reg))
+				return write_mem(addr=data[1:], reg=reg)
 			else:
 				print('Syntax Error! Line %d' % line_num)
 		else:
 			print('Syntax Error! Line %d' % line_num)
 	else:
 		print('Syntax Error! Line %d' % line_num)
+	return ''
 
 if __name__ == '__main__':
 	i = 1
 	for line in fin.readlines():
 		try:
-			process_line(line, i)
+			res = process_line(line, i)
+			if term_mode:
+				res = re.sub(';.*\n', '\n', res)
+				res = re.sub('0x', '', res)
+				res = re.sub('\n\t', '\n', res)
+				res = res.strip('\t')
+			if res != '' and res != '\n':
+				fout.write(res)
 		except:
 			print("Error at line %d" % i)
 			raise
 		i += 1
-	fout.write(RETURN)	
-	fout.write(TEST_RW_INSTS)
+	if not term_mode:
+		fout.write(RETURN)	
+		fout.write(TEST_RW_INSTS)
+	else:
+		fout.write('\tJR R7\n\tNOP\n')
