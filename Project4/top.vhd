@@ -120,7 +120,7 @@ begin
 			case( count ) is
 				when 0 => 
 					start_addr <= x"0000";
-					end_addr <= x"0220";
+					end_addr <= x"0300";
 					ram2_start_addr <= x"0000";
 					count := 1;
 				when 1 => 

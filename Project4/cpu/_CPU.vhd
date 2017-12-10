@@ -29,7 +29,7 @@ end CPU;
 
 architecture arch of CPU is	
 
-	signal out_for_if, if_in, ori_if_in: IF_Data;
+	signal out_for_if1, out_for_if, if_in: IF_Data;
 	signal if_out, id_in: IF_ID_Data;
 	signal id_out, ex_in: ID_EX_Data;
 	signal ex_out, mem_in: EX_MEM_Data;
@@ -84,7 +84,7 @@ begin
 	mem_stallReq <= mem_busy;
 	mem0: entity work.MEM port map (mem_read_data, mem_in.writeReg, mem_in.isLW, mem_in.isSW, mem_out);
 	
-	id_if0: entity work.ID_IF port map (rst, clk, ctrls(4), out_for_if, ori_if_in);
+	id_if0: entity work.ID_IF port map (rst, clk, ctrls(4), out_for_if1, if_in);
 	if_id0: entity work.IF_ID port map (rst, clk, ctrls(3), if_out, id_in);
 	id_ex0: entity work.ID_EX port map (rst, clk, ctrls(2), id_out, ex_in);
 	ex_mem0: entity work.EX_MEM port map (rst, clk, ctrls(1), ex_out, mem_in);
@@ -94,14 +94,12 @@ begin
 
 	intt <= '1'  when out_intt='1' and reg_ihh='1' else
 			'0';
-	if_in.pc        <= ori_if_in.pc;
-	if_in.isRefetch <= ori_if_in.isRefetch when intt='0' else '0';
-	if_in.branch    <= ori_if_in.branch when intt='0' else 
-					   ('1', x"0006");
+	out_for_if1.pc        <= out_for_if.pc;
+	out_for_if1.isRefetch <= out_for_if.isRefetch when intt='0' else '0';
+	out_for_if1.branch    <= out_for_if.branch when intt='0' else ('1', x"0006");
 
 	sir6.enable <= intt;
-	sir6.pc <=  ori_if_in.branch.target when ori_if_in.branch.enable='1' else
-				ori_if_in.pc;
+	sir6.pc <= out_for_if.branch.target when out_for_if.branch.enable='1' else out_for_if.pc;
 	sir6.intt_code <= out_intt_code;
 
 	
