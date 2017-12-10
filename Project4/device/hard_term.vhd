@@ -671,6 +671,7 @@ begin
                     if (bi_data = x"07") then
                         count <= 0;
                         bi_read <= '1';
+                        lenCmd := 0;
                         cmdIn := (others => x"00");
                         cnt2 := 0;
                         dataOut := (others => x"20");
