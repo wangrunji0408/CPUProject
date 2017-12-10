@@ -20,24 +20,31 @@ entity CPU is
 		ruc_if_canread: in std_logic; -- 当MEM操作RAM2时不可读
 
 		breakPointPC: in u16;
-		debug: out CPUDebug
+		debug: out CPUDebug;
+
+		out_intt: in std_logic;
+		out_intt_code : in u4 := "0000"
 	) ;
 end CPU;
 
 architecture arch of CPU is	
 
-	signal out_for_if, if_in: IF_Data;
+	signal out_for_if1, out_for_if, if_in: IF_Data;
 	signal if_out, id_in: IF_ID_Data;
 	signal id_out, ex_in: ID_EX_Data;
 	signal ex_out, mem_in: EX_MEM_Data;
 	signal reg1, reg2, mem_out: RegPort;	
 	signal if_stallReq, mem_stallReq: std_logic;
 
+	signal	sir6: SaveInR6;
+
 	signal step: natural;
 	signal mode: CPUMode;
 	signal ctrls: MidCtrls;
 
 	signal ifc_add, ifc_update, ifc_query, ifc_result: IFCachePort;
+
+	signal reg_ihh, intt: std_logic;
 	
 begin
 
@@ -77,11 +84,23 @@ begin
 	mem_stallReq <= mem_busy;
 	mem0: entity work.MEM port map (mem_read_data, mem_in.writeReg, mem_in.isLW, mem_in.isSW, mem_out);
 	
-	id_if0: entity work.ID_IF port map (rst, clk, ctrls(4), out_for_if, if_in);
+	id_if0: entity work.ID_IF port map (rst, clk, ctrls(4), out_for_if1, if_in);
 	if_id0: entity work.IF_ID port map (rst, clk, ctrls(3), if_out, id_in);
 	id_ex0: entity work.ID_EX port map (rst, clk, ctrls(2), id_out, ex_in);
 	ex_mem0: entity work.EX_MEM port map (rst, clk, ctrls(1), ex_out, mem_in);
 	reg0: entity work.Reg port map (rst, clk, ctrls(0), 
-			mem_out, reg1, reg2, reg1.data, reg2.data, debug.regs);
+			mem_out, reg1, reg2, reg1.data, reg2.data, debug.regs,
+			sir6, reg_ihh);
+
+	intt <= '1'  when out_intt='1' and reg_ihh='1' else
+			'0';
+	out_for_if1.pc        <= out_for_if.pc;
+	out_for_if1.isRefetch <= out_for_if.isRefetch when intt='0' else '0';
+	out_for_if1.branch    <= out_for_if.branch when intt='0' else ('1', x"0006");
+
+	sir6.enable <= intt;
+	sir6.pc <= out_for_if.branch.target when out_for_if.branch.enable='1' else out_for_if.pc;
+	sir6.intt_code <= out_intt_code;
+
 	
 end arch ; -- arch
