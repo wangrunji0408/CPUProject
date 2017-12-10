@@ -416,9 +416,10 @@ begin
                     else
                         mips := x"FFFF";
                     end if;
-                when 11 =>          
+                when 11 =>
                     if (mips = x"FFFF") then
                         dataOut(1 to 6) := (x"45", x"52", x"52", x"4F", x"52", x"0D");
+                        cnt2 := 0;
                     else
                         count <= 14;
                     end if;
@@ -440,19 +441,11 @@ begin
                         count <= 12;
                     end if;
                 when 14 =>          --write mips
-                    if (addr = x"0000") then    --back judgement
-                        cmdIn := (others => x"00");
-                        dataOut := (others => x"20");
-                        count <= 0;
-                        lenCmd := 0;
-                        status <= ReadShell;
+                    if (bo_canwrite = '1') then
+                        bo_write <= '0';
+                        bo_data <= addr(7 downto 0);
                     else
-                        if (bo_canwrite = '1') then
-                            bo_write <= '0';
-                            bo_data <= addr(7 downto 0);
-                        else
-                            count <= count;
-                        end if;
+                        count <= count;
                     end if;
                 when 15 =>          --addr low
                     bo_write<= '1';
@@ -473,8 +466,16 @@ begin
                         count <= count;
                     end if;
                 when 19 =>          --mips low
-                    
                     bo_write<= '1';
+                    if (addr = x"0000") then    --back judgement
+                        cmdIn := (others => x"00");
+                        dataOut := (others => x"20");
+                        count <= 0;
+                        lenCmd := 0;
+                        status <= ReadShell;
+                    else
+                        null;
+                    end if;
                 when 20 =>
                     if (bo_canwrite = '1') then
                         bo_data <= mips(15 downto 8);
@@ -484,7 +485,8 @@ begin
                     end if;
                 when 21 =>          --mips high
                     bo_write<= '1';
-                    count <= 8;
+                    addr := addr + 1;
+                    count <= 6;
                 when others => count <= 0;
                 end case;
             when CmdD =>
