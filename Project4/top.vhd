@@ -162,31 +162,31 @@ begin
 		deb_key: entity work.debounce port map(clk50, key(i), key_stable(i));
 	end generate ;
 
-	shell0: entity work.Shell 
-		port map (rst, clk50, 
-			ci_buf.write, ci_buf.isBack, ci_buf.data_write, co_buf.write, co_buf.data_write, shellBuf);
+	-- shell0: entity work.Shell 
+	-- 	port map (rst, clk50, 
+	-- 		ci_buf.write, ci_buf.isBack, ci_buf.data_write, co_buf.write, co_buf.data_write, shellBuf);
 
 	-- PS2 => CharInBuf  => | Hard | => ByteInBuf =>  | CPU |
 	--        CharOutBuf <= | Term | <= ByteOutBuf <= |     |
-	ps2: entity work.ps2_keyboard_to_ascii 
-		port map (clk50, ps2_clk, ps2_data, ascii_new, ascii_code);
-	a2b: entity work.AsciiToBufferInput
-		port map (rst, clk50, ascii_new, ascii_code, cfg.byte_mode, ci_buf.write, ci_buf.isBack, ci_buf.data_write);
-	ci_buf0: entity work.DataBuffer
-		port map (rst, ci_buf.write, ci_buf.read, ci_buf.isBack, ci_buf.canwrite, ci_buf.canread, ci_buf.data_write, ci_buf.data_read, ci_buf_info);
-	co_buf0: entity work.DataBuffer
-		port map (rst, co_buf.write, co_buf.read, co_buf.isBack, co_buf.canwrite, co_buf.canread, co_buf.data_write, co_buf.data_read, co_buf_info);
-	bi_buf0: entity work.DataBuffer
-		port map (rst, bi_buf.write, bi_buf.read, bi_buf.isBack, bi_buf.canwrite, bi_buf.canread, bi_buf.data_write, bi_buf.data_read, bi_buf_info);
-	bo_buf0: entity work.DataBuffer
-		port map (rst, bo_buf.write, bo_buf.read, bo_buf.isBack, bo_buf.canwrite, bo_buf.canread, bo_buf.data_write, bo_buf.data_read, bo_buf_info);
-	co_buf.read <= key_stable(0);
+	-- ps2: entity work.ps2_keyboard_to_ascii 
+	-- 	port map (clk50, ps2_clk, ps2_data, ascii_new, ascii_code);
+	-- a2b: entity work.AsciiToBufferInput
+	-- 	port map (rst, clk50, ascii_new, ascii_code, cfg.byte_mode, ci_buf.write, ci_buf.isBack, ci_buf.data_write);
+	-- ci_buf0: entity work.DataBuffer
+	-- 	port map (rst, ci_buf.write, ci_buf.read, ci_buf.isBack, ci_buf.canwrite, ci_buf.canread, ci_buf.data_write, ci_buf.data_read, ci_buf_info);
+	-- co_buf0: entity work.DataBuffer
+	-- 	port map (rst, co_buf.write, co_buf.read, co_buf.isBack, co_buf.canwrite, co_buf.canread, co_buf.data_write, co_buf.data_read, co_buf_info);
+	-- bi_buf0: entity work.DataBuffer
+	-- 	port map (rst, bi_buf.write, bi_buf.read, bi_buf.isBack, bi_buf.canwrite, bi_buf.canread, bi_buf.data_write, bi_buf.data_read, bi_buf_info);
+	-- bo_buf0: entity work.DataBuffer
+	-- 	port map (rst, bo_buf.write, bo_buf.read, bo_buf.isBack, bo_buf.canwrite, bo_buf.canread, bo_buf.data_write, bo_buf.data_read, bo_buf_info);
+	-- co_buf.read <= key_stable(0);
 
-	ht: entity work.HardTerm 
-		port map (rst, clk50,
-			ci_buf.read, ci_buf.canread, ci_buf.data_read, co_buf.write, co_buf.canwrite, co_buf.data_write,
-			bo_buf.read, bo_buf.canread, bo_buf.data_read, bi_buf.write, bi_buf.canwrite, bi_buf.data_write,
-			term_count, open);
+	-- ht: entity work.HardTerm 
+	-- 	port map (rst, clk50,
+	-- 		ci_buf.read, ci_buf.canread, ci_buf.data_read, co_buf.write, co_buf.canwrite, co_buf.data_write,
+	-- 		bo_buf.read, bo_buf.canread, bo_buf.data_read, bi_buf.write, bi_buf.canwrite, bi_buf.data_write,
+	-- 		term_count, open);
 
 	rstnot <= not rst;
 	make_clk25 : entity work.ClkDiv port map (rst, clk50, clk25);	
