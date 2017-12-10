@@ -10,6 +10,8 @@ DELINT: NOP 			;中断处理程序
 	SW_SP R1 0x1
 	SW_SP R2 0x2
 	SW_SP R3 0x3
+	SW_SP R4 0x4
+	SW_SP R5 0x5
 	SW_SP R6 0x6
 	SW_SP R7 0x7
 
@@ -43,10 +45,56 @@ DELINT: NOP 			;中断处理程序
 	SLL R6 R6 0x0000 	;R6=0xBF00 
 	SW R6 R3 0x0000		;(R3='T'
 	NOP
+	LI R3 0x0A		
+	MFPC R7 
+	ADDIU R7 0x0003  
+	NOP
+	B TESTW 	
+	NOP
+	LI R6 0x00BF 
+	SLL R6 R6 0x0000 	;R6=0xBF00 
+	SW R6 R3 0x0000		;(R3='\n'
+
+	MFIH R3
+	ADDIU R3 0xFC
+	BNEZ R3 I_ENDWAIT
+	NOP
+
+	LI R4 0x10    ; R4=0x5
+					; wait when Ctrl-E
+I_LOOP0:
+	ADDIU R4 0xFF
+
+	LI R3 0x2E	
+	MFPC R7 
+	ADDIU R7 0x0003  
+	NOP
+	B TESTW 	
+	NOP
+	LI R6 0x00BF 
+	SLL R6 R6 0x0000 	;R6=0xBF00 
+	SW R6 R3 0x0000		;(R3='.'
+	
+	BEQZ R4 I_ENDWAIT
+	LI R1 0x00
+I_LOOP1:
+	ADDIU R1 0xFF
+	BEQZ R1 I_LOOP0
+	LI R2 0x40
+I_LOOP2:
+	ADDIU R2 0xFF
+	BEQZ R2 I_LOOP1
+	NOP
+	B I_LOOP2
+
+I_ENDWAIT:
+		
 	LW_SP R0 0x0
 	LW_SP R1 0x1
 	LW_SP R2 0x2
 	LW_SP R3 0x3
+	LW_SP R4 0x4
+	LW_SP R5 0x5
 	LW_SP R6 0x6
 	LW_SP R7 0x7		;r7=用户程序返回地址
 	
@@ -54,10 +102,10 @@ DELINT: NOP 			;中断处理程序
 
 	MFIH R3   ; JR R7 when Ctrl-C
 	ADDIU R3 0xFF
-	BEQZ R3 ENDUSERPRO
+	BEQZ R3 I_ENDUSERPRO
 	LW_SP R3 0x3
 
-	MFPC R7		; Press any key to continue when Ctrl-D
+	MFPC R7		; Press std interupt when Ctrl-D
 	ADDIU R7 0x0003	
 	NOP	
 	B TESTW
@@ -98,7 +146,7 @@ DELINT: NOP 			;中断处理程序
 	MTIH R3
 	JR R6
 	LW_SP R3 0x3
-ENDUSERPRO:
+I_ENDUSERPRO:
 	NOP
 	JR R7
 	NOP

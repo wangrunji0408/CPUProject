@@ -148,9 +148,12 @@ begin
 		end if;
 	end process;
 
-	intt <= '1' when buf0.write='0' else '0';
-	intt_code <= "0001" when ascii_code="0000011" else
-				 "0010" when ascii_code="0000100" else
+	intt <= '1' when buf0.write='0' and intt_code/="0000"
+			else '0';
+
+	intt_code <= "0001" when ascii_code="0000011" else --Ctrl+C stop
+				 "0010" when ascii_code="0000100" else --Ctrl+D show INT
+				 "0100" when ascii_code="0000101" else --Ctrl+E wait 5s
 				 "0000";
 
 	cfg.byte_mode <= switch(15);
