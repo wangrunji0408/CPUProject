@@ -85,6 +85,12 @@ package Base is
 		target: u16;
 	end record;
 
+	type SaveInR6 is record
+		enable: std_logic;
+		pc: u16;
+		intt_code:u4;
+	end record;
+
 	type RegPort is record
 		enable: std_logic;
 		addr: RegAddr;

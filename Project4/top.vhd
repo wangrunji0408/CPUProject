@@ -19,7 +19,7 @@ entity Top is
 		uart_read, uart_write: out std_logic;					-- UART lock
 
 		u_rxd: in std_logic;
-		u_txd: out std_logic;	-- ´®¿Ú2
+		u_txd: out std_logic;	-- ä¸²å£2
 
 		flash_addr: out u23;
 		flash_data: inout u16;
@@ -45,21 +45,21 @@ architecture arch of Top is
 	signal ascii_new: std_logic;
 	signal ascii_code: std_logic_vector(6 downto 0);
 
-	------ IOCtrlÊ¹ÓÃÕß ------
-	------ ¶ÔMEM½Ó¿Ú ------
+	------ IOCtrlä½¿ç”¨è€… ------
+	------ å¯¹MEMæ¥å£ ------
 	signal mem_type: MEMType;
 	signal mem_addr: u16;
 	signal mem_write_data: u16;
 	signal mem_read_data: u16;
-	signal mem_busy: std_logic;	-- ´®¿Ú²Ù×÷¿ÉÄÜºÜÂı£¬busy=1±íÊ¾ÉĞÎ´Íê³É
-	------ ¶ÔIF½Ó¿Ú ------
+	signal mem_busy: std_logic;	-- ä¸²å£æ“ä½œå¯èƒ½å¾ˆæ…¢ï¼Œbusy=1è¡¨ç¤ºå°šæœªå®Œæˆ
+	------ å¯¹IFæ¥å£ ------
 	signal if_addr: u16;
 	signal if_data: u16;
-	signal if_canread: std_logic; -- µ±MEM²Ù×÷RAM2Ê±²»¿É¶Á
-	------ ¶ÔPixelReader½Ó¿Ú ------
+	signal if_canread: std_logic; -- å½“MEMæ“ä½œRAM2æ—¶ä¸å¯è¯»
+	------ å¯¹PixelReaderæ¥å£ ------
 	signal pixel_ram1_addr: u16;
 	signal pixel_ram1_data: u16;
-	signal pixel_canread: std_logic; -- µ±MEM²Ù×÷RAM1Ê±²»¿É¶Á
+	signal pixel_canread: std_logic; -- å½“MEMæ“ä½œRAM1æ—¶ä¸å¯è¯»
 
 	signal pixel_x, pixel_y: natural;
 	signal pixel_data: u16;
@@ -69,10 +69,10 @@ architecture arch of Top is
 	signal uart2_data_ready, uart2_tbre, uart2_tsre: std_logic;
 	signal uart2_read, uart2_write: std_logic;
 
-	-- ×´Ì¬»ú --
+	-- çŠ¶æ€æœº --
 	signal finish_boot: boolean := false;
 	
-	-- ¶ÔBoot½Ó¿Ú --
+	-- å¯¹Bootæ¥å£ --
 	signal start_addr, end_addr, ram2_start_addr : u16;
 	signal done : std_logic := '0';
 	signal flash_addr_16 : u16;
@@ -81,12 +81,16 @@ architecture arch of Top is
 	signal flash_ram2_data : u16;
 	signal flash_write_ram2 : std_logic;
 
-	-- Boot ½Ó¹ÜRamUart --
+	-- Boot æ¥ç®¡RamUart --
 	signal mem_type_boot : MEMType;
 	signal mem_addr_boot  : u16;
 	signal mem_write_data_boot : u16;
 
-	-- µ÷ÊÔĞÅÏ¢ÓëÆäËû --
+	-- ä¸­æ–­ --
+	signal intt : std_logic;
+	signal intt_code : u4;
+
+	-- è°ƒè¯•ä¿¡æ¯ä¸å…¶ä»– --
 	signal digit0, digit1: u4;
 
 	signal clk_stable: std_logic;
@@ -117,7 +121,7 @@ begin
 			case( count ) is
 				when 0 => 
 					start_addr <= x"0000";
-					end_addr <= x"0220";
+					end_addr <= x"0300";
 					ram2_start_addr <= x"0000";
 					count := 1;
 				when 1 => 
@@ -145,6 +149,14 @@ begin
 		end if;
 	end process;
 
+	intt <= '1' when ci_buf.write='0' and intt_code/="0000"
+			else '0';
+
+	intt_code <= "0001" when ascii_code="0000011" else --Ctrl+C stop
+				 "0010" when ascii_code="0000100" else --Ctrl+D show INT
+				 "0100" when ascii_code="0000101" else --Ctrl+E wait 5s
+				 "0000";
+
 	cfg.byte_mode <= switch(15);
 	cfg.pixel_mode <= switch(14);
 	cfg.com1_keyboard <= switch(13);
@@ -156,7 +168,7 @@ begin
 	digit0 <= to_unsigned(term_count, 8)(7 downto 4);
 	digit1 <= to_unsigned(term_count, 8)(3 downto 0);
 
-	-- ÎÈ¶¨°´Å¥ĞÅºÅ
+	-- ç¨³å®šæŒ‰é’®ä¿¡å·
 	deb: entity work.debounce port map(clk50, clk, clk_stable);
 	deb_keys: for i in 0 to 3 generate
 		deb_key: entity work.debounce port map(clk50, key(i), key_stable(i));
@@ -211,7 +223,6 @@ begin
 	vga_b <= unsigned(color_out(2 downto 0));
 
 	flash_addr <= "000000" & flash_addr_16 & "0";
---	flash_data <= (others => 'Z');
 	flash_ctrl <= (BYTE, CE0, '0', '0',OE, '1', '1', '1', WE); --what is STS??
 		
 	rst_cpu <= rst when finish_boot else '0';
@@ -244,7 +255,8 @@ begin
 	cpu0: entity work.CPU 
 		port map (rst, clk_cpu, clk_stable, key_stable(3), cfg,
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, if_addr, if_data, if_canread, 
-			x"FFFF", debug); 
+			x"FFFF", debug,
+			intt, intt_code); 
 
 	logger: entity work.IOLogger port map (rst, clk_cpu, debug.id_in.pc,
 			mem_type, mem_addr, mem_write_data, mem_read_data, mem_busy, io);
