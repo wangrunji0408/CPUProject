@@ -21,6 +21,7 @@ TESTW:	NOP	 			;测试串口1是否能写 使用R4 R3
 	LW R4 R3 0x0001		; R3 <= mem[BF01]
 	LI R4 0x0001 
 	AND R4 R3
+	NOP
 	BEQZ R4 TESTW		;BF01&1=0 则等待	
 	NOP		
 	JR R5
@@ -31,11 +32,22 @@ TESTR:	NOP				;测试串口1是否能读 使用R4 R3
 	LW R4 R3 0x0001		; R3 <= mem[BF01]
 	LI R4 0x0002
 	AND R4 R3
+	NOP
 	BEQZ R4 TESTR		;BF01&2=0  则等待	
 	NOP	
 	JR R5
 	NOP
 WAIT:  NOP				;等待 每回合R4-- 直到R4=0
+	LI R3 0x0
+	ADDIU R3 0xFF
+WAIT1:
+	NOP
+	NOP
+	NOP
+	NOP
+	BNEZ R3 WAIT1
+	ADDIU R3 0xFF
+
 	BNEZ R4 WAIT
 	ADDIU R4 0xFF
 	JR R5
@@ -64,8 +76,11 @@ RETURN = """
 def set_reg(reg, data):
 	if data.startswith('{{') and data.endswith('}}'):
 		num = eval(data.strip('{}'))
-		num = (1 << 16) + num if num < 0 else num
-		data = '%04x' % num
+		if type(num) is str:
+			data = num
+		else:
+			num = (1 << 16) + num if num < 0 else num
+			data = '%04x' % num
 	assert(len(data) == 4)
 	if data[0:2] == '00':
 		return '\tLI %s 0x%s\t\t\t; %s <= %s\n' % (reg, data[2:4],  reg, data)
@@ -76,16 +91,19 @@ def set_reg(reg, data):
 		elif int(data[2], 16) < 8:
 			res += '\tADDIU %s 0x%s\t\t; %s <= %s\n' % (reg, data[2:4],  reg, data)
 		else:
+			assert(reg != 'R5')
 			res += '\tLI R5 0x%s\n\tADDU R5 %s %s\t\t; %s <= %s\n' % (data[2:4], reg, reg,  reg, data)
 		return res
 
 def read_mem(addr, reg):
+	assert(reg != 'R4')
 	return (TESTR if addr == 'BF00' and not sim_mode else '') \
 		+ set_reg('R4', addr) \
 		+ '\tLW %s %s 0x0\t\t' % ('R4', reg) \
 		+ '; %s <= *%s\n' % (reg, addr)
 
 def write_mem(addr, reg):
+	assert(reg != 'R4')
 	return (TESTW if addr == 'BF00' and not sim_mode else '') \
 		+ set_reg('R4', addr) \
 		+ '\tSW %s %s 0x0\t\t' % ('R4', reg) \
@@ -130,7 +148,7 @@ def char_data(char, color='777', down=False):
 	x |= 1 << 14 if down else 0
 	return '%04x' % x
 
-def print_str(s, pos, color='777'):
+def print_str(s, pos, color):
 	(x, y) = pos
 	res = ''
 	for c in s:
@@ -166,30 +184,30 @@ def debug(s):
 def debug_reg(reg):
 	if not sim_mode:
 		return ''
+	assert(reg != 'R4')
 	res = ''
-	res += debug(reg + '=')
-	res += set_reg(reg='R5', data='F000')
-	res += '\tAND R5 %s\n' % reg
-	res += '\tSRA R5 R5 0x0\n'
-	res += '\tSRA R5 R5 0x4\n'
-	res += '\tADDIU R5 0x30\n'
-	res += write_mem(addr='BF00', reg='R5')
-	res += set_reg(reg='R5', data='0F00')
-	res += '\tAND R5 %s\n' % reg
-	res += '\tSRA R5 R5 0x0\n'
-	res += '\tADDIU R5 0x30\n'
-	res += write_mem(addr='BF00', reg='R5')
-	res += set_reg(reg='R5', data='00F0')
-	res += '\tAND R5 %s\n' % reg
-	res += '\tSRA R5 R5 0x4\n'
-	res += '\tADDIU R5 0x30\n'
-	res += write_mem(addr='BF00', reg='R5')
-	res += set_reg(reg='R5', data='000F')
-	res += '\tAND R5 %s\n' % reg
-	res += '\tADDIU R5 0x30\n'
-	res += write_mem(addr='BF00', reg='R5')
-	res += set_reg(reg='R5', data='0020')
-	res += write_mem(addr='BF00', reg='R5')
+	res += set_reg(reg='R4', data='F000')
+	res += '\tAND R4 %s\n' % reg
+	res += '\tSRA R4 R4 0x0\n'
+	res += '\tSRA R4 R4 0x4\n'
+	res += '\tADDIU R4 0x30\n'
+	res += write_mem(addr='BF00', reg='R4')
+	res += set_reg(reg='R4', data='0F00')
+	res += '\tAND R4 %s\n' % reg
+	res += '\tSRA R4 R4 0x0\n'
+	res += '\tADDIU R4 0x30\n'
+	res += write_mem(addr='BF00', reg='R4')
+	res += set_reg(reg='R4', data='00F0')
+	res += '\tAND R4 %s\n' % reg
+	res += '\tSRA R4 R4 0x4\n'
+	res += '\tADDIU R4 0x30\n'
+	res += write_mem(addr='BF00', reg='R4')
+	res += set_reg(reg='R4', data='000F')
+	res += '\tAND R4 %s\n' % reg
+	res += '\tADDIU R4 0x30\n'
+	res += write_mem(addr='BF00', reg='R4')
+	res += set_reg(reg='R4', data='0020')
+	res += write_mem(addr='BF00', reg='R4')
 	return res
 
 def process_line(line, line_num):
@@ -202,7 +220,8 @@ def process_line(line, line_num):
 		# Print Hello,World (20,19)
 		s = tokens[1]
 		pos = [int(i) for i in tokens[2].strip('()').split(',')]
-		fout.write(print_str(s, pos))
+		color = tokens[3] if len(tokens) >= 4 else '777'
+		fout.write(print_str(s, pos, color))
 	elif tokens[0].startswith('DebugReg'):
 		# DebugReg R1
 		fout.write(debug_reg(tokens[1]))
@@ -254,7 +273,11 @@ def process_line(line, line_num):
 if __name__ == '__main__':
 	i = 1
 	for line in fin.readlines():
-		process_line(line, i)
+		try:
+			process_line(line, i)
+		except:
+			print("Error at line %d" % i)
+			raise
 		i += 1
 	fout.write(RETURN)	
 	fout.write(TEST_RW_INSTS)

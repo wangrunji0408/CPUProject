@@ -43,8 +43,8 @@ begin
 			buf := (others => NULL_LINE);
 			x := 0; y := 0;
 		elsif rising_edge(clk) then
-			kb_event := kb_write = '0' and last_kb_write = '1';
-			co_event := co_write = '0' and last_co_write = '1';
+			kb_event := kb_write = '1' and last_kb_write = '0';
+			co_event := co_write = '1' and last_co_write = '0';
 			
 			if kb_event then
 				data := kb_data;

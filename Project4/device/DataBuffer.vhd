@@ -15,11 +15,11 @@ end DataBuffer;
 
 architecture arch of DataBuffer is	
 	function add(x: natural) return natural is
-	begin if x = 63 then return 0; else return x + 1; end if;
+	begin if x = 31 then return 0; else return x + 1; end if;
 	end function;
 
 	function sub(x: natural) return natural is
-	begin if x = 0 then return 63; else return x - 1; end if;
+	begin if x = 0 then return 31; else return x - 1; end if;
 	end function;
 begin
 
@@ -34,7 +34,7 @@ begin
 			buf.data <= (others => x"00");
 			wp := 0; rp := 0;
 		else
-			if falling_edge(write) then
+			if rising_edge(write) then
 				if isBack = '1' then
 					wp := sub(wp);
 				else
