@@ -7,19 +7,24 @@ use work.Base.all;
 entity Reg is
 	port (
 		rst, clk: in std_logic;
+		ctrl: in MidCtrl;
 		write: in RegPort;
 		read1, read2: in RegPort;	-- read.data is null, unable to read.
 		read1_dataout, read2_dataout: out u16;
-		d_regs: out RegData		-- for debug
+		d_regs: out RegData;		-- for debug
+
+		sir6: in SaveInR6:= ('0', x"0000", "0000");
+		ihh : out std_logic
 	) ;
 end Reg;
 
 architecture arch of Reg is	
 
-	signal Regs:RegData;
+	signal Regs: RegData;
 
 begin
 	d_regs <= Regs;
+	ihh <= Regs(9)(15);
 
 	read1_dataout <= Regs(to_integer(read1.addr)) when read1.enable = '1' 
 					 else x"0000";
@@ -31,8 +36,13 @@ begin
 		if rst = '0' then
 			Regs <= (others => x"0000");
 		elsif rising_edge(clk) then
-			if write.enable = '1'then
+			if write.enable = '1' then
 				Regs(to_integer(write.addr)) <= write.data;
+			end if;
+			if sir6.enable = '1' then
+				Regs(6) <= sir6.pc;
+				Regs(9)(15) <= '0';
+				Regs(9)(3 downto 0) <= sir6.intt_code;
 			end if;
 		end if;
 	end process;

@@ -4,6 +4,7 @@ use ieee.numeric_std.all;
 
 package Base is
 	subtype u32 is unsigned(31 downto 0);
+	subtype u23 is unsigned(22 downto 0);
 	subtype u16 is unsigned(15 downto 0);
 	subtype u18 is unsigned(17 downto 0);
     subtype u11 is unsigned(10 downto 0);
@@ -19,6 +20,29 @@ package Base is
 	subtype RegAddr is u4;
 	subtype TColor is std_logic_vector(8 downto 0); 	--颜色：[R2R1R0 G2G1G0 B2B1B0]
 	type RegData is array (0 to 15) of u16;
+	type DataBuf is array (0 to 31) of u8;
+	type DataBufPort is record
+		write, read, isBack: std_logic;
+		canwrite, canread: std_logic;
+		data_write, data_read: u8;
+	end record;
+	type DataBufInfo is record
+		data: DataBuf;
+		writePos, readPos: natural;
+	end record;
+
+	type LineBuf is array (0 to 15) of u8;
+	type ShellBuf is array (0 to 15) of LineBuf;
+	type ShellBufInfo is record
+		data: ShellBuf;
+		x, y: natural;
+	end record;
+
+	type Config is record
+		byte_mode: std_logic;
+		com1_keyboard: std_logic;
+		pixel_mode: std_logic;
+	end record;
 
 	-- 特殊寄存器。和通用寄存器一起，统一编码为4位地址。
 	constant REG_SP: RegAddr := x"8";
@@ -32,7 +56,7 @@ package Base is
 		OP_NOT, OP_SLL, OP_SRL, OP_SRA, OP_ROL,
 		OP_LTU, OP_LTS, OP_EQ -- 分别对应 SLTUI SLT CMP 指令，输出0/1
 	);
-
+    
 	type AluFlag is record
 		cf, zf, sf, vf: std_logic;
 	end record;
@@ -46,18 +70,25 @@ package Base is
 		clk, data: std_logic;
 	end record;
 
-	type UartFlags is record
+	type UartPort is record
 		data_ready, tbre, tsre: std_logic;
+		write, read: std_logic;
+		data_write, data_read: u16; -- is ram1_data
 	end record;
 
-	type UartCtrl is record
-		read, write: std_logic;
-		data: u16; -- is ram1_data
+	type FlashCtrl is record
+		byte, ce, ce1, ce2, oe, rp, sts, vpen, we: std_logic;
 	end record;
 
 	type PCBranch is record
-		isOffset, isJump: std_logic;
-		offset, target: u16;
+		enable: std_logic;
+		target: u16;
+	end record;
+
+	type SaveInR6 is record
+		enable: std_logic;
+		pc: u16;
+		intt_code:u4;
 	end record;
 
 	type RegPort is record
@@ -71,13 +102,24 @@ package Base is
 		a, b: u16;
 	end record;
 
+	type IFCachePort is record
+		enable: std_logic;
+		pc, inst: u16;
+	end record;
+
 	type RamPort is record
 		enable, read, write: std_logic;
 		addr: u18;
 		data: u16;
 	end record;
 
-	type MEMType is (None, ReadRam1, WriteRam1, ReadRam2, WriteRam2, ReadUart, WriteUart);
+	type MEMType is (
+		None, 
+		ReadRam1, WriteRam1, ReadRam2, WriteRam2, 
+		ReadUart, WriteUart, TestUart,
+		ReadUart2, WriteUart2, TestUart2,
+		ReadBuf, WriteBuf, TestBuf
+	);
 
 	type InstType is (
 		I_AND, I_OR, I_ADDU, I_SUBU, I_SLT, I_CMP,
@@ -89,48 +131,80 @@ package Base is
 		I_ERR
 	);
 
+    type TermCmd is (
+        T_REG, T_ASM, T_UASM, T_GO, T_DATA, T_NULL
+    );
+    
+	type CPUMode is (STEP, BREAK_POINT);
+	type MidCtrl is (PASS, STALL, CLEAR, STORE, RESTORE);
+	type MidCtrls is array (4 downto 0) of MidCtrl;
+
+	type IF_Data is record
+		pc: u16;
+		branch: PCBranch;
+		isRefetch: std_logic;
+	end record;
+
 	type IF_ID_Data is record
 		pc: u16;
 		inst: Inst;
 	end record;
 
-	type ID_MEM_Data is record
+	type ID_EX_Data is record
 		writeReg: RegPort;
 		isLW: std_logic;
 		isSW: std_logic;
 		writeMemData: u16;
+		aluInput: AluInput;
 	end record;
+
+	type EX_MEM_Data is record
+		writeReg: RegPort;
+		isLW: std_logic;
+		isSW: std_logic;
+		mem_type: MEMType;
+		mem_addr: u16;
+		mem_write_data: u16;
+	end record;
+
+	type IOEvent is record
+		pc: u16;
+		mode: MEMType;
+		addr, data: u16;
+	end record;
+	type IODebug is array (0 to 15) of IOEvent;
 
 	type CPUDebug is record
 		step: natural;
+		mode: CPUMode;
+		breakPointPC: u16;
 		regs: RegData;
 		instType: InstType;
-		branch: PCBranch;
+		if_in: IF_Data;
 		id_in: IF_ID_Data;
-		ex_in, mem_in: ID_MEM_Data;
-		ex_in_aluInput: AluInput;
-		mem_in_aluOut: u16;
+		ex_in: ID_EX_Data;
+		mem_in: EX_MEM_Data;
 		mem_out: RegPort;
 	end record;
 
+	constant NULL_IFCACHEPORT : IFCachePort := ('0', x"0000", x"0000");	
 	constant NULL_REGPORT : RegPort := ('0', x"0", x"0000");
 	constant NULL_RAMPORT : RamPort := ('1', '1', '1', "00" & x"0000", x"0000");
 	constant NULL_ALUINPUT : AluInput := (OP_NOP, x"0000", x"0000");
-	constant NULL_PCBRANCH : PCBranch := ('0', '0', x"0000", x"0000");
+	constant NULL_PCBRANCH : PCBranch := ('0', x"0000");
+	constant NULL_IOEVENT: IOEvent := (x"0000", None, x"0000", x"0000");
+	constant NULL_IF_DATA: IF_Data := (x"0000", NULL_PCBRANCH, '0');
+	constant NULL_IF_ID_DATA: IF_ID_Data := (x"0000", x"0000");
+	constant NULL_ID_EX_DATA: ID_EX_Data := (NULL_REGPORT, '0', '0', x"0000", NULL_ALUINPUT);	
+	constant NULL_EX_MEM_DATA: EX_MEM_Data := (NULL_REGPORT, '0', '0', None, x"0000", x"0000");
 	
-	function toStr2 (x: u16) return string;
-	function toStr16 (x: u16) return string;
-	function toHex8 (x: u8) return string;
+    function toAscii (x: u4) return u8;
+    function toData (x: u8) return u4;
 	function charToU8 (x: character) return u8;
-	function toHex (x: u4) return character;
-	function toString (x: unsigned) return string;
-	function showInst (x: InstType) return string;
+	function charToU4 (x: natural) return u4;
 	function to_u4 (x: integer) return u4;
 	function to_u16 (x: integer) return u16;
-	function show_AluInput (x: AluInput) return string; --len=13
-	function show_RegPort (x: RegPort) return string; --len=7
-	function show_IF_ID_Data (x: IF_ID_Data) return string;	--len=21
-	function show_ID_MEM_Data (x: ID_MEM_Data) return string; --len=15
+	function toString (x: unsigned) return string;
 	function DisplayNumber (number: u4) return std_logic_vector;
 
 	function signExtend (number: u8) return u16;
@@ -276,66 +350,77 @@ package body Base is
 		end if;
 	end function;
 
-	function toStr2 (x: u16) return string is 
-		variable s: string(1 to 16);
-	begin
-		for i in 1 to 16 loop
-			case x(i-1) is
-				when '0' => s(i) := '0';
-				when '1' => s(i) := '1';
-				when 'Z' => s(i) := 'Z';
-				when 'U' => s(i) := 'U';
-				when 'X' => s(i) := 'X';
-				when others => s(i) := '?';
-			end case ;
-		end loop ; -- 
-		return s;
-	end function;
-
-	function toStr16 (x: u16) return string is 
-		variable hex : string(1 to 4);
-		variable fourbit : u4;
-	begin
-		for i in 3 downto 0 loop
-			fourbit:=x(((i*4)+3) downto (i*4));
-			hex(4-I) := toHex(fourbit);
-		end loop;
-		return hex;
-	end function;
-
-	function toHex8 (x: u8) return string is
-	begin
-		return toHex(x(7 downto 4)) & toHex(x(3 downto 0));
-	end function;
-
 	function charToU8 (x: character) return u8 is
 	begin
 		return to_unsigned(character'pos(x), 8);
 	end function;
 
-	function toHex (x: u4) return character is 
+	function charToU4 (x: natural) return u4 is
+	begin
+		case( x ) is
+			when 48 => return x"0";
+			when 49 => return x"1";
+			when 50 => return x"2";
+			when 51 => return x"3";
+			when 52 => return x"4";
+			when 53 => return x"5";
+			when 54 => return x"6";
+			when 55 => return x"7";
+			when 56 => return x"8";
+			when 57 => return x"9";
+			when 65|97 => return x"A";
+			when 66|98 => return x"B";
+			when 67|99 => return x"C";
+			when 68|100 => return x"D";
+			when 69|101 => return x"E";
+			when 70|102 => return x"F";		
+			when others => return x"0";
+		end case ;
+	end function;
+
+    function toAscii (x: u4) return u8 is 
 	begin
 		case x is
-			when "0000" => return '0';
-			when "0001" => return '1';
-			when "0010" => return '2';
-			when "0011" => return '3';
-			when "0100" => return '4';
-			when "0101" => return '5';
-			when "0110" => return '6';
-			when "0111" => return '7';
-			when "1000" => return '8';
-			when "1001" => return '9';
-			when "1010" => return 'A';
-			when "1011" => return 'B';
-			when "1100" => return 'C';
-			when "1101" => return 'D';
-			when "1110" => return 'E';
-			when "1111" => return 'F';
-			when "ZZZZ" => return 'z';
-			when "UUUU" => return 'u';
-			when "XXXX" => return 'x';
-			when others => return '?';
+			when x"0" => return x"30";
+			when x"1" => return x"31";
+			when x"2" => return x"32";
+			when x"3" => return x"33";
+			when x"4" => return x"34";
+			when x"5" => return x"35";
+			when x"6" => return x"36";
+			when x"7" => return x"37";
+			when x"8" => return x"38";
+			when x"9" => return x"39";
+			when x"A" => return x"41";
+			when x"B" => return x"42";
+			when x"C" => return x"43";
+			when x"D" => return x"44";
+			when x"E" => return x"45";
+			when x"F" => return x"46";
+			when others => return x"00";
+		end case;
+	end function;
+    
+    function toData (x: u8) return u4 is 
+	begin
+		case x is
+			when x"30" => return x"0";
+			when x"31" => return x"1";
+			when x"32" => return x"2";
+			when x"33" => return x"3";
+			when x"34" => return x"4";
+			when x"35" => return x"5";
+			when x"36" => return x"6";
+			when x"37" => return x"7";
+			when x"38" => return x"8";
+			when x"39" => return x"9";
+			when x"41" => return x"A";
+			when x"42" => return x"B";
+			when x"43" => return x"C";
+			when x"44" => return x"D";
+			when x"45" => return x"E";
+			when x"46" => return x"F";
+			when others => return x"0";
 		end case;
 	end function;
 
@@ -378,71 +463,4 @@ package body Base is
 		end case;
 	end function;
 
-	function show_AluInput (x: AluInput) return string is -- len = 13
-		variable op: string(1 to 6);
-	begin
-		op := AluOp'image(x.op);
-		return op(4 to 6) & " " & toStr16(x.a) & " " & toStr16(x.b);
-	end function;
-
-	function show_RegPort (x: RegPort) return string is -- len = 7
-	begin
-		if x.enable = '0' then return "NULLREG";
-		else return "R" & toHex(x.addr) & "=" & toStr16(x.data);
-		end if;
-	end function;
-
-	function show_IF_ID_Data (x: IF_ID_Data) return string is -- len = 21
-	begin
-		return toStr16(x.pc) & " " & toStr2(x.inst); 
-	end function;
-
-	function show_ID_MEM_Data (x: ID_MEM_Data) return string is -- len = 15
-		variable s: string(1 to 4) := "    ";
-	begin
-		if x.isLW = '1' then 		s := " LW ";
-		elsif x.isSW = '1' then 	s := " SW ";
-		end if;
-		return show_RegPort(x.writeReg) & s & toStr16(x.writeMemData);
-	end function;
-
-	function showInst (x: InstType) return string is
-	begin
-		case( x ) is
-			when I_AND => return "AND   "; 
-			when I_OR => return "OR    "; 
-			when I_ADDU => return "ADDU  "; 
-			when I_SUBU => return "SUBU  "; 
-			when I_SLT => return "SLT   "; 
-			when I_CMP => return "CMP   ";
-			when I_ADDIU => return "ADDIU "; 
-			when I_ADDIU3 => return "ADDIU3"; 
-			when I_ADDSP => return "ADDSP "; 
-			when I_ADDSP3 => return "ADDSP3"; 
-			when I_SLL => return "SLL   "; 
-			when I_SRA => return "SRA   "; 
-			when I_SRL => return "SRL   "; 
-			when I_SLTUI => return "SLTUI "; 
-			when I_NOT => return "NOT   "; 
-			when I_LI => return "LI    ";
-			when I_MFIH => return "MFIH  "; 
-			when I_MFPC => return "MFPC  "; 
-			when I_MTIH => return "MTIH  "; 
-			when I_MTSP => return "MTSP  ";
-			when I_B => return "B     "; 
-			when I_BEQZ => return "BEQZ  "; 
-			when I_BNEZ => return "BNEZ  "; 
-			when I_BTEQZ => return "BTEQZ "; 
-			when I_JR => return "JR    ";
-			when I_LW => return "LW    "; 
-			when I_LW_SP => return "LW_SP "; 
-			when I_SW => return "SW    "; 
-			when I_SW_SP => return "SW_SP "; 
-			when I_SW_RS => return "SW_RS ";
-			when I_NOP => return "NOP   ";
-			when I_ERR => return "ERROR!";
-			when others => return "others";
-		end case ;
-	end function;
-	
 end package body;

@@ -7,45 +7,32 @@ use work.Base.all;
 -- 时钟上升沿时，简单地将参数从输入传递到输出
 entity EX_MEM is
 	port (
-		rst, clk, stall, clear: in std_logic;
+		rst, clk: in std_logic;
+		ctrl: in MidCtrl;		
 		-- EX
-		ex_writeReg: in RegPort;		
-		ex_isLW, ex_isSW: in std_logic;
-		ex_writeMemData: in u16;
-		ex_aluOut: in u16;
+		ex_out: in EX_MEM_Data;
 		-- MEM
-		mem_writeReg: out RegPort;		
-		mem_isLW, mem_isSW: out std_logic;
-		mem_writeMemData: out u16;
-		mem_aluOut: out u16
+		mem_in: buffer EX_MEM_Data
 	) ;
 end EX_MEM;
 
 architecture arch of EX_MEM is	
+	signal t: EX_MEM_Data;
 begin
 
 	process( rst, clk )
 	begin
 		if rst = '0' then
-			mem_writeReg <= NULL_REGPORT;
-			mem_isLW <= '0';
-			mem_isSW <= '0';
-			mem_writeMemData <= x"0000";
-			mem_aluOut <= x"0000";
+			mem_in <= NULL_EX_MEM_DATA;
+			t <= NULL_EX_MEM_DATA;
 		elsif rising_edge(clk) then
-			if clear = '1' then
-				mem_writeReg <= NULL_REGPORT;
-				mem_isLW <= '0';
-				mem_isSW <= '0';
-				mem_writeMemData <= x"0000";
-				mem_aluOut <= x"0000";
-			elsif stall = '0' then
-				mem_writeReg <= ex_writeReg;
-				mem_isLW <= ex_isLW;
-				mem_isSW <= ex_isSW;
-				mem_writeMemData <= ex_writeMemData;
-				mem_aluOut <= ex_aluOut;
-			end if;
+			case( ctrl ) is
+			when CLEAR =>	mem_in <= NULL_EX_MEM_DATA;
+			when PASS =>	mem_in <= ex_out;
+			when STORE =>	t <= mem_in;
+			when RESTORE =>	mem_in <= t;
+			when STALL =>	null;
+			end case ;
 		end if;
 	end process ;
 	

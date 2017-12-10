@@ -6,6 +6,12 @@
 !*.vhd
 !*.bmp
 !*.xco
+!*.xaw
+!*.ngd
+!*.ncd
+!*.bak
+!*.mp
+!program/
 !test/
 !mock/
 !cpu/
