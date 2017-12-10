@@ -37,7 +37,6 @@ end HardTerm;
 architecture arch of HardTerm is
     type TStatus is (GetOK, ReadShell, CmdA, CmdD, CmdG, CmdU, CmdR);
     signal status: TStatus;
-    signal inst: u16;
 begin
 
     process (clk, rst, ci_canread, ci_data, co_canwrite, bi_canread, bi_data, bo_canwrite)
@@ -52,6 +51,7 @@ begin
         variable opu : u2;
         variable aluOp: AluOp;
         variable oprx : u4;
+        variable inst : u16;
     begin
         if rst = '0' then
             count <= 0;
@@ -444,6 +444,7 @@ begin
                         cmdIn := (others => x"00");
                         dataOut := (others => x"20");
                         count <= 0;
+                        lenCmd := 0;
                         status <= ReadShell;
                     else
                         if (bo_canwrite = '1') then
@@ -763,6 +764,7 @@ begin
                     else
                         count <= count;
                     end if;
+                    cnt1 := 0;
                 when 1 =>
                     bo_write <= '1';
                 when 2 =>   --addr low
@@ -844,7 +846,8 @@ begin
                     dataOut(11) := toAscii(bi_data(7 downto 4));
                     dataOut(12) := toAscii(bi_data(3 downto 0));
                     dataOut(13) := x"29";
-                    inst(7 downto 0) <= bi_data;
+                    dataOut(14) := x"20";
+                    inst(7 downto 0) := bi_data;
                     bi_read <= '1';
                 when 12 =>      --read high
                     if (bi_canread = '1') then
@@ -855,10 +858,9 @@ begin
                 when 13 =>
                     dataOut(9) := toAscii(bi_data(7 downto 4));
                     dataOut(10) := toAscii(bi_data(3 downto 0));
-                    inst(15 downto 8) <= bi_data;
+                    inst(15 downto 8) := bi_data;
                     dataOut(32) := x"0D";
                     bi_read <= '1';
-                    
                     --UASM
                     opcode := inst(15 downto 11);
                     case(opcode) is
@@ -1047,7 +1049,6 @@ begin
                             else
                                 null;
                             end if;
-                            
                         when INST_SET4 =>
                             opu := inst(1 downto 0);
                             if (opu = "00") then  -- SLL
@@ -1071,7 +1072,7 @@ begin
                         when others => null;
                     end case;
                     
-                    
+                    cnt2 := 0;
                 when 14 =>
                     if (co_canwrite = '1') then                            
                         cnt2 := cnt2 + 1;
