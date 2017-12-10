@@ -9,7 +9,7 @@ if __name__ == '__main__':
 	fin = open(filename, 'r')
 	fout = open(outname, 'w')
 	sim_mode = False
-	term_mode = True	# 可直接复制到Term粘贴，不带注释
+	term_mode = False	# 可直接复制到Term粘贴，不带注释
 
 # R0-R2 用户可用
 # R3 用于读写内存的内容
